@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6983D239-07DA-4DFA-9AAA-F6876029FF8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core", "src\Mocha.Core\Mocha.Core.csproj", "{DCA600F0-4D6C-44DA-A493-F63097CCE74E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Distributor", "src\Mocha.Distributor\Mocha.Distributor.csproj", "{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Aggregator", "src\Mocha.Aggregator\Mocha.Aggregator.csproj", "{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DCA600F0-4D6C-44DA-A493-F63097CCE74E} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
+		{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
+		{59E9A27B-4976-455D-B9DA-A5746DB9EDE7} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
