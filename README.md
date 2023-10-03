@@ -26,7 +26,7 @@ The set of features that Mocha will provide:
 
 The components of Mocha are as follows:
 - Mocha Distributor Cluster: As the gateway of the Mocha system, it is responsible for receiving data reported by OTel SDK and Collectors and routed them to the corresponding aggregator nodes through consistent hashing. To ensure data is not lost, the Distributor should eventually have the ability to locally store data in a FIFO queue.
-- Mocha Aggregator Cluster: The core component of Mocha, which generates corresponding streaming data flows and executes them by reading the pre-configured or user-configured aggr rule DSL. The aggregator is a stateful component with the ability to distribute shuffled data and needs to register its information in ETCD.
+- Mocha Streaming Cluster: The core component of Mocha, which generates corresponding streaming data flows and executes them by reading the pre-configured or user-configured aggr rule DSL. Streaming is a stateful component with the ability to distribute shuffled data and needs to register its information in ETCD.
 - Storage: Mocha MTL storage, which can use open-source storage components such as ClickHouse, Elastic Search, and victoriametrics.
 - Mocha Querier + Grafana: Querying data from storage and providing it to Grafana for display. Therefore, it is necessary to compatibility with promql/jeager/loki and other data sources.
 - Mocha Manager : Consisting of a manager server, dashboard, and ETCD for cluster metadata and data analysis rules storage.
