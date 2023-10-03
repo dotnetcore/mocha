@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core", "src\Mocha.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Distributor", "src\Mocha.Distributor\Mocha.Distributor.csproj", "{3FB80481-B9D8-4B7B-BCD2-220E79DAC33F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Aggregator", "src\Mocha.Aggregator\Mocha.Aggregator.csproj", "{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Streaming", "src\Mocha.Streaming\Mocha.Streaming.csproj", "{59E9A27B-4976-455D-B9DA-A5746DB9EDE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
