@@ -4,17 +4,16 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5130",
+      "applicationUrl": "http://localhost:4317",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "OTEL__GRPC__SERVER__PORT": "4350"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "https://localhost:7192;http://localhost:5130",
+      "applicationUrl": "https://localhost:4319;http://localhost:4317",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
