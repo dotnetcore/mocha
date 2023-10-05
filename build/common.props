@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup>
+        <RepoRoot>$([System.IO.Directory]::GetParent($(MSBuildThisFileDirectory)).Parent.FullName)</RepoRoot>
+    </PropertyGroup>
+</Project>

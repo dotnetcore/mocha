@@ -1,9 +1,10 @@
 using Grpc.Core;
 using OpenTelemetry.Proto.Collector.Trace.V1;
 
-namespace Mocha.Distributor.Services;
+namespace Mocha.Distributor.Receivers;
 
-public class OTelTraceExportService : TraceService.TraceServiceBase
+// ReSharper disable once IdentifierTypo
+public class OtlpTraceExportService : TraceService.TraceServiceBase
 {
     public override Task<ExportTraceServiceResponse> Export(ExportTraceServiceRequest request, ServerCallContext context)
     {

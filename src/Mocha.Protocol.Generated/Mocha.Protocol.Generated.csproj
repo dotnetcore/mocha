@@ -15,9 +15,17 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <Protobuf Include="..\..\proto\otlp\opentelemetry\proto\**\*.proto" 
-                  ProtoRoot="..\..\proto\otlp" 
+        <Protobuf Include="$(RepoRoot)\proto\otlp\opentelemetry\proto\**\*.proto" 
+                  ProtoRoot="$(RepoRoot)\proto\otlp" 
                   OutputDir="%(RelativePath)generated" 
                   CompileOutputs="false" />
+    </ItemGroup>
+    <ItemGroup>
+        <Protobuf Include="$(RepoRoot)\proto\distributor\**\*.proto">
+            <ProtoRoot>$(RepoRoot)\proto\distributor</ProtoRoot>
+            <OutputDir>%(RelativePath)generated\distributor</OutputDir>
+            <AdditionalImportDirs>$(RepoRoot)\proto\otlp</AdditionalImportDirs>
+            <CompileOutputs>false</CompileOutputs>
+        </Protobuf>
     </ItemGroup>
 </Project>

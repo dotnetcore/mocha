@@ -1,0 +1,4 @@
+<Project>
+    <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'Mocha.sln'))\build\Common.props" />
+  </Project>
+  

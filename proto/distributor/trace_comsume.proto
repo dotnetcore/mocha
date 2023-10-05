@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package mocha.distributor.consumer.trace;
+
+import "opentelemetry/proto/trace/v1/trace.proto";
+
+option csharp_namespace = "Mocha.Distributor.Consumer";
+
+service TraceConsumer {
+    rpc Consume (ConsumeRequest) returns (stream opentelemetry.proto.trace.v1.ResourceSpans){}
+}
+
+message ConsumeRequest {
+    string name = 1;
+    string namespace = 2;
+    int64 offset = 3;
+}

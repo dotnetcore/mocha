@@ -1,5 +1,6 @@
 using System.Net;
-using Mocha.Distributor.Services;
+using Mocha.Distributor.Exporters;
+using Mocha.Distributor.Receivers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,8 @@ builder.Services.AddGrpcReflection();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.MapGrpcService<OTelTraceExportService>();
+app.MapGrpcService<OtlpTraceExportService>();
+app.MapGrpcService<TraceConsumerService>();
 
 app.MapGrpcReflectionService();
 
