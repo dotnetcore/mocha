@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    var port = builder.Configuration.GetSection("OTel").GetSection("Grpc").GetSection("Server").GetValue<int>("Port");
+    int port = builder.Configuration.GetValue<int>("OTel:Grpc:Server:Port");
     options.Listen(IPAddress.Any, port);
 });
 
