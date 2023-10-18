@@ -21,6 +21,8 @@ jobs:
       run: git submodule update --init --recursive
     - name: Restore dependencies
       run: dotnet restore
+    - name: Build third-party modules
+      run: dotnet build ./src/Mocha.Protocol.Generated
     - name: Build
       run: dotnet build
     - name: Format
