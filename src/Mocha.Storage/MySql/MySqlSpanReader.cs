@@ -1,8 +1,8 @@
 using Mocha.Core.Storage;
 
-namespace Mocha.Storage.EntityFrameworkStorage;
+namespace Mocha.Storage.Mysql;
 
-public class EntityFrameworkSpanReader:ISpanReader
+public class MySqlSpanReader:ISpanReader
 {
 
     public Task FindTraceList(string serviceName)
