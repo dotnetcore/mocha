@@ -73,4 +73,4 @@ dotnet_naming_style.camel_case_underscore_style.required_prefix = _
 dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case
 
 # file header
-file header_template = Licensed to the.NET Core Community under one or more agreements.\nThe.NET Core Community licenses this file to you under the MIT license.
+file_header_template = Licensed to the.NET Core Community under one or more agreements.\nThe.NET Core Community licenses this file to you under the MIT license.
