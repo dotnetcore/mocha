@@ -26,4 +26,4 @@ jobs:
     - name: Build
       run: dotnet build
     - name: Format
-      run: dotnet format --verify-no-changes --verbosity diagnostic --exclude ./src/Mocha.Protocol.Generated
+      run: dotnet format --verify-no-changes --verbosity diagnostic
