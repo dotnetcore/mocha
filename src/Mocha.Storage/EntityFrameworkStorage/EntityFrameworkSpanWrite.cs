@@ -1,9 +1,9 @@
 ﻿using Mocha.Core.Model.Trace;
 using Mocha.Core.Storage;
 
-namespace Mocha.Storage.Mysql;
+namespace Mocha.Storage.EntityFrameworkStorage;
 
-public class MySqlSpanWrite:ISpanWrite
+public class EntityFrameworkSpanWrite:ISpanWrite
 {
     public Task<bool> WriterAsync(Span span)
     {
