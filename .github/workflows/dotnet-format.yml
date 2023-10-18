@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 7.0.x
     - name: Fetch submodules
-      run: git submodule update --recursive --remote
+      run: git submodule update --init --recursive
     - name: Restore dependencies
       run: dotnet restore
     - name: Format
