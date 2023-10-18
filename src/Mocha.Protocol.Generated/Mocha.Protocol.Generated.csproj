@@ -15,9 +15,9 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <Protobuf Include="..\..\proto\otlp\opentelemetry\proto\**\*.proto" 
-                  ProtoRoot="..\..\proto\otlp" 
-                  OutputDir="%(RelativePath)generated" 
+        <Protobuf Include="..\..\proto\otlp\opentelemetry\proto\**\*.proto"
+                  ProtoRoot="..\..\proto\otlp"
+                  OutputDir="%(RelativePath)generated"
                   CompileOutputs="false" />
     </ItemGroup>
 </Project>
