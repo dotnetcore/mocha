@@ -7,6 +7,7 @@ public class OTelTraceExportService : TraceService.TraceServiceBase
 {
     public override Task<ExportTraceServiceResponse> Export(ExportTraceServiceRequest request, ServerCallContext context)
     {
+        request.ResourceSpans.First().ScopeSpans.First().Spans.First().SpanId.ToString();
         return Task.FromResult(new ExportTraceServiceResponse());
     }
 }
