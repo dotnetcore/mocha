@@ -15,4 +15,11 @@
       <ProjectReference Include="..\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj" />
     </ItemGroup>
 
+    <!--    code style checker-->
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 </Project>
