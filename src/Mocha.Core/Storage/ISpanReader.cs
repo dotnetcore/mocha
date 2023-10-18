@@ -1,8 +1,5 @@
 namespace Mocha.Core.Storage;
 
-/// <summary>
-///
-/// </summary>
 public interface ISpanReader
 {
 
