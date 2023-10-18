@@ -7,5 +7,4 @@ public class SpanEvent
     public long TimeBucket { get; private set; }
 
     public string EventName { get; private set; }
-
 }

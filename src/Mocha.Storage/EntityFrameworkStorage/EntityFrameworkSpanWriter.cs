@@ -3,16 +3,10 @@ using Mocha.Core.Storage;
 
 namespace Mocha.Storage.EntityFrameworkStorage;
 
-public class EntityFrameworkSpanWriter:ISpanWriter
+public class EntityFrameworkSpanWriter : ISpanWriter
 {
-    public Task<bool> WriteAsync(Span span)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Write(Span span)
+    public Task<bool> WriteAsync(IEnumerable<Span> span)
     {
         throw new NotImplementedException();
     }
 }
-
