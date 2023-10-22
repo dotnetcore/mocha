@@ -1,6 +1,8 @@
 ﻿// Licensed to the.NET Core Community under one or more agreements.
 // The.NET Core Community licenses this file to you under the MIT license.
 
+using Mocha.Core.Enums;
+
 namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class Span
@@ -23,7 +25,7 @@ public class Span
 
     public string StatusMessage { get; set; } = default!;
 
-    public int SpanKind { get; private set; }
+    public SpanKindEnum SpanKind { get; set; }
 
     public string ServiceName { get; set; } = default!;
 
