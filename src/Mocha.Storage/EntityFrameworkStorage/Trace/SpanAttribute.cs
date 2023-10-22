@@ -1,4 +1,4 @@
-﻿namespace Mocha.Core.Model.Trace;
+﻿namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class SpanAttribute
 {

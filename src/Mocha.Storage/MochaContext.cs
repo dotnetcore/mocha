@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Mocha.Core.Model.Trace;
+using Mocha.Storage.EntityFrameworkStorage.Trace;
 
 namespace Mocha.Storage;
 

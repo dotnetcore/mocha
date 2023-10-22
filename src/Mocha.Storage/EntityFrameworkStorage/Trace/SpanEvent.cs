@@ -1,5 +1,4 @@
-﻿namespace Mocha.Core.Model.Trace;
-
+﻿namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 public class SpanEvent
 {
     public string TraceId { get; private set; }= default!;

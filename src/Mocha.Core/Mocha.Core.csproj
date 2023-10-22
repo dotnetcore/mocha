@@ -7,4 +7,8 @@
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Mocha.Distributor\Mocha.Distributor.csproj" />
+    </ItemGroup>
+
 </Project>
