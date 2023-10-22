@@ -11,13 +11,12 @@ public class MochaContext : DbContext
     public MochaContext(DbContextOptions options) : base(options)
     {
     }
+
     public DbSet<SpanAttribute> SpanAttributes => Set<SpanAttribute>();
 
     public DbSet<SpanEvent> SpanEvents => Set<SpanEvent>();
 
     public DbSet<SpanLink> SpanLinks => Set<SpanLink>();
 
-    public DbSet<Span> Spans=> Set<Span>();
-
-
+    public DbSet<Span> Spans => Set<Span>();
 }

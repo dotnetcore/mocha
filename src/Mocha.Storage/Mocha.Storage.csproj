@@ -6,11 +6,11 @@
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj"/>
+        <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="EFCore.NamingConventions" Version="7.0.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.12"/>
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0"/>
+        <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.12" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
     </ItemGroup>
 </Project>
