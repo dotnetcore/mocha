@@ -9,7 +9,7 @@ public class TraceReadQuery
 {
     public string? ServiceName { get; set; }
 
-    public ICollection<KeyValuePair<string, string>> SpanAttributes { get; set; } = new HashSet<KeyValuePair<string, string>>();
+    public IDictionary<string, string>? SpanAttributes { get; set; }
 
     public long? StartTimeStamp { get; set; }
 
