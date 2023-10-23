@@ -7,7 +7,7 @@ namespace Mocha.Storage.EntityFrameworkStorage;
 
 public class EntityFrameworkSpanWriter : ISpanWriter
 {
-    public Task<bool> WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
+    public Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
         throw new NotImplementedException();
     }

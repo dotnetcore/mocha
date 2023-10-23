@@ -4,7 +4,8 @@
 using OpenTelemetry.Proto.Trace.V1;
 
 namespace Mocha.Core.Storage;
+
 public interface ISpanWriter
 {
-    Task<bool> WriteAsync(IEnumerable<Span> spans);
+    Task WriteAsync(IEnumerable<Span> spans);
 }
