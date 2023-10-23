@@ -7,5 +7,13 @@ public enum SpanKind
 {
     Unspecified,
 
+    Client,
 
+    Server,
+
+    Internal,
+
+    Producer,
+
+    Consumer
 }
