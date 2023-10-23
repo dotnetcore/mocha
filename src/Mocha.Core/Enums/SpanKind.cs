@@ -5,15 +5,15 @@ namespace Mocha.Core.Enums;
 
 public enum SpanKind
 {
-    Unspecified,
+    Unspecified = 0,
 
-    Client,
+    Client = 1,
 
-    Server,
+    Server = 2,
 
-    Internal,
+    Internal = 3,
 
-    Producer,
+    Producer = 4,
 
-    Consumer
+    Consumer = 5
 }
