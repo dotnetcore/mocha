@@ -4,8 +4,9 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Mocha.Aggregator</RootNamespace>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
-
+    <ItemGroup>
+        <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj" />
+    </ItemGroup>
 </Project>

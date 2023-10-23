@@ -4,6 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj" />
       <ProjectReference Include="..\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj" />
     </ItemGroup>
 

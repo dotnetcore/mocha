@@ -1,0 +1,29 @@
+name: .NET format
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  dotnet-format:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Fetch submodules
+      run: git submodule update --init --recursive
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build third-party modules
+      run: dotnet build ./src/Mocha.Protocol.Generated
+    - name: Build
+      run: dotnet build
+    - name: Format
+      run: dotnet format --verify-no-changes --verbosity diagnostic
