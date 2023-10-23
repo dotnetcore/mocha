@@ -31,11 +31,11 @@ public class Span
 
     public uint TraceFlags { get; set; }
 
-    public string? TraceState { get; set; }= string.Empty;
+    public string? TraceState { get; set; } = string.Empty;
 
     public IEnumerable<SpanLink> SpanLinks { get; set; } = Enumerable.Empty<SpanLink>();
 
-    public IEnumerable<SpanAttribute> SpanAttributes { get; set; } =  Enumerable.Empty<SpanAttribute>();
+    public IEnumerable<SpanAttribute> SpanAttributes { get; set; } = Enumerable.Empty<SpanAttribute>();
 
-    public IEnumerable<SpanEvent> SpanEvents { get; set; } =  Enumerable.Empty<SpanEvent>();
+    public IEnumerable<SpanEvent> SpanEvents { get; set; } = Enumerable.Empty<SpanEvent>();
 }
