@@ -2,17 +2,18 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Mocha.Core.Storage;
+using Mocha.Core.Storage.Query;
 
-namespace Mocha.Storage.Mysql;
+namespace Mocha.Storage.EntityFrameworkStorage;
 
-public class MySqlSpanWriter : ISpanWriter
+public class EntityFrameworkSpanReader : ISpanReader
 {
-    public Task<bool> WriterAsync()
+    public Task<IEnumerable<string>> FindTraceIdListAsync(TraceReadQuery query)
     {
         throw new NotImplementedException();
     }
 
-    public bool Writer()
+    public Task FindSpanListByTraceIdAsync(string traceId)
     {
         throw new NotImplementedException();
     }

@@ -3,11 +3,11 @@
 
 using Mocha.Core.Storage;
 
-namespace Mocha.Storage.Mysql;
+namespace Mocha.Storage.EntityFrameworkStorage;
 
-public class MySqlSpanReader : ISpanReader
+public class EntityFrameworkSpanWriter : ISpanWriter
 {
-    public Task FindTraceList(string serviceName)
+    public Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
         throw new NotImplementedException();
     }
