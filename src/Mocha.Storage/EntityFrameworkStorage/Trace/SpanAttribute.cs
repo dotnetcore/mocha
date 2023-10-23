@@ -5,15 +5,15 @@ namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class SpanAttribute
 {
-    public string AttributeKey { get; private set; } = default!;
+    public string AttributeKey { get; set; } = string.Empty;
 
-    public string AttributeValue { get; private set; } = default!;
+    public string AttributeValue { get; set; } = string.Empty;
 
-    public long TimeBucket { get; private set; }
+    public long TimeBucket { get; set; }
 
-    public string TraceId { get; private set; } = default!;
+    public string TraceId { get; set; } = string.Empty;
 
-    public string SpanId { get; private set; } = default!;
+    public string SpanId { get; set; } = string.Empty;
 
     public Span Span { get; set; } = default!;
 }

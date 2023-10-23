@@ -6,11 +6,11 @@ namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class SpanEvent
 {
-    public string TraceId { get; private set; } = default!;
+    public string TraceId { get; set; } = string.Empty;
 
-    public long TimeBucket { get; private set; }
+    public long TimeBucket { get; set; }
 
-    public string EventName { get; private set; } = default!;
+    public string EventName { get; set; } = string.Empty;
 
     public Span Span { get; set; } = default!;
 }

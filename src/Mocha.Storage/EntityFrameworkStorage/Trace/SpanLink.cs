@@ -5,13 +5,13 @@ namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class SpanLink
 {
-    public string TraceId { get; private set; } = default!;
+    public string TraceId { get; private set; } = string.Empty;
 
-    public string SpanId { get; private set; } = default!;
+    public string SpanId { get; private set; } = string.Empty;
 
-    public string LinkedSpanId { get; private set; } = default!;
+    public string LinkedSpanId { get; private set; } = string.Empty;
 
-    public string TraceState { get; private set; } = default!;
+    public string TraceState { get; private set; } = string.Empty;
 
     public bool Flags { get; private set; }
 

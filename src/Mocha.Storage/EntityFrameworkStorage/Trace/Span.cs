@@ -31,7 +31,7 @@ public class Span
 
     public uint TraceFlags { get; set; }
 
-    public string? TraceState { get; set; } = string.Empty;
+    public string? TraceState { get; set; }
 
     public IEnumerable<SpanLink> SpanLinks { get; set; } = Enumerable.Empty<SpanLink>();
 
