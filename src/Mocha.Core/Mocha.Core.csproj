@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <ProjectReference Include="..\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj" />
     </ItemGroup>
 
 </Project>
