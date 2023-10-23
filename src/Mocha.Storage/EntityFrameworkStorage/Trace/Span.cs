@@ -7,35 +7,35 @@ namespace Mocha.Storage.EntityFrameworkStorage.Trace;
 
 public class Span
 {
-    public string TraceId { get; set; } = default!;
+    public string TraceId { get; set; } = string.Empty;
 
-    public string SpanId { get; set; } = default!;
+    public string SpanId { get; set; } = string.Empty;
 
-    public string SpanName { get; set; } = default!;
+    public string SpanName { get; set; } = string.Empty;
 
-    public string ParentSpanId { get; set; } = default!;
+    public string ParentSpanId { get; set; } = string.Empty;
 
-    public string StartTime { get; set; } = default!;
+    public string ServiceName { get; set; } = string.Empty;
 
-    public string EndTime { get; set; } = default!;
+    public long StartTime { get; set; }
+
+    public long EndTime { get; set; }
 
     public double Duration { get; set; }
 
     public int StatusCode { get; set; }
 
-    public string StatusMessage { get; set; } = default!;
+    public string? StatusMessage { get; set; } = string.Empty;
 
-    public SpanKindEnum SpanKind { get; set; }
+    public SpanKind SpanKind { get; set; }
 
-    public string ServiceName { get; set; } = default!;
+    public uint TraceFlags { get; set; }
 
-    public bool TraceFlags { get; set; }
+    public string? TraceState { get; set; }= string.Empty;
 
-    public bool TraceState { get; set; }
+    public IEnumerable<SpanLink> SpanLinks { get; set; } = Enumerable.Empty<SpanLink>();
 
-    public ICollection<SpanLink> SpanLinks { get; set; } = new HashSet<SpanLink>();
+    public IEnumerable<SpanAttribute> SpanAttributes { get; set; } =  Enumerable.Empty<SpanAttribute>();
 
-    public ICollection<SpanAttribute> SpanAttributes { get; set; } = new HashSet<SpanAttribute>();
-
-    public ICollection<SpanEvent> SpanEvents { get; set; } = new HashSet<SpanEvent>();
+    public IEnumerable<SpanEvent> SpanEvents { get; set; } =  Enumerable.Empty<SpanEvent>();
 }

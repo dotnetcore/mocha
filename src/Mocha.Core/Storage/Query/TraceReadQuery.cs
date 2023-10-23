@@ -7,13 +7,13 @@ namespace Mocha.Core.Storage.Query;
 
 public class TraceReadQuery
 {
-    public string ServiceName { get; set; } = default!;
+    public string? ServiceName { get; set; }
 
     public ICollection<KeyValuePair<string, string>> SpanAttributes { get; set; } = new HashSet<KeyValuePair<string, string>>();
 
-    public long StartTimeBucket { get; set; } = default!;
+    public long? StartTimeStamp { get; set; }
 
-    public long EndTimeBucket { get; set; } = default!;
+    public long? EndTimeStamp { get; set; }
 
-    public string SpanName { get; set; } = default!;
+    public string? SpanName { get; set; }
 }

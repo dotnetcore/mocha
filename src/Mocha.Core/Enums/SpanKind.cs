@@ -3,7 +3,9 @@
 
 namespace Mocha.Core.Enums;
 
-public enum SpanKindEnum
+public enum SpanKind
 {
     Unspecified,
+
+
 }
