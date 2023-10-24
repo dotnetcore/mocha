@@ -63,30 +63,20 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
         lock (_rebalanceLock)
         {
             var partitionsPerConsumer = _partitionNumber / _consumers.Count;
-            var partitionsPerConsumerRemainder = _partitionNumber % _consumers.Count;
 
             var partitionIndex = 0;
-            foreach (var consumer in _consumers)
+            for (var i = 0; i < _consumers.Count - 1; i++)
             {
-                var partitions = new MemoryBufferPartition<T>[partitionsPerConsumer];
-                for (var i = 0; i < partitionsPerConsumer; i++)
-                {
-                    partitions[i] = _partitions[partitionIndex++];
-                }
+                var partitions = _partitions[partitionIndex..(partitionIndex + partitionsPerConsumer)];
 
-                consumer.AssignPartitions(partitions);
+                _consumers[i].AssignPartitions(partitions);
+
+                partitionIndex += partitionsPerConsumer;
             }
 
-            if (partitionsPerConsumerRemainder > 0)
-            {
-                var partitions = new MemoryBufferPartition<T>[partitionsPerConsumerRemainder];
-                for (var i = 0; i < partitionsPerConsumerRemainder; i++)
-                {
-                    partitions[i] = _partitions[partitionIndex++];
-                }
+            var partitionsRemainder = _partitions[partitionIndex..];
 
-                _consumers[^1].AssignPartitions(partitions);
-            }
+            _consumers[^1].AssignPartitions(partitionsRemainder);
         }
     }
 }

@@ -13,7 +13,7 @@ internal sealed class MemoryBufferSegment<T>
     public MemoryBufferSegment(int length, MemoryBufferPartition<T>.Offset startOffset)
     {
         _startOffset = startOffset;
-        _endOffset = startOffset + (ulong)length;
+        _endOffset = startOffset + (ulong)(length - 1);
         _slots = new T[length];
         _writePosition = -1;
     }

@@ -2,13 +2,15 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Mocha.Core.Buffer.Memory;
 
 internal class MemoryBufferPartition<T>
 {
-    private const int SegmentLength = 1024;
+    // internal for testing
+    internal static int SegmentLength = 1024;
 
     private volatile MemoryBufferSegment<T> _head;
     private volatile MemoryBufferSegment<T> _tail;
@@ -28,9 +30,10 @@ internal class MemoryBufferPartition<T>
 
     public void Enqueue(T item)
     {
-        var tail = _tail;
         while (true)
         {
+            var tail = _tail;
+
             if (tail.TryEnqueue(item))
             {
                 foreach (var reader in _consumerReaders.Values)
@@ -46,7 +49,7 @@ internal class MemoryBufferPartition<T>
                 var newSegment = TryRecycleSegment(out var recycledSegment)
                     ? recycledSegment
                     : new MemoryBufferSegment<T>(SegmentLength, tail.EndOffset + 1);
-                _tail.NextSegment = newSegment;
+                tail.NextSegment = newSegment;
                 _tail = newSegment;
             }
         }
@@ -105,9 +108,15 @@ internal class MemoryBufferPartition<T>
 
     private Offset MinConsumerOffset()
     {
-        Offset minConsumerOffset = default;
+        Offset? minConsumerOffset = null;
         foreach (var reader in _consumerReaders.Values)
         {
+            if (minConsumerOffset == null)
+            {
+                minConsumerOffset = reader.CurrentOffset;
+                continue;
+            }
+
             var offset = reader.CurrentOffset;
             if (offset < minConsumerOffset)
             {
@@ -115,11 +124,12 @@ internal class MemoryBufferPartition<T>
             }
         }
 
-        return minConsumerOffset;
+        return minConsumerOffset ?? _head.StartOffset;
     }
 
 
     // offset may exceed ulong.MaxValue, creat new generation to avoid this
+    [DebuggerDisplay("Generation = {_generation}, Index = {_index}")]
     internal struct Offset
     {
         // TODO: handle generation overflow
@@ -167,7 +177,6 @@ internal class MemoryBufferPartition<T>
         {
             return left._generation != right._generation || left._index != right._index;
         }
-
 
         public static Offset operator -(Offset offset, Offset value)
         {
