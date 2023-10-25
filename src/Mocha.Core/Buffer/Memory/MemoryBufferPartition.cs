@@ -126,7 +126,6 @@ internal class MemoryBufferPartition<T>
         return minConsumerOffset ?? _head.StartOffset;
     }
 
-
     // offset may exceed ulong.MaxValue, creat new generation to avoid this
     [DebuggerDisplay("Generation = {_generation}, Index = {_index}")]
     internal struct Offset
