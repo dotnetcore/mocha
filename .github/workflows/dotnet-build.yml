@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  dotnet-format:
+  dotnet-build:
 
     runs-on: ubuntu-latest
 
