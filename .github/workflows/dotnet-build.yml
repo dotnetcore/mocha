@@ -1,4 +1,4 @@
-name: .NET format
+name: .NET Build
 
 on:
   push:
