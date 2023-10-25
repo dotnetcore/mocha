@@ -192,7 +192,8 @@ internal class MemoryBufferPartition<T>
             {
                 return new Offset
                 {
-                    _generation = offset._generation - value._generation, _index = offset._index - value._index
+                    _generation = offset._generation - value._generation,
+                    _index = offset._index - value._index
                 };
             }
 
