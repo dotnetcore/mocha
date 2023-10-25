@@ -9,7 +9,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 {
     private readonly BufferConsumerOptions _options;
     private readonly MemoryBufferQueue<T> _queue;
-    private volatile MemoryBufferPartition<T>[] _assignedPartitions;
+    private volatile MemoryBufferPartition<T>[] _assignedPartitions = default!;
     private int _partitionIndex;
     private MemoryBufferPartition<T>? _partitionInConsumption;
 

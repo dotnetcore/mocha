@@ -27,3 +27,5 @@ jobs:
       run: dotnet build
     - name: Format
       run: dotnet format --verify-no-changes --verbosity diagnostic
+    - name: Test
+      run: dotnet test

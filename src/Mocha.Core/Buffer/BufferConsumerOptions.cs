@@ -5,7 +5,7 @@ namespace Mocha.Core.Buffer;
 
 public class BufferConsumerOptions
 {
-    public string GroupName { get; set; }
+    public string GroupName { get; init; } = default!;
 
-    public bool AutoCommit { get; set; }
+    public bool AutoCommit { get; init; }
 }

@@ -166,7 +166,7 @@ public class MemoryBufferQueueTests
 
     [Fact]
     // 使用均分的方式，将每个消费者分配到的分区数量尽可能均匀
-    public async Task Equal_distribution_load_balancing_strategy_for_consumers()
+    public void Equal_distribution_load_balancing_strategy_for_consumers()
     {
         var queue = new MemoryBufferQueue<int>(18);
 

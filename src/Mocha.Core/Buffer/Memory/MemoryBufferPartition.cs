@@ -75,7 +75,6 @@ internal class MemoryBufferPartition<T>
         reader.MoveNext();
     }
 
-
     private bool TryRecycleSegment([NotNullWhen(true)] out MemoryBufferSegment<T>? recycledSegment)
     {
         recycledSegment = null;
