@@ -7,15 +7,17 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 {
     private readonly MemoryBufferPartition<T>[] _partitions;
     private readonly int _partitionNumber;
-    private readonly List<MemoryBufferConsumer<T>> _consumers;
-    private readonly object _rebalanceLock;
+    // Consider that the frequency of creating and deleting consumers will not be very high,
+    // so the lock is relatively coarse-grained.
+    private readonly object _consumersLock;
+    private readonly Dictionary<string /* GroupName */, List<MemoryBufferConsumer<T>>> _consumers;
 
     public MemoryBufferQueue(int partitionNumber)
     {
         _partitionNumber = partitionNumber;
         _partitions = new MemoryBufferPartition<T>[partitionNumber];
-        _consumers = new List<MemoryBufferConsumer<T>>();
-        _rebalanceLock = new object();
+        _consumers = new Dictionary<string, List<MemoryBufferConsumer<T>>>();
+        _consumersLock = new object();
 
         for (var i = 0; i < partitionNumber; i++)
         {
@@ -29,17 +31,31 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 
     public IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options)
     {
-        lock (_rebalanceLock)
+        var groupName = options.GroupName;
+        if (groupName == null)
         {
-            if (_consumers.Count >= _partitionNumber)
+            throw new ArgumentNullException(nameof(groupName));
+        }
+
+        lock (_consumersLock)
+        {
+            _consumers.TryGetValue(groupName, out var currentGroupConsumers);
+            if (currentGroupConsumers == null)
             {
-                throw new InvalidOperationException("Maximum number of consumers reached, cannot create more.");
+                currentGroupConsumers = new List<MemoryBufferConsumer<T>>();
+                _consumers.Add(groupName, currentGroupConsumers);
+            }
+
+            if (currentGroupConsumers.Count >= _partitionNumber)
+            {
+                throw new InvalidOperationException(
+                    $"Maximum number of consumers reached for group {groupName}, no more than {_partitionNumber} consumers are allowed.");
             }
 
             var consumer = new MemoryBufferConsumer<T>(options, this);
-            _consumers.Add(consumer);
+            currentGroupConsumers.Add(consumer);
 
-            Rebalance();
+            Rebalance(currentGroupConsumers);
 
             return consumer;
         }
@@ -47,36 +63,50 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 
     public void RemoveConsumer(IBufferConsumer<T> consumer)
     {
-        lock (_rebalanceLock)
+        lock (_consumersLock)
         {
-            if (!_consumers.Remove((MemoryBufferConsumer<T>)consumer))
+            var groupName = consumer.GroupName;
+            if (!_consumers.TryGetValue(groupName, out var currentGroupConsumers))
             {
-                throw new InvalidOperationException("Consumer not found.");
+                throw new InvalidOperationException($"Group {groupName} not found.");
             }
 
-            Rebalance();
+            if (!currentGroupConsumers.Remove((MemoryBufferConsumer<T>)consumer))
+            {
+                throw new InvalidOperationException($"Consumer not found in group {groupName}.");
+            }
+
+            Rebalance(currentGroupConsumers);
         }
     }
 
-    private void Rebalance()
+    private void Rebalance(List<MemoryBufferConsumer<T>> consumers)
     {
-        lock (_rebalanceLock)
+        var consumersCount = consumers.Count;
+        if (consumersCount == 0)
         {
-            var partitionsPerConsumer = _partitionNumber / _consumers.Count;
+            return;
+        }
 
-            var partitionIndex = 0;
-            for (var i = 0; i < _consumers.Count - 1; i++)
+        var partitionsPerConsumer = _partitionNumber / consumersCount;
+
+        var partitionsRemainder = _partitionNumber % consumersCount;
+
+        var startIndex = 0;
+        foreach (var consumer in consumers)
+        {
+            var extraPartitions = partitionsRemainder > 0 ? 1 : 0;
+            var endIndex = startIndex + partitionsPerConsumer + extraPartitions;
+            var partitions = _partitions[startIndex..endIndex];
+
+            consumer.AssignPartitions(partitions);
+
+            startIndex = endIndex;
+
+            if (partitionsRemainder > 0)
             {
-                var partitions = _partitions[partitionIndex..(partitionIndex + partitionsPerConsumer)];
-
-                _consumers[i].AssignPartitions(partitions);
-
-                partitionIndex += partitionsPerConsumer;
+                partitionsRemainder--;
             }
-
-            var partitionsRemainder = _partitions[partitionIndex..];
-
-            _consumers[^1].AssignPartitions(partitionsRemainder);
         }
     }
 }

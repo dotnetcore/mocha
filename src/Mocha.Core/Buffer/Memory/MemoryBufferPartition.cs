@@ -84,11 +84,12 @@ internal class MemoryBufferPartition<T>
             return false;
         }
 
-        var minConsumerOffset = MinConsumerOffset();
+        var minConsumerPendingOffset = MinConsumerPendingOffset();
 
         for (var segment = _head; segment != _tail; segment = segment.NextSegment!)
         {
-            if (segment.EndOffset < minConsumerOffset)
+            var wholeSegmentConsumed = segment.EndOffset < minConsumerPendingOffset;
+            if (wholeSegmentConsumed)
             {
                 recycledSegment = segment;
             }
@@ -105,25 +106,26 @@ internal class MemoryBufferPartition<T>
         return true;
     }
 
-    private Offset MinConsumerOffset()
+    private Offset MinConsumerPendingOffset()
     {
-        Offset? minConsumerOffset = null;
+        Offset? minPendingOffset = null;
         foreach (var reader in _consumerReaders.Values)
         {
-            if (minConsumerOffset == null)
+            var pendingOffset = reader.PendingOffset;
+
+            if (minPendingOffset == null)
             {
-                minConsumerOffset = reader.CurrentOffset;
+                minPendingOffset = pendingOffset;
                 continue;
             }
 
-            var offset = reader.CurrentOffset;
-            if (offset < minConsumerOffset)
+            if (pendingOffset < minPendingOffset)
             {
-                minConsumerOffset = offset;
+                minPendingOffset = pendingOffset;
             }
         }
 
-        return minConsumerOffset ?? _head.StartOffset;
+        return minPendingOffset ?? _head.StartOffset;
     }
 
     // offset may exceed ulong.MaxValue, creat new generation to avoid this
@@ -230,7 +232,7 @@ internal class MemoryBufferPartition<T>
     private sealed class Reader
     {
         private MemoryBufferSegment<T> _currentSegment;
-        private Offset _currentOffset;
+        private Offset _pendingOffset;
 
         private volatile TaskCompletionSource<T>? _tcs;
         private readonly ReaderWriterLockSlim _tcsLock;
@@ -238,11 +240,11 @@ internal class MemoryBufferPartition<T>
         public Reader(MemoryBufferSegment<T> currentSegment, Offset currentOffset)
         {
             _currentSegment = currentSegment;
-            _currentOffset = currentOffset;
+            _pendingOffset = currentOffset;
             _tcsLock = new ReaderWriterLockSlim();
         }
 
-        public Offset CurrentOffset => _currentOffset;
+        public Offset PendingOffset => _pendingOffset;
 
         public ValueTask<T> ReadAsync()
         {
@@ -251,18 +253,18 @@ internal class MemoryBufferPartition<T>
                 throw new InvalidOperationException("Cannot read concurrently.");
             }
 
-            if (_currentSegment.TryGet(_currentOffset, out var item))
+            if (_currentSegment.TryGet(_pendingOffset, out var item))
             {
                 return new ValueTask<T>(item);
             }
 
             var nextSegment = _currentSegment.NextSegment;
-            var moveToNextSegment = _currentSegment.EndOffset < _currentOffset && nextSegment != null;
+            var moveToNextSegment = _currentSegment.EndOffset < _pendingOffset && nextSegment != null;
 
             if (moveToNextSegment)
             {
                 _currentSegment = nextSegment!;
-                _currentOffset = nextSegment!.StartOffset;
+                _pendingOffset = nextSegment!.StartOffset;
                 return ReadAsync();
             }
 
@@ -274,7 +276,7 @@ internal class MemoryBufferPartition<T>
 
         public void MoveNext()
         {
-            _currentOffset++;
+            _pendingOffset++;
         }
 
         public void OnWrite(T item)

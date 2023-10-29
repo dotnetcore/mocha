@@ -24,6 +24,8 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         _assignedPartitions = partitions;
     }
 
+    public string GroupName => _options.GroupName;
+
     public async IAsyncEnumerable<T> ConsumeAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

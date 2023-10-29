@@ -165,28 +165,67 @@ public class MemoryBufferQueueTests
     }
 
     [Fact]
-    // 使用均分的方式，将每个消费者分配到的分区数量尽可能均匀
     public void Equal_distribution_load_balancing_strategy_for_consumers()
     {
         var queue = new MemoryBufferQueue<int>(18);
 
-        var fieldInfo = typeof(MemoryBufferConsumer<int>)
+        var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
             .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-        var customers = new IBufferConsumer<int>[4];
+        var group1Customers = new IBufferConsumer<int>[4];
+        for (var i = 0; i < 3; i++)
+        {
+            group1Customers[i] =
+                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
+        }
 
+        var group2Customers = new IBufferConsumer<int>[4];
         for (var i = 0; i < 4; i++)
         {
-            customers[i] = queue.CreateConsumer(new BufferConsumerOptions { GroupName = $"TestGroup{i}", AutoCommit = false });
+            group2Customers[i] =
+                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup2", AutoCommit = false });
+        }
+
+        var group3Customers = new IBufferConsumer<int>[5];
+        for (var i = 0; i < 5; i++)
+        {
+            group3Customers[i] =
+                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup3", AutoCommit = false });
+        }
+
+        var group4Customers = new IBufferConsumer<int>[16];
+        for (var i = 0; i < 16; i++)
+        {
+            group4Customers[i] =
+                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup4", AutoCommit = false });
         }
 
         for (var i = 0; i < 3; i++)
         {
-            var partitions = (MemoryBufferPartition<int>[])fieldInfo.GetValue(customers[i])!;
-            Assert.Equal(4, partitions.Length);
+            var partitions =
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
+            Assert.Equal(6, partitions.Length);
         }
 
-        var partitionsForLastCustomer = (MemoryBufferPartition<int>[])fieldInfo.GetValue(customers[3])!;
-        Assert.Equal(6, partitionsForLastCustomer.Length);
+        for (var i = 0; i < 4; i++)
+        {
+            var partitions =
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group2Customers[i])!;
+            Assert.Equal(i < 2 ? 5 : 4, partitions.Length);
+        }
+
+        for (var i = 0; i < 5; i++)
+        {
+            var partitions =
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group3Customers[i])!;
+            Assert.Equal(i < 3 ? 4 : 3, partitions.Length);
+        }
+
+        for (var i = 0; i < 16; i++)
+        {
+            var partitions =
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group4Customers[i])!;
+            Assert.Equal(i < 2 ? 2 : 1, partitions.Length);
+        }
     }
 }

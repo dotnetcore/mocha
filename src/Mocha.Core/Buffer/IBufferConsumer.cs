@@ -5,6 +5,8 @@ namespace Mocha.Core.Buffer;
 
 public interface IBufferConsumer<out T>
 {
+    string GroupName { get; }
+
     IAsyncEnumerable<T> ConsumeAsync(CancellationToken cancellationToken = default);
 
     ValueTask CommitAsync();
