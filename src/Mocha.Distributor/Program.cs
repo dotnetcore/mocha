@@ -3,6 +3,7 @@
 
 using System.Net;
 using Mocha.Distributor.Services;
+using Mocha.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.WebHost.ConfigureKestrel(options =>
 // Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
+builder.Services.AddEntityFrameworkCoreStorage();
 
 var app = builder.Build();
 
