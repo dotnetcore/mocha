@@ -11,4 +11,5 @@ builder.Services.AddStorage(options =>
     {
         dbContext.UseInMemoryDatabase("db");
     });
+    options.UseEntityFrameworkCore();
 });

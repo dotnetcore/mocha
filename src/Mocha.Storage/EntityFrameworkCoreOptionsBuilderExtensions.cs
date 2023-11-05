@@ -3,6 +3,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Mocha.Core.Storage;
+using Mocha.Storage.EntityFrameworkStorage;
 
 namespace Mocha.Storage;
 
@@ -14,5 +16,12 @@ public static class EntityFrameworkCoreOptionsBuilderExtensions
     {
         configure(new StorageOptionsBuilder(services));
         return services;
+    }
+
+    public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder)
+    {
+        builder.Services.AddScoped<ISpanReader, EntityFrameworkSpanReader>();
+        builder.Services.AddScoped<ISpanWriter, EntityFrameworkSpanWriter>();
+        return builder;
     }
 }
