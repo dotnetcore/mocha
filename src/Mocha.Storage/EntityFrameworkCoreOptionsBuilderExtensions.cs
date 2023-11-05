@@ -8,10 +8,11 @@ namespace Mocha.Storage;
 
 public static class EntityFrameworkCoreOptionsBuilderExtensions
 {
-    public static IServiceCollection AddEntityFrameworkCoreStorage(
-        this IServiceCollection services,Action<DbContextOptionsBuilder>? optionsAction=null)
+    public static IServiceCollection AddStorage(
+        this IServiceCollection services,
+        Action<StorageOptionsBuilder> configure)
     {
-        services.AddDbContext<MochaContext>(optionsAction);
+        configure(new StorageOptionsBuilder(services));
         return services;
     }
 }
