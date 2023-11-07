@@ -2,7 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 
-namespace Mocha.Storage.EntityFrameworkStorage.Trace;
+namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class SpanEvent
 {

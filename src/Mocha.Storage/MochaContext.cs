@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Mocha.Storage.EntityFrameworkStorage.Trace;
+using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage;
 

@@ -4,10 +4,17 @@
 using Mocha.Core.Storage;
 using Mocha.Core.Storage.Query;
 
-namespace Mocha.Storage.EntityFrameworkStorage;
+namespace Mocha.Storage.EntityFrameworkCore;
 
 public class EntityFrameworkSpanReader : ISpanReader
 {
+    private readonly MochaContext _mochaContext;
+
+    public EntityFrameworkSpanReader(MochaContext mochaContext)
+    {
+        _mochaContext = mochaContext;
+    }
+
     public Task<IEnumerable<string>> FindTraceIdListAsync(TraceReadQuery query)
     {
         throw new NotImplementedException();

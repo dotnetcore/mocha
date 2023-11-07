@@ -3,7 +3,7 @@
 
 using Mocha.Core.Enums;
 
-namespace Mocha.Storage.EntityFrameworkStorage.Trace;
+namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class Span
 {
