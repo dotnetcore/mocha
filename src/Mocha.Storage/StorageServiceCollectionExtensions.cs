@@ -2,10 +2,11 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
+using Mocha.Storage;
 
-namespace Mocha.Storage;
+namespace Microsoft.Extensions.DependencyInjection;
 
-public static class ServiceCollectionExtensions
+public static class StorageServiceCollectionExtensions
 {
     public static IServiceCollection AddStorage(this IServiceCollection services, Action<StorageOptionsBuilder> configure)
     {
