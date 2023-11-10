@@ -5,6 +5,8 @@ namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class SpanLink
 {
+    public long Id { get; set; }
+
     public string TraceId { get; private set; } = string.Empty;
 
     public string SpanId { get; private set; } = string.Empty;

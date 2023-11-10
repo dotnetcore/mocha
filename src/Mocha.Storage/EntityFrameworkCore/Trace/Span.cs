@@ -6,8 +6,9 @@ using Mocha.Core.Enums;
 namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class Span
-
 {
+    public long Id { get; set; }
+    
     public string TraceId { get; set; } = string.Empty;
 
     public string SpanId { get; set; } = string.Empty;

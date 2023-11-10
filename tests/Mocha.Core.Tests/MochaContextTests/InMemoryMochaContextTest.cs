@@ -4,6 +4,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Mocha.Storage;
+using Mocha.Storage.EntityFrameworkCore;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Core.Tests.MochaContextTests;
@@ -20,8 +21,6 @@ public class InMemoryMochaContextTest
         using var context = new MochaContext(_contextOptions);
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
-        context.AddRange();
-        context.SaveChanges();
     }
 
     [Fact]

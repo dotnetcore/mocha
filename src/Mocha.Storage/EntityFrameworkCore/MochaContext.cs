@@ -5,7 +5,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 
-namespace Mocha.Storage;
+namespace Mocha.Storage.EntityFrameworkCore;
 
 public class MochaContext : DbContext
 {
