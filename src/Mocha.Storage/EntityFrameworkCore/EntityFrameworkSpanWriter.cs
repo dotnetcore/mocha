@@ -17,9 +17,8 @@ public class EntityFrameworkSpanWriter : ISpanWriter
         _mochaContext = mochaContext;
     }
 
-    public async Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
+    public Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
-        //_mochaContext.Spans.Add()
         throw new NotImplementedException();
     }
 
