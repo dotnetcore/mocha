@@ -7,6 +7,9 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 {
     private readonly MemoryBufferPartition<T>[] _partitions;
     private readonly int _partitionNumber;
+
+    private readonly IBufferProducer<T> _producer;
+
     // Consider that the frequency of creating and deleting consumers will not be very high,
     // so the lock is relatively coarse-grained.
     private readonly object _consumersLock;
@@ -16,18 +19,18 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
     {
         _partitionNumber = partitionNumber;
         _partitions = new MemoryBufferPartition<T>[partitionNumber];
-        _consumers = new Dictionary<string, List<MemoryBufferConsumer<T>>>();
-        _consumersLock = new object();
-
         for (var i = 0; i < partitionNumber; i++)
         {
             _partitions[i] = new MemoryBufferPartition<T>();
         }
+
+        _producer = new MemoryBufferProducer<T>(_partitions);
+
+        _consumers = new Dictionary<string, List<MemoryBufferConsumer<T>>>();
+        _consumersLock = new object();
     }
 
-    public MemoryBufferPartition<T>[] Partitions => _partitions;
-
-    public IBufferProducer<T> CreateProducer() => new MemoryBufferProducer<T>(this);
+    public IBufferProducer<T> CreateProducer() => _producer;
 
     public IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options)
     {
@@ -52,12 +55,12 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
                     $"Maximum number of consumers reached for group {groupName}, no more than {_partitionNumber} consumers are allowed.");
             }
 
-            var consumer = new MemoryBufferConsumer<T>(options, this);
-            currentGroupConsumers.Add(consumer);
+            var newConsumer = new MemoryBufferConsumer<T>(options, this);
+            currentGroupConsumers.Add(newConsumer);
 
             Rebalance(currentGroupConsumers);
 
-            return consumer;
+            return newConsumer;
         }
     }
 
@@ -88,16 +91,58 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
             return;
         }
 
+        foreach (var partition in _partitions)
+        {
+            partition.ClearRegisteredConsumers();
+        }
+
+        if (consumersCount == 1)
+        {
+            consumers[0].AssignPartitions(_partitions);
+            return;
+        }
+
+        foreach (var consumer in consumers)
+        {
+            consumer.Pause();
+        }
+
         var partitionsPerConsumer = _partitionNumber / consumersCount;
 
         var partitionsRemainder = _partitionNumber % consumersCount;
 
+        var partitionsBeingConsumed = consumers
+            .Where(c => c.IsConsuming)
+            .Select(c => c.PartitionBeingConsumed)
+            .ToHashSet();
+
+        var reassignAllowedPartitions =
+            _partitions.Where(p => !partitionsBeingConsumed.Contains(p)).ToArray();
+
         var startIndex = 0;
         foreach (var consumer in consumers)
         {
+            var isConsuming = consumer.IsConsuming;
+            var partitionBeingConsumed = consumer.PartitionBeingConsumed!;
             var extraPartitions = partitionsRemainder > 0 ? 1 : 0;
-            var endIndex = startIndex + partitionsPerConsumer + extraPartitions;
-            var partitions = _partitions[startIndex..endIndex];
+            var endIndex = startIndex
+                           + partitionsPerConsumer
+                           + (isConsuming ? -1 : 0)
+                           + extraPartitions;
+
+            var isPartitionEnough = endIndex == startIndex;
+            if (isPartitionEnough)
+            {
+                consumer.AssignPartitions(partitionBeingConsumed);
+                continue;
+            }
+
+            var partitions = reassignAllowedPartitions[startIndex..endIndex];
+
+            if (isConsuming)
+            {
+                partitions = partitions.Append(partitionBeingConsumed).ToArray();
+            }
 
             consumer.AssignPartitions(partitions);
 
@@ -107,6 +152,11 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
             {
                 partitionsRemainder--;
             }
+        }
+
+        foreach (var consumer in consumers)
+        {
+            consumer.Resume();
         }
     }
 }

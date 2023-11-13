@@ -5,5 +5,5 @@ namespace Mocha.Core.Buffer;
 
 public interface IBufferProducer<in T>
 {
-    void Produce(T item);
+    ValueTask ProduceAsync(T item);
 }

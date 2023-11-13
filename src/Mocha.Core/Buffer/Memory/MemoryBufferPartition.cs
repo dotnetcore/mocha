@@ -7,26 +7,51 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Mocha.Core.Buffer.Memory;
 
+[DebuggerDisplay("PartitionId = {PartitionId}, Capacity = {Capacity}, Count = {Count}")]
+[DebuggerTypeProxy(typeof(MemoryBufferPartition<>.DebugView))]
 internal class MemoryBufferPartition<T>
 {
     // internal for testing
     internal static int SegmentLength = 1024;
 
+    private static int _idIncreasement;
+
     private volatile MemoryBufferSegment<T> _head;
     private volatile MemoryBufferSegment<T> _tail;
 
-    // At most one consumer per group,
-    // different consumers in a group will not access concurrently at the same time.
+    // Most of the time, at most one consumer per group can consume the same partition at the same time,
+    // but different consumers in the same group may consume the same partition temporarily when Rebalance is called.
     private readonly ConcurrentDictionary<string /* group name */, Reader> _consumerReaders;
+    private readonly HashSet<MemoryBufferConsumer<T>> _consumers;
 
     private readonly object _createSegmentLock;
 
     public MemoryBufferPartition()
     {
+        PartitionId = _idIncreasement++;
         _head = _tail = new MemoryBufferSegment<T>(SegmentLength, default);
         _consumerReaders = new ConcurrentDictionary<string, Reader>();
+        _consumers = new HashSet<MemoryBufferConsumer<T>>();
+
         _createSegmentLock = new object();
     }
+
+    public int PartitionId { get; }
+
+    public ulong Capacity => (ulong)(_tail.EndOffset - _head.StartOffset + 1);
+
+    public ulong Count
+    {
+        get
+        {
+            var freeCount = (ulong)(_tail.Capacity - _tail.Count);
+            return Capacity - freeCount;
+        }
+    }
+
+    public void RegisterConsumer(MemoryBufferConsumer<T> consumer) => _consumers.Add(consumer);
+
+    public void ClearRegisteredConsumers() => _consumers.Clear();
 
     public void Enqueue(T item)
     {
@@ -36,9 +61,9 @@ internal class MemoryBufferPartition<T>
 
             if (tail.TryEnqueue(item))
             {
-                foreach (var reader in _consumerReaders.Values)
+                foreach (var customer in _consumers)
                 {
-                    reader.OnWrite(item);
+                    customer.NotifyNewDataAvailable(this);
                 }
 
                 return;
@@ -46,23 +71,29 @@ internal class MemoryBufferPartition<T>
 
             lock (_createSegmentLock)
             {
-                var newSegment = TryRecycleSegment(out var recycledSegment)
+                if (_tail != tail)
+                {
+                    // tail has been changed, retry
+                    continue;
+                }
+
+                var newSegmentStartOffset = tail.EndOffset + 1;
+                var newSegment = TryRecycleSegment(newSegmentStartOffset, out var recycledSegment)
                     ? recycledSegment
-                    : new MemoryBufferSegment<T>(SegmentLength, tail.EndOffset + 1);
+                    : new MemoryBufferSegment<T>(SegmentLength, newSegmentStartOffset);
                 tail.NextSegment = newSegment;
                 _tail = newSegment;
             }
         }
     }
 
-    public ValueTask<T> PullAsync(string groupName)
+    public bool TryPull(string groupName, [NotNullWhen(true)] out T item)
     {
-        var reader = _consumerReaders.AddOrUpdate(
+        var reader = _consumerReaders.GetOrAdd(
             groupName,
-            _ => new Reader(_head, _head.StartOffset),
-            (_, reader) => reader);
+            _ => new Reader(_head, _head.StartOffset));
 
-        return reader.ReadAsync();
+        return reader.TryRead(out item);
     }
 
     public void Commit(string groupName)
@@ -75,7 +106,9 @@ internal class MemoryBufferPartition<T>
         reader.MoveNext();
     }
 
-    private bool TryRecycleSegment([NotNullWhen(true)] out MemoryBufferSegment<T>? recycledSegment)
+    private bool TryRecycleSegment(
+        MemoryBufferPartitionOffset newSegmentStartOffset,
+        [NotNullWhen(true)] out MemoryBufferSegment<T>? recycledSegment)
     {
         recycledSegment = null;
 
@@ -86,29 +119,32 @@ internal class MemoryBufferPartition<T>
 
         var minConsumerPendingOffset = MinConsumerPendingOffset();
 
+        MemoryBufferSegment<T>? recyclableSegment = null;
         for (var segment = _head; segment != _tail; segment = segment.NextSegment!)
         {
             var wholeSegmentConsumed = segment.EndOffset < minConsumerPendingOffset;
             if (wholeSegmentConsumed)
             {
-                recycledSegment = segment;
+                recyclableSegment = segment;
             }
         }
 
-        if (recycledSegment == null)
+        if (recyclableSegment == null)
         {
             return false;
         }
 
-        _head = recycledSegment.NextSegment!;
-        recycledSegment.NextSegment = null;
+        recycledSegment = recyclableSegment.RecycleSlots(newSegmentStartOffset);
+
+        _head = recyclableSegment.NextSegment!;
+        _tail = recycledSegment;
 
         return true;
     }
 
-    private Offset MinConsumerPendingOffset()
+    private MemoryBufferPartitionOffset MinConsumerPendingOffset()
     {
-        Offset? minPendingOffset = null;
+        MemoryBufferPartitionOffset? minPendingOffset = null;
         foreach (var reader in _consumerReaders.Values)
         {
             var pendingOffset = reader.PendingOffset;
@@ -128,170 +164,65 @@ internal class MemoryBufferPartition<T>
         return minPendingOffset ?? _head.StartOffset;
     }
 
-    // offset may exceed ulong.MaxValue, creat new generation to avoid this
-    [DebuggerDisplay("Generation = {_generation}, Index = {_index}")]
-    internal struct Offset
-    {
-        // TODO: handle generation overflow
-        private ulong _generation;
-        private ulong _index;
-
-        public override bool Equals(object? obj)
-        {
-            return obj is Offset offset && this == offset;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_generation, _index);
-        }
-
-        public ulong ToUInt64()
-        {
-            if (_generation == 0)
-            {
-                return _index;
-            }
-
-            throw new InvalidOperationException("Offset is too large to be converted to UInt64.");
-        }
-
-        public static bool operator >(Offset left, Offset right)
-        {
-            return left._generation > right._generation ||
-                   left._generation == right._generation && left._index > right._index;
-        }
-
-        public static bool operator <(Offset left, Offset right)
-        {
-            return left._generation < right._generation ||
-                   left._generation == right._generation && left._index < right._index;
-        }
-
-        public static bool operator ==(Offset left, Offset right)
-        {
-            return left._generation == right._generation && left._index == right._index;
-        }
-
-        public static bool operator !=(Offset left, Offset right)
-        {
-            return left._generation != right._generation || left._index != right._index;
-        }
-
-        public static Offset operator -(Offset offset, Offset value)
-        {
-            if (offset < value)
-            {
-                throw new InvalidOperationException("Cannot subtract a larger offset from a smaller offset.");
-            }
-
-            if (offset._generation == value._generation)
-            {
-                return new Offset { _generation = 0, _index = offset._index - value._index };
-            }
-
-            if (offset._index >= value._index)
-            {
-                return new Offset
-                {
-                    _generation = offset._generation - value._generation,
-                    _index = offset._index - value._index
-                };
-            }
-
-            return new Offset
-            {
-                _generation = offset._generation - value._generation - 1,
-                _index = ulong.MaxValue - value._index + offset._index + 1
-            };
-        }
-
-        public static Offset operator ++(Offset offset)
-        {
-            var generation = offset._generation;
-            if (offset._index == ulong.MaxValue)
-            {
-                generation++;
-            }
-
-            return new Offset { _generation = generation, _index = offset._index + 1 };
-        }
-
-        public static Offset operator +(Offset offset, ulong value)
-        {
-            var generation = offset._generation;
-            if (offset._index == ulong.MaxValue)
-            {
-                generation++;
-            }
-
-            return new Offset { _generation = generation, _index = offset._index + value };
-        }
-    }
-
+    // One reader can only be used by one consumer at the same time.
     private sealed class Reader
     {
         private MemoryBufferSegment<T> _currentSegment;
-        private Offset _pendingOffset;
+        private MemoryBufferPartitionOffset _pendingOffset;
 
-        private volatile TaskCompletionSource<T>? _tcs;
-        private readonly ReaderWriterLockSlim _tcsLock;
-
-        public Reader(MemoryBufferSegment<T> currentSegment, Offset currentOffset)
+        public Reader(MemoryBufferSegment<T> currentSegment, MemoryBufferPartitionOffset currentOffset)
         {
             _currentSegment = currentSegment;
             _pendingOffset = currentOffset;
-            _tcsLock = new ReaderWriterLockSlim();
         }
 
-        public Offset PendingOffset => _pendingOffset;
+        public MemoryBufferPartitionOffset PendingOffset => _pendingOffset;
 
-        public ValueTask<T> ReadAsync()
+        public bool TryRead(out T item)
         {
-            if (_tcs != null)
-            {
-                throw new InvalidOperationException("Cannot read concurrently.");
-            }
+            var segment = SelectSegment();
+            return segment.TryGet(_pendingOffset, out item);
+        }
 
-            if (_currentSegment.TryGet(_pendingOffset, out var item))
-            {
-                return new ValueTask<T>(item);
-            }
+        public void MoveNext() => _pendingOffset++;
 
-            var nextSegment = _currentSegment.NextSegment;
-            var moveToNextSegment = _currentSegment.EndOffset < _pendingOffset && nextSegment != null;
+        private MemoryBufferSegment<T> SelectSegment()
+        {
+            var currentSegment = _currentSegment;
+            var nextSegment = currentSegment.NextSegment;
+            var moveToNextSegment = currentSegment.EndOffset < _pendingOffset && nextSegment != null;
 
             if (moveToNextSegment)
             {
                 _currentSegment = nextSegment!;
-                _pendingOffset = nextSegment!.StartOffset;
-                return ReadAsync();
             }
 
-            _tcsLock.EnterWriteLock();
-            _tcs = new TaskCompletionSource<T>();
-            _tcsLock.ExitWriteLock();
-            return new ValueTask<T>(_tcs.Task);
+            return _currentSegment;
+        }
+    }
+
+    private class DebugView
+    {
+        private readonly MemoryBufferPartition<T> _partition;
+
+        public DebugView(MemoryBufferPartition<T> partition)
+        {
+            _partition = partition;
         }
 
-        public void MoveNext()
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public MemoryBufferSegment<T>[] Segments
         {
-            _pendingOffset++;
-        }
-
-        public void OnWrite(T item)
-        {
-            _tcsLock.EnterReadLock();
-            var tcs = _tcs;
-            if (tcs == null)
+            get
             {
-                return;
+                var segments = new List<MemoryBufferSegment<T>>();
+                for (var segment = _partition._head; segment != null; segment = segment.NextSegment)
+                {
+                    segments.Add(segment);
+                }
+
+                return segments.ToArray();
             }
-
-            _tcsLock.ExitReadLock();
-
-            _tcs = null;
-            tcs.SetResult(item);
         }
     }
 }
