@@ -130,7 +130,7 @@ public class MemoryBufferPartitionTests
         return segments;
     }
 
-    private T[] GetSlots<T>(MemoryBufferSegment<T> segment)
+    private T[]? GetSlots<T>(MemoryBufferSegment<T> segment)
     {
         return typeof(MemoryBufferSegment<>)
             .MakeGenericType(typeof(T))
