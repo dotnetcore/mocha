@@ -11,60 +11,40 @@ namespace Mocha.Core.Benchmarks;
 public class MemoryBufferQueueConsumeBenchmark
 {
     private BlockingCollection<int>? _blockingCollection;
-    private MemoryBufferQueue<int>? _memoryBufferQueue1;
-    private MemoryBufferQueue<int>? _memoryBufferQueue2;
+    private MemoryBufferQueue<int>? _memoryBufferQueue;
+    private IEnumerable<IBufferConsumer<int>> _consumers = default!;
 
     [Params(4096, 8192)] public int MessageSize { get; set; }
 
-    [GlobalSetup]
+    [IterationSetup]
     public void Setup()
     {
         _blockingCollection = new BlockingCollection<int>();
-        _memoryBufferQueue1 = new MemoryBufferQueue<int>(1);
-        _memoryBufferQueue2 = new MemoryBufferQueue<int>(Environment.ProcessorCount);
-        var producer1 = _memoryBufferQueue1.CreateProducer();
-        var producer2 = _memoryBufferQueue2.CreateProducer();
+        _memoryBufferQueue = new MemoryBufferQueue<int>(Environment.ProcessorCount);
+        var producer = _memoryBufferQueue.CreateProducer();
 
         for (var i = 0; i < MessageSize; i++)
         {
             _blockingCollection.Add(i);
-            producer1.ProduceAsync(i);
-            producer2.ProduceAsync(i);
+            producer.ProduceAsync(i);
         }
+
+        _consumers = _memoryBufferQueue!.CreateConsumers(
+            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true }, Environment.ProcessorCount);
     }
 
     [Benchmark]
     public void BlockingCollection_Concurrent_Consuming()
     {
-        var countDownEvent = new CountdownEvent(10);
+        var countDownEvent = new CountdownEvent(MessageSize);
         for (var i = 0; i < Environment.ProcessorCount; i++)
         {
             _ = Task.Run(() =>
             {
-                _blockingCollection!.Take();
-                countDownEvent.Signal();
-            });
-        }
-
-        countDownEvent.Wait();
-    }
-
-    [Benchmark]
-    public void MemoryBufferQueue_Concurrent_Producing_Partition_1()
-    {
-        var countDownEvent = new CountdownEvent(MessageSize);
-        for (var i = 0; i < Environment.ProcessorCount; i++)
-        {
-            _ = Task.Run(async () =>
-            {
-                var consumer =
-                    _memoryBufferQueue1!.CreateConsumer(new BufferConsumerOptions
-                    {
-                        GroupName = "TestGroup", AutoCommit = true
-                    });
-                await foreach (var item in consumer.ConsumeAsync())
+                while (true)
                 {
                     countDownEvent.Signal();
+                    _blockingCollection!.Take();
                 }
             });
         }
@@ -76,16 +56,12 @@ public class MemoryBufferQueueConsumeBenchmark
     public void MemoryBufferQueue_Concurrent_Producing_Partition_ProcessorCount()
     {
         var countDownEvent = new CountdownEvent(MessageSize);
-        for (var i = 0; i < Environment.ProcessorCount; i++)
+
+        foreach (var consumer in _consumers)
         {
             _ = Task.Run(async () =>
             {
-                var consumer =
-                    _memoryBufferQueue2!.CreateConsumer(new BufferConsumerOptions
-                    {
-                        GroupName = "TestGroup", AutoCommit = true
-                    });
-                await foreach (var item in consumer.ConsumeAsync())
+                await foreach (var _ in consumer.ConsumeAsync())
                 {
                     countDownEvent.Signal();
                 }

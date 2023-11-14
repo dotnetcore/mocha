@@ -8,4 +8,6 @@ public interface IBufferQueue<T>
     IBufferProducer<T> CreateProducer();
 
     IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options);
+
+    IEnumerable<IBufferConsumer<T>> CreateConsumers(BufferConsumerOptions options, int consumerNumber);
 }

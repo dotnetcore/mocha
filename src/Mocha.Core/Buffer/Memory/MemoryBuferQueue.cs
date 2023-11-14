@@ -34,6 +34,22 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 
     public IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options)
     {
+        var consumers = CreateConsumers(options, 1);
+        return consumers.First();
+    }
+
+    public IEnumerable<IBufferConsumer<T>> CreateConsumers(BufferConsumerOptions options, int consumerNumber)
+    {
+        if (consumerNumber < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(consumerNumber), "The number of consumers must be greater than 0.");
+        }
+
+        if (consumerNumber > _partitionNumber)
+        {
+            throw new ArgumentOutOfRangeException(nameof(consumerNumber), "The number of consumers cannot be greater than the number of partitions.");
+        }
+
         var groupName = options.GroupName;
         if (groupName == null)
         {
@@ -42,121 +58,46 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 
         lock (_consumersLock)
         {
-            _consumers.TryGetValue(groupName, out var currentGroupConsumers);
-            if (currentGroupConsumers == null)
+            if (_consumers.ContainsKey(groupName))
             {
-                currentGroupConsumers = new List<MemoryBufferConsumer<T>>();
-                _consumers.Add(groupName, currentGroupConsumers);
+                throw new InvalidOperationException($"The consumer group '{groupName}' already exists.");
             }
 
-            if (currentGroupConsumers.Count >= _partitionNumber)
+            var consumers = new List<MemoryBufferConsumer<T>>();
+            for (var i = 0; i < consumerNumber; i++)
             {
-                throw new InvalidOperationException(
-                    $"Maximum number of consumers reached for group {groupName}, no more than {_partitionNumber} consumers are allowed.");
+                var consumer = new MemoryBufferConsumer<T>(options, this);
+                consumers.Add(consumer);
             }
 
-            var newConsumer = new MemoryBufferConsumer<T>(options, this);
-            currentGroupConsumers.Add(newConsumer);
+            AssignPartitions(consumers);
 
-            Rebalance(currentGroupConsumers);
-
-            return newConsumer;
+            _consumers.Add(groupName, consumers);
+            return consumers;
         }
     }
 
-    public void RemoveConsumer(IBufferConsumer<T> consumer)
+    private void AssignPartitions(List<MemoryBufferConsumer<T>> consumers)
     {
-        lock (_consumersLock)
-        {
-            var groupName = consumer.GroupName;
-            if (!_consumers.TryGetValue(groupName, out var currentGroupConsumers))
-            {
-                throw new InvalidOperationException($"Group {groupName} not found.");
-            }
-
-            if (!currentGroupConsumers.Remove((MemoryBufferConsumer<T>)consumer))
-            {
-                throw new InvalidOperationException($"Consumer not found in group {groupName}.");
-            }
-
-            Rebalance(currentGroupConsumers);
-        }
-    }
-
-    private void Rebalance(List<MemoryBufferConsumer<T>> consumers)
-    {
-        var consumersCount = consumers.Count;
-        if (consumersCount == 0)
-        {
-            return;
-        }
-
-        foreach (var partition in _partitions)
-        {
-            partition.ClearRegisteredConsumers();
-        }
-
-        if (consumersCount == 1)
-        {
-            consumers[0].AssignPartitions(_partitions);
-            return;
-        }
-
+        var consumerNumber = consumers.Count;
+        var partitionsPerConsumer = _partitionNumber / consumerNumber;
+        var partitionsRemainder = _partitionNumber % consumerNumber;
+        var partitionStartIndex = 0;
         foreach (var consumer in consumers)
         {
-            consumer.Pause();
-        }
-
-        var partitionsPerConsumer = _partitionNumber / consumersCount;
-
-        var partitionsRemainder = _partitionNumber % consumersCount;
-
-        var partitionsBeingConsumed = consumers
-            .Where(c => c.IsConsuming)
-            .Select(c => c.PartitionBeingConsumed)
-            .ToHashSet();
-
-        var reassignAllowedPartitions =
-            _partitions.Where(p => !partitionsBeingConsumed.Contains(p)).ToArray();
-
-        var startIndex = 0;
-        foreach (var consumer in consumers)
-        {
-            var isConsuming = consumer.IsConsuming;
-            var partitionBeingConsumed = consumer.PartitionBeingConsumed!;
             var extraPartitions = partitionsRemainder > 0 ? 1 : 0;
-            var endIndex = startIndex
-                           + partitionsPerConsumer
-                           + (isConsuming ? -1 : 0)
-                           + extraPartitions;
-
-            var isPartitionEnough = endIndex == startIndex;
-            if (isPartitionEnough)
-            {
-                consumer.AssignPartitions(partitionBeingConsumed);
-                continue;
-            }
-
-            var partitions = reassignAllowedPartitions[startIndex..endIndex];
-
-            if (isConsuming)
-            {
-                partitions = partitions.Append(partitionBeingConsumed).ToArray();
-            }
-
+            var partitionEndIndex = partitionStartIndex
+                                    + partitionsPerConsumer
+                                    + extraPartitions;
+            var partitions = _partitions[partitionStartIndex..partitionEndIndex];
             consumer.AssignPartitions(partitions);
 
-            startIndex = endIndex;
+            partitionStartIndex = partitionEndIndex;
 
             if (partitionsRemainder > 0)
             {
                 partitionsRemainder--;
             }
-        }
-
-        foreach (var consumer in consumers)
-        {
-            consumer.Resume();
         }
     }
 }

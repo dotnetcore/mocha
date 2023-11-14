@@ -51,8 +51,6 @@ internal class MemoryBufferPartition<T>
 
     public void RegisterConsumer(MemoryBufferConsumer<T> consumer) => _consumers.Add(consumer);
 
-    public void ClearRegisteredConsumers() => _consumers.Clear();
-
     public void Enqueue(T item)
     {
         while (true)
@@ -61,9 +59,9 @@ internal class MemoryBufferPartition<T>
 
             if (tail.TryEnqueue(item))
             {
-                foreach (var customer in _consumers)
+                foreach (var consumer in _consumers)
                 {
-                    customer.NotifyNewDataAvailable(this);
+                    consumer.NotifyNewDataAvailable(this);
                 }
 
                 return;
@@ -210,7 +208,16 @@ internal class MemoryBufferPartition<T>
             _partition = partition;
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public int PartitionId => _partition.PartitionId;
+
+        public ulong Capacity => _partition.Capacity;
+
+        public ulong Count => _partition.Count;
+
+        public HashSet<MemoryBufferConsumer<T>> Consumers => _partition._consumers;
+
+        public ConcurrentDictionary<string, Reader> ConsumerReaders => _partition._consumerReaders;
+
         public MemoryBufferSegment<T>[] Segments
         {
             get

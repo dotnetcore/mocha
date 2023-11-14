@@ -7,7 +7,7 @@ using Mocha.Core.Benchmarks;
 var allBenchmarks = new[]
 {
     typeof(MemoryBufferQueueProduceBenchmark),
-    // typeof(MemoryBufferQueueConsumeBenchmark),
+    typeof(MemoryBufferQueueConsumeBenchmark),
 };
 
 new BenchmarkSwitcher(allBenchmarks).Run(args, new BenchmarkConfig());

@@ -13,11 +13,10 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
     private int _partitionIndex;
     private MemoryBufferPartition<T>? _partitionBeingConsumed;
-    private readonly ManualResetEventSlim _readyToConsumeEvent;
 
     private volatile int _dataAvailableVersion;
     private volatile TaskCompletionSource<MemoryBufferPartition<T>>? _dataAvailableTaskCompletionSource;
-    private readonly SemaphoreSlim _dataAvailableSemaphore;
+    private readonly ReaderWriterLockSlim _dataAvailableLock;
 
     public MemoryBufferConsumer(BufferConsumerOptions options, MemoryBufferQueue<T> queue)
     {
@@ -25,10 +24,8 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         _queue = queue;
 
         _assignedPartitions = Array.Empty<MemoryBufferPartition<T>>();
-        _readyToConsumeEvent = new ManualResetEventSlim(true);
-
         _dataAvailableVersion = 0;
-        _dataAvailableSemaphore = new SemaphoreSlim(1, 1);
+        _dataAvailableLock = new ReaderWriterLockSlim();
     }
 
     public string GroupName => _options.GroupName;
@@ -45,11 +42,6 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
             partition.RegisterConsumer(this);
         }
     }
-
-    public void Pause() => _readyToConsumeEvent.Reset();
-
-    public void Resume() => _readyToConsumeEvent.Set();
-
     public async IAsyncEnumerable<T> ConsumeAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -73,7 +65,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
             // Try to pull from other partitions
             T itemFromOtherPartition = default!;
             var hasItemFromOtherPartition = false;
-            
+
             foreach (var t in _assignedPartitions)
             {
                 partition = t;
@@ -99,7 +91,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
             try
             {
-                await _dataAvailableSemaphore.WaitAsync(cancellationToken);
+                _dataAvailableLock.EnterWriteLock();
 
                 if (_dataAvailableVersion != dataAvailableVersion)
                 {
@@ -112,7 +104,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
             }
             finally
             {
-                _dataAvailableSemaphore.Release();
+                _dataAvailableLock.ExitWriteLock();
             }
 
             var partitionWithNewData = await _dataAvailableTaskCompletionSource.Task;
@@ -134,8 +126,6 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         var partition = _partitionBeingConsumed ??
                         throw new InvalidOperationException("No partition is in consumption.");
 
-        _readyToConsumeEvent.Wait();
-
         partition.Commit(_options.GroupName);
 
         _partitionBeingConsumed = null;
@@ -143,44 +133,40 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask CloseAsync()
-    {
-        _queue.RemoveConsumer(this);
-        _readyToConsumeEvent.Dispose();
-        return ValueTask.CompletedTask;
-    }
-
     public void NotifyNewDataAvailable(MemoryBufferPartition<T> partition)
     {
         Interlocked.Increment(ref _dataAvailableVersion);
 
-        if (_dataAvailableTaskCompletionSource == null)
-        {
-            return;
-        }
-
-        if (_dataAvailableTaskCompletionSource.Task.IsCompleted)
-        {
-            return;
-        }
-
-        _dataAvailableSemaphore.Wait();
-        var tsc = _dataAvailableTaskCompletionSource;
+        _dataAvailableLock.EnterUpgradeableReadLock();
         try
         {
-            if (tsc == null)
+            if (_dataAvailableTaskCompletionSource == null
+                || _dataAvailableTaskCompletionSource.Task.IsCompleted)
             {
                 return;
             }
 
-            _dataAvailableTaskCompletionSource = null;
+            _dataAvailableLock.EnterWriteLock();
+            try
+            {
+                if (_dataAvailableTaskCompletionSource == null
+                    || _dataAvailableTaskCompletionSource.Task.IsCompleted)
+                {
+                    return;
+                }
+
+                _dataAvailableTaskCompletionSource.SetResult(partition);
+                _dataAvailableTaskCompletionSource = null;
+            }
+            finally
+            {
+                _dataAvailableLock.ExitWriteLock();
+            }
         }
         finally
         {
-            _dataAvailableSemaphore.Release();
+            _dataAvailableLock.ExitUpgradeableReadLock();
         }
-
-        tsc.SetResult(partition);
     }
 
     private bool TryPull(MemoryBufferPartition<T> partition, out T item)
@@ -199,7 +185,6 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
     {
         if (_options.AutoCommit)
         {
-            _readyToConsumeEvent.Wait();
             partition.Commit(_options.GroupName);
         }
     }

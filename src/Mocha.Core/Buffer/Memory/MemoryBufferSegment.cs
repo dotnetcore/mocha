@@ -12,7 +12,7 @@ internal sealed class MemoryBufferSegment<T>
     private readonly MemoryBufferPartitionOffset _startOffset;
     private readonly MemoryBufferPartitionOffset _endOffset;
     private readonly T[] _slots;
-    private int _writePosition;
+    private volatile int _writePosition;
 
     public MemoryBufferSegment(int length, MemoryBufferPartitionOffset startOffset)
     {
@@ -38,7 +38,7 @@ internal sealed class MemoryBufferSegment<T>
 
     public int Capacity => _slots.Length;
 
-    public int Count => _writePosition + 1;
+    public int Count => Math.Min(Capacity, _writePosition + 1);
 
     public bool TryEnqueue(T item)
     {

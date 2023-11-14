@@ -10,6 +10,4 @@ public interface IBufferConsumer<out T>
     IAsyncEnumerable<T> ConsumeAsync(CancellationToken cancellationToken = default);
 
     ValueTask CommitAsync();
-
-    ValueTask CloseAsync();
 }

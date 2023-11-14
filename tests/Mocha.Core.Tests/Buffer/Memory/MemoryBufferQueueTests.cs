@@ -110,8 +110,10 @@ public class MemoryBufferQueueTests
     {
         var queue = new MemoryBufferQueue<int>(2);
         var producer = queue.CreateProducer();
-        var consumer1 = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
-        var consumer2 = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
+        var consumers = queue
+            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false }, 2).ToList();
+        var consumer1 = consumers[0];
+        var consumer2 = consumers[1];
 
         await producer.ProduceAsync(1);
         await producer.ProduceAsync(2);
@@ -230,188 +232,50 @@ public class MemoryBufferQueueTests
 
         var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
             .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var group1Consumers =
+            queue.CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false }, 3)
+                .ToList();
 
-        var group1Customers = new IBufferConsumer<int>[4];
-        for (var i = 0; i < 3; i++)
-        {
-            group1Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
-        }
+        var group2Consumers = queue
+            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup2", AutoCommit = false }, 4)
+            .ToList();
 
-        var group2Customers = new IBufferConsumer<int>[4];
-        for (var i = 0; i < 4; i++)
-        {
-            group2Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup2", AutoCommit = false });
-        }
+        var group3Consumers = queue
+            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup3", AutoCommit = false }, 5)
+            .ToList();
 
-        var group3Customers = new IBufferConsumer<int>[5];
-        for (var i = 0; i < 5; i++)
-        {
-            group3Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup3", AutoCommit = false });
-        }
-
-        var group4Customers = new IBufferConsumer<int>[16];
-        for (var i = 0; i < 16; i++)
-        {
-            group4Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup4", AutoCommit = false });
-        }
+        var group4Consumers = queue
+            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup4", AutoCommit = false }, 16)
+            .ToList();
 
         for (var i = 0; i < 3; i++)
         {
             var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Consumers[i])!;
             Assert.Equal(6, partitions.Length);
         }
 
         for (var i = 0; i < 4; i++)
         {
             var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group2Customers[i])!;
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group2Consumers[i])!;
             Assert.Equal(i < 2 ? 5 : 4, partitions.Length);
         }
 
         for (var i = 0; i < 5; i++)
         {
             var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group3Customers[i])!;
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group3Consumers[i])!;
             Assert.Equal(i < 3 ? 4 : 3, partitions.Length);
         }
 
         for (var i = 0; i < 16; i++)
         {
             var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group4Customers[i])!;
+                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group4Consumers[i])!;
             Assert.Equal(i < 2 ? 2 : 1, partitions.Length);
         }
     }
-
-    [Fact]
-    public void Rebalance_If_New_Customer_Created()
-    {
-        var queue = new MemoryBufferQueue<int>(9);
-
-        var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
-            .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
-
-        var group1Customers = new IBufferConsumer<int>[5];
-        for (var i = 0; i < 3; i++)
-        {
-            group1Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
-        }
-
-        for (var i = 0; i < 3; i++)
-        {
-            var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
-            Assert.Equal(3, partitions.Length);
-        }
-
-        group1Customers[3] =
-            queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
-
-        for (var i = 0; i < 4; i++)
-        {
-            var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
-            Assert.Equal(i == 0 ? 3 : 2, partitions.Length);
-        }
-
-        group1Customers[4] =
-            queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
-
-        for (var i = 0; i < 5; i++)
-        {
-            var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
-
-            Assert.Equal(i < 4 ? 2 : 1, partitions.Length);
-        }
-    }
-
-    [Fact]
-    public void Rebalance_If_Customer_Removed()
-    {
-        var queue = new MemoryBufferQueue<int>(9);
-
-        var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
-            .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
-
-        var group1Customers = new IBufferConsumer<int>[9];
-
-        for (var i = 0; i < 9; i++)
-        {
-            group1Customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false });
-        }
-
-        for (var i = 0; i < 9; i++)
-        {
-            var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
-            Assert.Single(partitions);
-        }
-
-        queue.RemoveConsumer(group1Customers[0]);
-        group1Customers = group1Customers[1..];
-        for (var i = 0; i < 8; i++)
-        {
-            var partitions =
-                (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(group1Customers[i])!;
-            Assert.Equal(i == 0 ? 2 : 1, partitions.Length);
-        }
-    }
-
-    [Fact]
-    public async Task Concurrent_Rebalance()
-    {
-        var customerCount = Environment.ProcessorCount;
-        var partitionCount = Environment.ProcessorCount * 2;
-
-        var queue = new MemoryBufferQueue<int>(partitionCount);
-
-        var producer = queue.CreateProducer();
-
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * partitionCount;
-        for (var i = 0; i < messageSize; i++)
-        {
-            await producer.ProduceAsync(i);
-        }
-
-        var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
-            .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
-
-        var customers = new IBufferConsumer<int>[customerCount];
-        Parallel.For(0, customerCount, i =>
-        {
-            customers[i] =
-                queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
-
-            _ = Task.Run(async () =>
-            {
-                await foreach (var item in customers[i].ConsumeAsync())
-                {
-                }
-            });
-        });
-
-        var allPartitions = new List<MemoryBufferPartition<int>>();
-
-        for (var i = 0; i < customerCount; i++)
-        {
-            var partitions = (MemoryBufferPartition<int>[])assignedPartitionsFieldInfo.GetValue(customers[i])!;
-
-            Assert.Equal(2, partitions.Length);
-            allPartitions.AddRange(partitions);
-        }
-
-        var ids = allPartitions.Select(x => x.PartitionId).ToHashSet();
-        Assert.Equal(partitionCount, ids.Count);
-    }
-
 
     [Fact]
     public void Concurrent_Producer_Single_Partition()
@@ -421,10 +285,10 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>(1);
 
         var countDownEvent = new CountdownEvent(messageSize);
-        var customer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
+        var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
         _ = Task.Run(async () =>
         {
-            await foreach (var item in customer.ConsumeAsync())
+            await foreach (var item in consumer.ConsumeAsync())
             {
                 if (countDownEvent.Signal())
                 {
@@ -451,11 +315,7 @@ public class MemoryBufferQueueTests
             });
         }
 
-        countDownEvent.Wait(TimeSpan.FromSeconds(10));
-        if (countDownEvent.CurrentCount != 0)
-        {
-            throw new Exception("Not all messages consumed.");
-        }
+        countDownEvent.Wait();
     }
 
     [Fact]
@@ -465,11 +325,11 @@ public class MemoryBufferQueueTests
 
         var queue = new MemoryBufferQueue<int>(Environment.ProcessorCount);
 
-        var customer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
+        var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
         var countDownEvent = new CountdownEvent(messageSize);
         _ = Task.Run(async () =>
         {
-            await foreach (var item in customer.ConsumeAsync())
+            await foreach (var item in consumer.ConsumeAsync())
             {
                 if (countDownEvent.Signal())
                 {
@@ -496,84 +356,38 @@ public class MemoryBufferQueueTests
             });
         }
 
-        countDownEvent.Wait(TimeSpan.FromSeconds(10));
-        if (countDownEvent.CurrentCount != 0)
-        {
-            throw new Exception("Not all messages consumed.");
-        }
+        countDownEvent.Wait();
     }
 
-    [Fact]
-    public async Task Concurrent_Consumer_Single_Group()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Concurrent_Consumer_Multiple_Groups(int groupNumber)
     {
         var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
-        var partitionNumber = Environment.ProcessorCount;
-        var customerNumberPerGroup = Environment.ProcessorCount;
+        var partitionNumber = Environment.ProcessorCount * 2;
+        var consumerNumberPerGroup = Environment.ProcessorCount;
 
         var queue = new MemoryBufferQueue<int>(partitionNumber);
-        var producer = queue.CreateProducer();
-        for (var i = 0; i < messageSize; i++)
-        {
-            await producer.ProduceAsync(i);
-        }
 
-        var countDownEvent1 = new CountdownEvent(messageSize);
-
-        for (var i = 0; i < customerNumberPerGroup; i++)
-        {
-            _ = Task.Run(async () =>
-            {
-                var consumer =
-                    queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = true });
-                await foreach (var item in consumer.ConsumeAsync())
-                {
-                    if (countDownEvent1.Signal())
-                    {
-                        break;
-                    }
-                }
-            });
-        }
-
-        countDownEvent1.Wait(TimeSpan.FromSeconds(10));
-
-        if (countDownEvent1.CurrentCount != 0)
-        {
-            throw new Exception("Not all messages consumed.");
-        }
-    }
-
-    [Fact]
-    public async Task Concurrent_Consumer_Multiple_Groups()
-    {
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
-        var partitionNumber = Environment.ProcessorCount;
-        var customerNumberPerGroup = Environment.ProcessorCount;
-        var groupNumber = 2;
-        var countDownEvent = new CountdownEvent(messageSize * groupNumber);
-
-        var queue = new MemoryBufferQueue<int>(partitionNumber);
-        var producer = queue.CreateProducer();
-        for (var i = 0; i < messageSize; i++)
-        {
-            await producer.ProduceAsync(i);
-        }
+        var countdownEvent = new CountdownEvent(messageSize * groupNumber);
 
         for (var groupIndex = 0; groupIndex < groupNumber; groupIndex++)
         {
-            for (var i = 0; i < customerNumberPerGroup; i++)
+            var consumers = queue
+                .CreateConsumers(
+                    new BufferConsumerOptions { GroupName = "TestGroup" + (groupIndex + 1), AutoCommit = true },
+                    consumerNumberPerGroup)
+                .ToList();
+
+            foreach (var consumer in consumers)
             {
-                var index = groupIndex;
                 _ = Task.Run(async () =>
                 {
-                    var consumer =
-                        queue.CreateConsumer(new BufferConsumerOptions
-                        {
-                            GroupName = "TestGroup" + (index + 1), AutoCommit = true
-                        });
                     await foreach (var item in consumer.ConsumeAsync())
                     {
-                        if (countDownEvent.Signal())
+                        if (countdownEvent.Signal())
                         {
                             break;
                         }
@@ -582,81 +396,32 @@ public class MemoryBufferQueueTests
             }
         }
 
-        try
-        {
-            countDownEvent.Wait(TimeSpan.FromSeconds(10));
-        }
-        catch
-        {
-            throw new Exception("Not all messages consumed.");
-        }
-    }
-
-    [Fact]
-    public void Concurrent_Producer_And_Concurrent_Consumer_Single_Group()
-    {
-        MemoryBufferPartition<int>.SegmentLength = 3;
-        var messageSize = 100;
-        var partitionNumber = Environment.ProcessorCount;
-        var customerNumberPerGroup = Environment.ProcessorCount;
-
-        var queue = new MemoryBufferQueue<int>(partitionNumber);
-
-        var customerCountdownEvent = new CountdownEvent(messageSize);
-        for (var i = 0; i < customerNumberPerGroup; i++)
-        {
-            _ = Task.Run(async () =>
-            {
-                var consumer =
-                    queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = true });
-                await foreach (var item in consumer.ConsumeAsync())
-                {
-                    if (customerCountdownEvent.Signal())
-                    {
-                        break;
-                    }
-                }
-            });
-        }
-
         var producer = queue.CreateProducer();
-        var chunkSize = (int)Math.Ceiling(messageSize * 1.0d / partitionNumber);
-        var chunks = Enumerable.Range(0, messageSize).Chunk(chunkSize);
-        foreach (var chunk in chunks)
-        {
-            _ = Task.Run(async () =>
-            {
-                foreach (var item in chunk)
-                {
-                    var valueTask = producer.ProduceAsync(item);
-                    if (!valueTask.IsCompletedSuccessfully)
-                    {
-                        await valueTask.AsTask();
-                    }
-                }
-            });
-        }
 
-        try
+        _ = Task.Run(async () =>
         {
-            customerCountdownEvent.Wait(TimeSpan.FromSeconds(10));
-        }
-        catch
-        {
-            throw new Exception("Not all messages consumed.");
-        }
+            for (var i = 0; i < messageSize; i++)
+            {
+                var valueTask = producer.ProduceAsync(i);
+                if (!valueTask.IsCompletedSuccessfully)
+                {
+                    await valueTask.AsTask();
+                }
+            }
+        });
+
+        countdownEvent.Wait();
     }
 
-    // TODO: Fix this test
-    // [Theory]
-    // [InlineData(1)]
-    // [InlineData(2)]
-    // [InlineData(3)]
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
     public void Concurrent_Producer_And_Concurrent_Consumer_Multiple_Groups(int groupNumber)
     {
         var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
-        var partitionNumber = Environment.ProcessorCount;
-        var customerNumberPerGroup = Environment.ProcessorCount;
+        var partitionNumber = Environment.ProcessorCount * 2;
+        var consumerNumberPerGroup = Environment.ProcessorCount;
 
         var queue = new MemoryBufferQueue<int>(partitionNumber);
 
@@ -664,16 +429,16 @@ public class MemoryBufferQueueTests
 
         for (var groupIndex = 0; groupIndex < groupNumber; groupIndex++)
         {
-            for (var i = 0; i < customerNumberPerGroup; i++)
+            var consumers = queue
+                .CreateConsumers(
+                    new BufferConsumerOptions { GroupName = "TestGroup" + (groupIndex + 1), AutoCommit = true },
+                    consumerNumberPerGroup)
+                .ToList();
+
+            foreach (var consumer in consumers)
             {
-                var index = groupIndex;
                 _ = Task.Run(async () =>
                 {
-                    var consumer =
-                        queue.CreateConsumer(new BufferConsumerOptions
-                        {
-                            GroupName = "TestGroup" + (index + 1), AutoCommit = true
-                        });
                     await foreach (var item in consumer.ConsumeAsync())
                     {
                         if (countdownEvent.Signal())
@@ -704,10 +469,6 @@ public class MemoryBufferQueueTests
             });
         }
 
-        countdownEvent.Wait(TimeSpan.FromSeconds(10));
-        if (countdownEvent.CurrentCount != 0)
-        {
-            throw new Exception("Not all messages consumed.");
-        }
+        countdownEvent.Wait();
     }
 }

@@ -9,7 +9,7 @@ namespace Mocha.Core.Benchmarks;
 
 public class MemoryBufferQueueProduceBenchmark
 {
-    private int[][] _chunks;
+    private int[][] _chunks = default!;
 
     [Params(4096, 8192)] public int MessageSize { get; set; }
 
