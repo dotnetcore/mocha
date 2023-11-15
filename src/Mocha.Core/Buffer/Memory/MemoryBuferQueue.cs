@@ -10,7 +10,7 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
 
     private readonly IBufferProducer<T> _producer;
 
-    // Consider that the frequency of creating and deleting consumers will not be very high,
+    // Consider that the frequency of creating consumers will not be very high,
     // so the lock is relatively coarse-grained.
     private readonly object _consumersLock;
     private readonly Dictionary<string /* GroupName */, List<MemoryBufferConsumer<T>>> _consumers;

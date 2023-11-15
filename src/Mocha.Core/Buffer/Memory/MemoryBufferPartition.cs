@@ -19,8 +19,7 @@ internal sealed class MemoryBufferPartition<T>
     private volatile MemoryBufferSegment<T> _head;
     private volatile MemoryBufferSegment<T> _tail;
 
-    // Most of the time, at most one consumer per group can consume the same partition at the same time,
-    // but different consumers in the same group may consume the same partition temporarily when Rebalance is called.
+    // At most one consumer per group can consume the same partition at the same time,
     private readonly ConcurrentDictionary<string /* group name */, Reader> _consumerReaders;
     private readonly HashSet<MemoryBufferConsumer<T>> _consumers;
 
