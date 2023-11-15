@@ -9,7 +9,7 @@ namespace Mocha.Core.Buffer.Memory;
 
 [DebuggerDisplay("PartitionId = {PartitionId}, Capacity = {Capacity}, Count = {Count}")]
 [DebuggerTypeProxy(typeof(MemoryBufferPartition<>.DebugView))]
-internal class MemoryBufferPartition<T>
+internal sealed class MemoryBufferPartition<T>
 {
     // internal for testing
     internal static int SegmentLength = 1024;

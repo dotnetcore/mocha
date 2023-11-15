@@ -8,31 +8,25 @@ namespace Mocha.Core.Buffer.Memory;
 internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 {
     private readonly BufferConsumerOptions _options;
-    private readonly MemoryBufferQueue<T> _queue;
     private volatile MemoryBufferPartition<T>[] _assignedPartitions;
 
     private int _partitionIndex;
     private MemoryBufferPartition<T>? _partitionBeingConsumed;
 
-    private volatile int _dataAvailableVersion;
-    private volatile TaskCompletionSource<MemoryBufferPartition<T>>? _dataAvailableTaskCompletionSource;
-    private readonly ReaderWriterLockSlim _dataAvailableLock;
+    private volatile int _pendingDataVersion;
+    private readonly PendingDataValueTaskSource<MemoryBufferPartition<T>> _pendingDataValueTaskSource;
+    private readonly ReaderWriterLockSlim _pendingDataLock;
 
-    public MemoryBufferConsumer(BufferConsumerOptions options, MemoryBufferQueue<T> queue)
+    public MemoryBufferConsumer(BufferConsumerOptions options)
     {
         _options = options;
-        _queue = queue;
-
         _assignedPartitions = Array.Empty<MemoryBufferPartition<T>>();
-        _dataAvailableVersion = 0;
-        _dataAvailableLock = new ReaderWriterLockSlim();
+        _pendingDataValueTaskSource = new PendingDataValueTaskSource<MemoryBufferPartition<T>>();
+        _pendingDataVersion = 0;
+        _pendingDataLock = new ReaderWriterLockSlim();
     }
 
     public string GroupName => _options.GroupName;
-
-    public MemoryBufferPartition<T>? PartitionBeingConsumed => _partitionBeingConsumed;
-
-    public bool IsConsuming => _partitionBeingConsumed != null;
 
     public void AssignPartitions(params MemoryBufferPartition<T>[] partitions)
     {
@@ -52,7 +46,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
         while (true)
         {
-            var dataAvailableVersion = _dataAvailableVersion;
+            var pendingDataVersion = _pendingDataVersion;
 
             var partition = SelectPartition();
 
@@ -91,23 +85,28 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
             try
             {
-                _dataAvailableLock.EnterWriteLock();
+                _pendingDataLock.EnterWriteLock();
 
-                if (_dataAvailableVersion != dataAvailableVersion)
+                // Check if the pending data version is changed,
+                // if so, it means that the pending data is already to be consumed.
+                if (_pendingDataVersion != pendingDataVersion)
                 {
                     continue;
                 }
 
-                _dataAvailableTaskCompletionSource =
-                    new TaskCompletionSource<MemoryBufferPartition<T>>(
-                        TaskCreationOptions.RunContinuationsAsynchronously);
+                // Mark the consumer is waiting for data.
+                _pendingDataValueTaskSource.Reset();
             }
             finally
             {
-                _dataAvailableLock.ExitWriteLock();
+                _pendingDataLock.ExitWriteLock();
             }
 
-            var partitionWithNewData = await _dataAvailableTaskCompletionSource.Task;
+            var pendingDataTask = _pendingDataValueTaskSource.ValueTask;
+
+            var partitionWithNewData = pendingDataTask.IsCompletedSuccessfully
+                ? pendingDataTask.Result
+                : await pendingDataTask;
 
             if (TryPull(partitionWithNewData, out item))
             {
@@ -135,37 +134,34 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
     public void NotifyNewDataAvailable(MemoryBufferPartition<T> partition)
     {
-        Interlocked.Increment(ref _dataAvailableVersion);
+        Interlocked.Increment(ref _pendingDataVersion);
 
-        _dataAvailableLock.EnterUpgradeableReadLock();
+        _pendingDataLock.EnterUpgradeableReadLock();
         try
         {
-            if (_dataAvailableTaskCompletionSource == null
-                || _dataAvailableTaskCompletionSource.Task.IsCompleted)
+            if (!_pendingDataValueTaskSource.IsWaiting)
             {
                 return;
             }
 
-            _dataAvailableLock.EnterWriteLock();
+            _pendingDataLock.EnterWriteLock();
             try
             {
-                if (_dataAvailableTaskCompletionSource == null
-                    || _dataAvailableTaskCompletionSource.Task.IsCompleted)
+                if (!_pendingDataValueTaskSource.IsWaiting)
                 {
                     return;
                 }
 
-                _dataAvailableTaskCompletionSource.SetResult(partition);
-                _dataAvailableTaskCompletionSource = null;
+                _pendingDataValueTaskSource.SetResult(partition);
             }
             finally
             {
-                _dataAvailableLock.ExitWriteLock();
+                _pendingDataLock.ExitWriteLock();
             }
         }
         finally
         {
-            _dataAvailableLock.ExitUpgradeableReadLock();
+            _pendingDataLock.ExitUpgradeableReadLock();
         }
     }
 

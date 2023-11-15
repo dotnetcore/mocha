@@ -66,7 +66,7 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
             var consumers = new List<MemoryBufferConsumer<T>>();
             for (var i = 0; i < consumerNumber; i++)
             {
-                var consumer = new MemoryBufferConsumer<T>(options, this);
+                var consumer = new MemoryBufferConsumer<T>(options);
                 consumers.Add(consumer);
             }
 
