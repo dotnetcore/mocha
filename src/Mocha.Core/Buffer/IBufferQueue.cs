@@ -3,11 +3,11 @@
 
 namespace Mocha.Core.Buffer;
 
-public interface IBufferQueue<T>
+public interface IBufferQueue
 {
-    IBufferProducer<T> CreateProducer();
+    IBufferProducer<T> CreateProducer<T>(string topicName);
 
-    IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options);
+    IBufferConsumer<T> CreateConsumer<T>(BufferConsumerOptions options);
 
-    IEnumerable<IBufferConsumer<T>> CreateConsumers(BufferConsumerOptions options, int consumerNumber);
+    IEnumerable<IBufferConsumer<T>> CreateConsumers<T>(BufferConsumerOptions options, int consumerNumber);
 }

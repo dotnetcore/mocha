@@ -26,6 +26,8 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         _pendingDataLock = new ReaderWriterLockSlim();
     }
 
+    public string TopicName => _options.TopicName;
+
     public string GroupName => _options.GroupName;
 
     public void AssignPartitions(params MemoryBufferPartition<T>[] partitions)
@@ -36,6 +38,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
             partition.RegisterConsumer(this);
         }
     }
+
     public async IAsyncEnumerable<T> ConsumeAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -174,6 +177,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         {
             AutoCommitIfEnabled(partition);
         }
+
         return dataAvailable;
     }
 

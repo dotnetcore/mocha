@@ -5,5 +5,7 @@ namespace Mocha.Core.Buffer;
 
 public interface IBufferProducer<in T>
 {
+    string TopicName { get; }
+
     ValueTask ProduceAsync(T item);
 }

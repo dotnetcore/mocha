@@ -27,7 +27,7 @@ builder.Services.AddBuffer(options =>
 {
     options.UseMemory(bufferOptions =>
     {
-        bufferOptions.AddTopic<Span>(Environment.ProcessorCount);
+        bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount);
     });
 });
 

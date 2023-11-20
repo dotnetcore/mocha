@@ -20,7 +20,7 @@ public class MemoryBufferQueueConsumeBenchmark
     public void Setup()
     {
         _blockingCollection = new BlockingCollection<int>();
-        _memoryBufferQueue = new MemoryBufferQueue<int>(Environment.ProcessorCount);
+        _memoryBufferQueue = new MemoryBufferQueue<int>("test", Environment.ProcessorCount);
         var producer = _memoryBufferQueue.CreateProducer();
 
         for (var i = 0; i < MessageSize; i++)

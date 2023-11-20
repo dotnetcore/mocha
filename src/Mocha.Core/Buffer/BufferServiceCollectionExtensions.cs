@@ -11,6 +11,7 @@ public static class BufferServiceCollectionExtensions
         this IServiceCollection services,
         Action<BufferOptionsBuilder> configure)
     {
+        services.AddSingleton<IBufferQueue, BufferQueue>();
         configure(new BufferOptionsBuilder(services));
         return services;
     }

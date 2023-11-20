@@ -8,10 +8,13 @@ internal sealed class MemoryBufferProducer<T> : IBufferProducer<T>
     private readonly MemoryBufferPartition<T>[] _partitions;
     private uint _partitionIndex;
 
-    public MemoryBufferProducer(MemoryBufferPartition<T>[] partitions)
+    public MemoryBufferProducer(string topicName, MemoryBufferPartition<T>[] partitions)
     {
+        TopicName = topicName;
         _partitions = partitions;
     }
+
+    public string TopicName { get; }
 
     public ValueTask ProduceAsync(T item)
     {

@@ -21,7 +21,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Produce_And_Consume()
     {
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
 
@@ -52,7 +52,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Produce_And_Consume_AutoCommit()
     {
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
 
@@ -77,7 +77,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Produce_And_Consume_With_Multiple_Partitions()
     {
-        var queue = new MemoryBufferQueue<int>(2);
+        var queue = new MemoryBufferQueue<int>("test", 2);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
 
@@ -108,7 +108,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Produce_And_Consume_With_Multiple_Consumers()
     {
-        var queue = new MemoryBufferQueue<int>(2);
+        var queue = new MemoryBufferQueue<int>("test", 2);
         var producer = queue.CreateProducer();
         var consumers = queue
             .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false }, 2).ToList();
@@ -134,7 +134,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Offset_Will_Not_Change_If_Consumer_Not_Commit()
     {
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
 
@@ -169,7 +169,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Consumer_Will_Wait_Until_Produce()
     {
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
 
@@ -192,7 +192,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public async Task Retry_Consumption_If_No_Committed_Offset()
     {
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
 
@@ -228,7 +228,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public void Equal_Distribution_Load_Balancing_Strategy_For_Consumers()
     {
-        var queue = new MemoryBufferQueue<int>(18);
+        var queue = new MemoryBufferQueue<int>("test", 18);
 
         var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
             .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -282,7 +282,7 @@ public class MemoryBufferQueueTests
     {
         var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
 
-        var queue = new MemoryBufferQueue<int>(1);
+        var queue = new MemoryBufferQueue<int>("test", 1);
 
         var countDownEvent = new CountdownEvent(messageSize);
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
@@ -323,7 +323,7 @@ public class MemoryBufferQueueTests
     {
         var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
 
-        var queue = new MemoryBufferQueue<int>(Environment.ProcessorCount);
+        var queue = new MemoryBufferQueue<int>("test", Environment.ProcessorCount);
 
         var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
         var countDownEvent = new CountdownEvent(messageSize);
@@ -369,7 +369,7 @@ public class MemoryBufferQueueTests
         var partitionNumber = Environment.ProcessorCount * 2;
         var consumerNumberPerGroup = Environment.ProcessorCount;
 
-        var queue = new MemoryBufferQueue<int>(partitionNumber);
+        var queue = new MemoryBufferQueue<int>("test", partitionNumber);
 
         var countdownEvent = new CountdownEvent(messageSize * groupNumber);
 
@@ -423,7 +423,7 @@ public class MemoryBufferQueueTests
         var partitionNumber = Environment.ProcessorCount * 2;
         var consumerNumberPerGroup = Environment.ProcessorCount;
 
-        var queue = new MemoryBufferQueue<int>(partitionNumber);
+        var queue = new MemoryBufferQueue<int>("test", partitionNumber);
 
         var countdownEvent = new CountdownEvent(messageSize * groupNumber);
 

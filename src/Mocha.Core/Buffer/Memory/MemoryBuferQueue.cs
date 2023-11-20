@@ -15,8 +15,9 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
     private readonly object _consumersLock;
     private readonly Dictionary<string /* GroupName */, List<MemoryBufferConsumer<T>>> _consumers;
 
-    public MemoryBufferQueue(int partitionNumber)
+    public MemoryBufferQueue(string topicName, int partitionNumber)
     {
+        TopicName = topicName;
         _partitionNumber = partitionNumber;
         _partitions = new MemoryBufferPartition<T>[partitionNumber];
         for (var i = 0; i < partitionNumber; i++)
@@ -24,37 +25,38 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
             _partitions[i] = new MemoryBufferPartition<T>();
         }
 
-        _producer = new MemoryBufferProducer<T>(_partitions);
+        _producer = new MemoryBufferProducer<T>(topicName, _partitions);
 
         _consumers = new Dictionary<string, List<MemoryBufferConsumer<T>>>();
         _consumersLock = new object();
     }
+
+    public string TopicName { get; }
 
     public IBufferProducer<T> CreateProducer() => _producer;
 
     public IBufferConsumer<T> CreateConsumer(BufferConsumerOptions options)
     {
         var consumers = CreateConsumers(options, 1);
-        return consumers.First();
+        return consumers.Single();
     }
 
     public IEnumerable<IBufferConsumer<T>> CreateConsumers(BufferConsumerOptions options, int consumerNumber)
     {
         if (consumerNumber < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(consumerNumber), "The number of consumers must be greater than 0.");
+            throw new ArgumentOutOfRangeException(nameof(consumerNumber),
+                "The number of consumers must be greater than 0.");
         }
 
         if (consumerNumber > _partitionNumber)
         {
-            throw new ArgumentOutOfRangeException(nameof(consumerNumber), "The number of consumers cannot be greater than the number of partitions.");
+            throw new ArgumentOutOfRangeException(nameof(consumerNumber),
+                "The number of consumers cannot be greater than the number of partitions.");
         }
 
         var groupName = options.GroupName;
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(groupName, nameof(options.GroupName));
 
         lock (_consumersLock)
         {

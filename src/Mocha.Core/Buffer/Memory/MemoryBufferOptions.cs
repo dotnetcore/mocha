@@ -14,9 +14,9 @@ public class MemoryBufferOptions
         _services = services;
     }
 
-    public MemoryBufferOptions AddTopic<T>(int partitionNumber)
+    public MemoryBufferOptions AddTopic<T>(string topicName, int partitionNumber)
     {
-        _services.AddSingleton<IBufferQueue<T>>(new MemoryBufferQueue<T>(partitionNumber));
+        _services.AddKeyedSingleton<IBufferQueue<T>>(topicName, new MemoryBufferQueue<T>(topicName, partitionNumber));
         return this;
     }
 }
