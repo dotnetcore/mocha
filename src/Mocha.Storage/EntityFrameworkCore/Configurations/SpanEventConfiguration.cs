@@ -7,7 +7,7 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Configurations;
 
-public class SpanEventConfiguration: IEntityTypeConfiguration<SpanEvent>
+public class SpanEventConfiguration : IEntityTypeConfiguration<SpanEvent>
 {
     public void Configure(EntityTypeBuilder<SpanEvent> builder)
     {

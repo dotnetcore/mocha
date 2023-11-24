@@ -7,7 +7,7 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Configurations;
 
-public class SpanAttributeConfiguration: IEntityTypeConfiguration<SpanAttribute>
+public class SpanAttributeConfiguration : IEntityTypeConfiguration<SpanAttribute>
 {
     public void Configure(EntityTypeBuilder<SpanAttribute> builder)
     {

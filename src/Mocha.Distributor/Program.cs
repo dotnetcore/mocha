@@ -4,6 +4,7 @@
 using System.Net;
 using Mocha.Core.Buffer;
 using Mocha.Distributor.Services;
+using Mocha.Storage.EntityFrameworkCore;
 using OpenTelemetry.Proto.Trace.V1;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,13 +24,8 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-builder.Services.AddBuffer(options =>
-{
-    options.UseMemory(bufferOptions =>
-    {
-        bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount);
-    });
-});
+builder.Services.AddBuffer(options => { options.UseMemory(bufferOptions => { bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount); }); });
+builder.Services.AddStorage(options => { options.UseEntityFrameworkCore(); });
 
 var app = builder.Build();
 

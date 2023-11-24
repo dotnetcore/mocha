@@ -7,7 +7,7 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Configurations;
 
-public class SpanLinkConfiguration: IEntityTypeConfiguration<SpanLink>
+public class SpanLinkConfiguration : IEntityTypeConfiguration<SpanLink>
 {
     public void Configure(EntityTypeBuilder<SpanLink> builder)
     {

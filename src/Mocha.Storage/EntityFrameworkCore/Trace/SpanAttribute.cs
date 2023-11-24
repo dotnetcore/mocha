@@ -6,7 +6,7 @@ namespace Mocha.Storage.EntityFrameworkCore.Trace;
 public class SpanAttribute
 {
     public long Id { get; set; }
-    
+
     public string AttributeKey { get; set; } = string.Empty;
 
     public string AttributeValue { get; set; } = string.Empty;
