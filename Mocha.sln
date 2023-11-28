@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage", "src\Mocha.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core.Benchmarks", "tests\Mocha.Core.Benchmarks\Mocha.Core.Benchmarks.csproj", "{2107E75D-9717-4CCD-BE85-713BEF75366A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage.Tests", "tests\Mocha.Storage.Tests\Mocha.Storage.Tests.csproj", "{FC0D810E-4ACC-4567-95D8-D7F617E412FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,7 @@ Global
 		{F53E1E73-CA7D-4921-8CEC-5629379AEDB7} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 		{8EEB6697-B975-430D-9CC3-3048E76C5ECA} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
 		{2107E75D-9717-4CCD-BE85-713BEF75366A} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
+		{FC0D810E-4ACC-4567-95D8-D7F617E412FE} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -71,5 +74,9 @@ Global
 		{2107E75D-9717-4CCD-BE85-713BEF75366A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2107E75D-9717-4CCD-BE85-713BEF75366A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2107E75D-9717-4CCD-BE85-713BEF75366A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
