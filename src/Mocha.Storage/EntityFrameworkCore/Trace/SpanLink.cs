@@ -7,15 +7,15 @@ public class SpanLink
 {
     public long Id { get; set; }
 
-    public string TraceId { get;  set; } = string.Empty;
+    public string TraceId { get; set; } = string.Empty;
 
-    public string SpanId { get;  set; } = string.Empty;
+    public string SpanId { get; set; } = string.Empty;
 
-    public string LinkedSpanId { get;  set; } = string.Empty;
+    public string LinkedSpanId { get; set; } = string.Empty;
 
-    public string TraceState { get;  set; } = string.Empty;
+    public string TraceState { get; set; } = string.Empty;
 
-    public uint Flags { get;  set; }
+    public uint Flags { get; set; }
 
     public Span Span { get; set; } = default!;
 }
