@@ -11,8 +11,6 @@ public class SpanAttribute
 
     public string AttributeValue { get; set; } = string.Empty;
 
-    public long TimeBucket { get; set; }
-
     public string TraceId { get; set; } = string.Empty;
 
     public string SpanId { get; set; } = string.Empty;

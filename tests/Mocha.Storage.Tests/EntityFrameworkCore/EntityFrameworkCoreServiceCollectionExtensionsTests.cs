@@ -10,7 +10,7 @@ namespace Mocha.Storage.Tests.EntityFrameworkCore;
 public class EntityFrameworkCoreServiceCollectionExtensionsTests
 {
     [Fact]
-    public void AddMemoryBuffer()
+    public void AddStorage()
     {
         var services = new ServiceCollection();
         services.AddStorage(x =>

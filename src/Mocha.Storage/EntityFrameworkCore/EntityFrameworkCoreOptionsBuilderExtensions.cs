@@ -12,6 +12,7 @@ public static class EntityFrameworkCoreOptionsBuilderExtensions
     {
         builder.Services.AddScoped<ISpanReader, EntityFrameworkSpanReader>();
         builder.Services.AddScoped<ISpanWriter, EntityFrameworkSpanWriter>();
+        builder.Services.AddScoped<IConverterToEntityFrameworkStorageModel, ConverterToEntityFrameworkStorageModel>();
         return builder;
     }
 }
