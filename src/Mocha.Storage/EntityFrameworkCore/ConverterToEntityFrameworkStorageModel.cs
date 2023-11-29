@@ -36,11 +36,15 @@ public class ConverterToEntityFrameworkStorageModel : IConverterToEntityFramewor
         return entityFrameworkSpan;
     }
 
-    private static SpanAttribute ConverterToSpanAttribute(OpenTelemetry.Proto.Common.V1.KeyValue keyValue, string traceId, string spanId)
+    private static SpanAttribute ConverterToSpanAttribute(OpenTelemetry.Proto.Common.V1.KeyValue keyValue,
+        string traceId, string spanId)
     {
         return new SpanAttribute()
         {
-            AttributeKey = keyValue.Key, AttributeValue = keyValue.Value.StringValue, SpanId = spanId, TraceId = traceId,
+            AttributeKey = keyValue.Key,
+            AttributeValue = keyValue.Value.StringValue,
+            SpanId = spanId,
+            TraceId = traceId,
         };
     }
 
