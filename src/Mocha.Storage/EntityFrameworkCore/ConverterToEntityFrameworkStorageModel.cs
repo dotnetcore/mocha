@@ -32,6 +32,7 @@ public class ConverterToEntityFrameworkStorageModel : IConverterToEntityFramewor
         var spanAttributes = span.Attributes.Select(attribute => ConverterToSpanAttribute(attribute, traceId, spanId));
         entityFrameworkSpan.SpanAttributes = spanAttributes;
         entityFrameworkSpan.SpanEvents = spanEvents;
+
         entityFrameworkSpan.SpanLinks = spanLinks;
         return entityFrameworkSpan;
     }

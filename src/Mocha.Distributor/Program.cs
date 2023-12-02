@@ -24,7 +24,10 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-builder.Services.AddBuffer(options => { options.UseMemory(bufferOptions => { bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount); }); });
+builder.Services.AddBuffer(options =>
+{
+    options.UseMemory(bufferOptions => { bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount); });
+});
 builder.Services.AddStorage(options => { options.UseEntityFrameworkCore(); });
 
 var app = builder.Build();
