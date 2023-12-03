@@ -6,9 +6,9 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public class ConverterToEntityFrameworkStorageModel : IConverterToEntityFrameworkStorageModel
+public class OtelConverter
 {
-    public Span ConverterToSpan(OpenTelemetry.Proto.Trace.V1.Span span)
+    public Span OtelSpanToEntityFrameworkSpan(OpenTelemetry.Proto.Trace.V1.Span span)
     {
         var spanId = span.SpanId.ToString() ?? "";
         var traceId = span.TraceId.ToString() ?? "";

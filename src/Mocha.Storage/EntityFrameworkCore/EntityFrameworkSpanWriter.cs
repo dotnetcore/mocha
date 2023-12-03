@@ -10,34 +10,18 @@ public class EntityFrameworkSpanWriter : ISpanWriter
 {
     private readonly MochaContext _mochaContext;
 
-    private readonly IConverterToEntityFrameworkStorageModel _converterToEntityFrameworkStorageModel;
+    private readonly OtelConverter _converter;
 
-    public EntityFrameworkSpanWriter(MochaContext mochaContext, IConverterToEntityFrameworkStorageModel converterToEntityFrameworkStorageModel)
+    public EntityFrameworkSpanWriter(MochaContext mochaContext, OtelConverter converter)
     {
         _mochaContext = mochaContext;
-        _converterToEntityFrameworkStorageModel = converterToEntityFrameworkStorageModel;
+        _converter = converter;
     }
 
     public async Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
-        var entityFrameworkSpans = spans.Select(_converterToEntityFrameworkStorageModel.ConverterToSpan);
+        var entityFrameworkSpans = spans.Select(_converter.OtelSpanToEntityFrameworkSpan);
         _mochaContext.Spans.AddRange(entityFrameworkSpans);
         await _mochaContext.SaveChangesAsync();
-    }
-
-
-    private SpanAttribute StructureSpanAttribute()
-    {
-        return new SpanAttribute() { };
-    }
-
-    private SpanAttribute StructureSpanLink()
-    {
-        return new SpanAttribute() { };
-    }
-
-    private SpanEvent StructureSpanEvent()
-    {
-        return new SpanEvent() { };
     }
 }
