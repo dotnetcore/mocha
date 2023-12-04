@@ -10,7 +10,6 @@ public static class EntityFrameworkCoreOptionsBuilderExtensions
 {
     public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder)
     {
-        builder.Services.AddScoped<ISpanReader, EntityFrameworkSpanReader>();
         builder.Services.AddScoped<ISpanWriter, EntityFrameworkSpanWriter>();
         builder.Services.AddScoped<OTelConverter>();
         return builder;

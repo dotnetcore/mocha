@@ -1,6 +1,7 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
+using System.Text;
 using Mocha.Core.Enums;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 
@@ -10,8 +11,8 @@ public class OTelConverter
 {
     public Span OTelSpanToEntityFrameworkSpan(OpenTelemetry.Proto.Trace.V1.Span span)
     {
-        var spanId = span.SpanId.ToString() ?? "";
-        var traceId = span.TraceId.ToString() ?? "";
+        var traceId = Encoding.UTF8.GetString(span.TraceId.ToByteArray());
+        var spanId = Encoding.UTF8.GetString(span.SpanId.ToByteArray());
         var entityFrameworkSpan = new Span()
         {
             SpanId = spanId,
@@ -27,12 +28,11 @@ public class OTelConverter
             TraceState = span.TraceState,
             SpanKind = GetSpanKind(span.Kind),
         };
-        var spanLinks = span.Links.Select(ConverterToSpanLink);
+        var spanLinks = span.Links.Select(link => ConverterToSpanLink(link, traceId));
         var spanEvents = span.Events.Select(@event => ConverterToSpanEvent(@event, traceId));
         var spanAttributes = span.Attributes.Select(attribute => ConverterToSpanAttribute(attribute, traceId, spanId));
         entityFrameworkSpan.SpanAttributes = spanAttributes.ToList();
         entityFrameworkSpan.SpanEvents = spanEvents.ToList();
-
         entityFrameworkSpan.SpanLinks = spanLinks.ToList();
         return entityFrameworkSpan;
     }
@@ -52,17 +52,22 @@ public class OTelConverter
 
     private static SpanEvent ConverterToSpanEvent(OpenTelemetry.Proto.Trace.V1.Span.Types.Event @event, string traceId)
     {
-        return new SpanEvent() { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
+        return new SpanEvent()
+        {
+            TraceId = traceId,
+            EventName = @event.Name,
+            TimeBucket = (long)@event.TimeUnixNano
+        };
     }
 
 
-    private static SpanLink ConverterToSpanLink(OpenTelemetry.Proto.Trace.V1.Span.Types.Link link)
+    private static SpanLink ConverterToSpanLink(OpenTelemetry.Proto.Trace.V1.Span.Types.Link link, string traceId)
     {
         return new SpanLink()
         {
             TraceId = link.TraceId.ToString() ?? "",
             SpanId = link.SpanId.ToString() ?? "",
-            LinkedSpanId = link.TraceId.ToString() ?? "",
+            LinkedSpanId = traceId,
             TraceState = link.TraceState,
             Flags = link.Flags
         };
