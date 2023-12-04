@@ -28,7 +28,7 @@ public class OTelConverter
             SpanKind = GetSpanKind(span.Kind),
         };
         var spanLinks = span.Links.Select(ConverterToSpanLink);
-        var spanEvents = span.Events.Select(ConverterToSpanEvent);
+        var spanEvents = span.Events.Select(@event => ConverterToSpanEvent(@event, traceId));
         var spanAttributes = span.Attributes.Select(attribute => ConverterToSpanAttribute(attribute, traceId, spanId));
         entityFrameworkSpan.SpanAttributes = spanAttributes.ToList();
         entityFrameworkSpan.SpanEvents = spanEvents.ToList();
@@ -50,9 +50,9 @@ public class OTelConverter
     }
 
 
-    private static SpanEvent ConverterToSpanEvent(OpenTelemetry.Proto.Trace.V1.Span.Types.Event @event)
+    private static SpanEvent ConverterToSpanEvent(OpenTelemetry.Proto.Trace.V1.Span.Types.Event @event, string traceId)
     {
-        return new SpanEvent() { };
+        return new SpanEvent() { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
     }
 
 

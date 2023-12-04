@@ -30,7 +30,11 @@ public class InMemoryMochaContextTest
         _serviceCollection.AddStorage(x =>
         {
             x.UseEntityFrameworkCore();
-            x.Services.AddDbContext<MochaContext>(context => { context.UseInMemoryDatabase($"InMemoryMochaContextTest{Guid.NewGuid().ToString()}").ConfigureWarnings(b => b.Ignore(InMemoryEventId.TransactionIgnoredWarning)); });
+            x.Services.AddDbContext<MochaContext>(context =>
+            {
+                context.UseInMemoryDatabase($"InMemoryMochaContextTest{Guid.NewGuid().ToString()}")
+                    .ConfigureWarnings(b => b.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+            });
         });
     }
 
@@ -51,9 +55,8 @@ public class InMemoryMochaContextTest
         await context.Database.EnsureDeletedAsync();
         await context.Database.EnsureCreatedAsync();
         var entityFrameworkSpanWriter = provider.GetRequiredService<ISpanWriter>();
-        var traceId=ActivityTraceId.CreateRandom();
-
-        var spanId=ActivitySpanId.CreateRandom();
+        var traceId = ActivityTraceId.CreateRandom();
+        var spanId = ActivitySpanId.CreateRandom();
         var traceIdBytes = new byte[16];
         var spanIdBytes = new byte[8];
         traceId.CopyTo(traceIdBytes);
@@ -73,32 +76,24 @@ public class InMemoryMochaContextTest
             TraceState = "string.Empty",
             StartTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
             EndTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
-            Status = new Status()
-            {
-                Message = "Success",
-                Code = Status.Types.StatusCode.Ok,
-            },
+            Status = new Status() { Message = "Success", Code = Status.Types.StatusCode.Ok, },
         };
         span.Links.Add(new Span.Types.Link()
         {
+            TraceId = UnsafeByteOperations.UnsafeWrap(traceIdBytes),
+            SpanId = UnsafeByteOperations.UnsafeWrap(spanIdBytes),
+            TraceState = "",
+            Flags = 1,
         });
-        span.Events.Add(new Span.Types.Event()
-        {
-
-        });
+        span.Events.Add(
+            new Span.Types.Event() { Name = "mysql", TimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks, });
         span.Attributes.Add(new KeyValue()
         {
             Key = "http.url",
-             Value =new AnyValue()
-             {
-                 StringValue = "https://github.com/open-telemetry/opentelemetry-dotnet"
-             }
+            Value = new AnyValue() { StringValue = "https://github.com/open-telemetry/opentelemetry-dotnet" }
         });
 
-        var spans = new List<Span>()
-        {
-            span
-        };
+        var spans = new List<Span>() { span };
         await entityFrameworkSpanWriter.WriteAsync(spans);
     }
 }
