@@ -35,9 +35,9 @@ public class Span
 
     public string? TraceState { get; set; }
 
-    public IEnumerable<SpanLink> SpanLinks { get; set; } = Enumerable.Empty<SpanLink>();
+    public ICollection<SpanLink> SpanLinks { get; set; } = new List<SpanLink>();
 
-    public IEnumerable<SpanAttribute> SpanAttributes { get; set; } = Enumerable.Empty<SpanAttribute>();
+    public ICollection<SpanAttribute> SpanAttributes { get; set; } = new List<SpanAttribute>();
 
-    public IEnumerable<SpanEvent> SpanEvents { get; set; } = Enumerable.Empty<SpanEvent>();
+    public ICollection<SpanEvent> SpanEvents { get; set; } = new List<SpanEvent>();
 }

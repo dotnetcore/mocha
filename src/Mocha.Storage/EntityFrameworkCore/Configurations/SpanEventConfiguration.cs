@@ -13,8 +13,8 @@ public class SpanEventConfiguration : IEntityTypeConfiguration<SpanEvent>
     {
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd().HasColumnType("bigint AUTO_INCREMENT");
-        builder.HasIndex(x => x.TraceId, "trace_id_index");
-        builder.HasIndex(x => x.EventName, "event_name_index");
+        builder.HasIndex(x => x.TraceId, "idx_trace_id");
+        builder.HasIndex(x => x.EventName, "idx_event_name");
         builder.ToTable("span_events");
     }
 }

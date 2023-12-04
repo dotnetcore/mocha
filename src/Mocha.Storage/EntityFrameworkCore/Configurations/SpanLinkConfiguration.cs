@@ -13,9 +13,9 @@ public class SpanLinkConfiguration : IEntityTypeConfiguration<SpanLink>
     {
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd().HasColumnType("bigint AUTO_INCREMENT");
-        builder.HasIndex(x => x.SpanId, "span_id_index");
-        builder.HasIndex(x => x.TraceId, "trace_id_index");
-        builder.HasIndex(x => x.LinkedSpanId, "linked_span_id");
+        builder.HasIndex(x => x.SpanId, "idx_span_id");
+        builder.HasIndex(x => x.TraceId, "idx_trace_id");
+        builder.HasIndex(x => x.LinkedSpanId, "idx_linked_span_id");
         builder.ToTable("span_links");
     }
 }

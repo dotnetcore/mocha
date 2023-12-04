@@ -6,9 +6,9 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public class OtelConverter
+public class OTelConverter
 {
-    public Span OtelSpanToEntityFrameworkSpan(OpenTelemetry.Proto.Trace.V1.Span span)
+    public Span OTelSpanToEntityFrameworkSpan(OpenTelemetry.Proto.Trace.V1.Span span)
     {
         var spanId = span.SpanId.ToString() ?? "";
         var traceId = span.TraceId.ToString() ?? "";
@@ -30,10 +30,10 @@ public class OtelConverter
         var spanLinks = span.Links.Select(ConverterToSpanLink);
         var spanEvents = span.Events.Select(ConverterToSpanEvent);
         var spanAttributes = span.Attributes.Select(attribute => ConverterToSpanAttribute(attribute, traceId, spanId));
-        entityFrameworkSpan.SpanAttributes = spanAttributes;
-        entityFrameworkSpan.SpanEvents = spanEvents;
+        entityFrameworkSpan.SpanAttributes = spanAttributes.ToList();
+        entityFrameworkSpan.SpanEvents = spanEvents.ToList();
 
-        entityFrameworkSpan.SpanLinks = spanLinks;
+        entityFrameworkSpan.SpanLinks = spanLinks.ToList();
         return entityFrameworkSpan;
     }
 

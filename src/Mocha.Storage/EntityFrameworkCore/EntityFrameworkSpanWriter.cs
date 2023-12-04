@@ -10,9 +10,9 @@ public class EntityFrameworkSpanWriter : ISpanWriter
 {
     private readonly MochaContext _mochaContext;
 
-    private readonly OtelConverter _converter;
+    private readonly OTelConverter _converter;
 
-    public EntityFrameworkSpanWriter(MochaContext mochaContext, OtelConverter converter)
+    public EntityFrameworkSpanWriter(MochaContext mochaContext, OTelConverter converter)
     {
         _mochaContext = mochaContext;
         _converter = converter;
@@ -20,7 +20,7 @@ public class EntityFrameworkSpanWriter : ISpanWriter
 
     public async Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
-        var entityFrameworkSpans = spans.Select(_converter.OtelSpanToEntityFrameworkSpan);
+        var entityFrameworkSpans = spans.Select(_converter.OTelSpanToEntityFrameworkSpan);
         _mochaContext.Spans.AddRange(entityFrameworkSpans);
         await _mochaContext.SaveChangesAsync();
     }
