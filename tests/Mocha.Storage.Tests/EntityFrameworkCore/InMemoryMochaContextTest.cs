@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Mocha.Core.Storage;
 using Mocha.Storage.EntityFrameworkCore;
-using Mocha.Storage.EntityFrameworkCore.Trace;
 using OpenTelemetry.Proto.Common.V1;
 using OpenTelemetry.Proto.Trace.V1;
 using Span = OpenTelemetry.Proto.Trace.V1.Span;
@@ -29,11 +28,13 @@ public class InMemoryMochaContextTest
             .Options;
         _serviceCollection.AddStorage(x =>
         {
-            x.UseEntityFrameworkCore();
-            x.Services.AddDbContext<MochaContext>(context =>
+            x.UseEntityFrameworkCore(option =>
             {
-                context.UseInMemoryDatabase($"InMemoryMochaContextTest{Guid.NewGuid().ToString()}")
-                    .ConfigureWarnings(b => b.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+                option.AddDbContext<MochaContext>(context =>
+                {
+                    context.UseInMemoryDatabase($"InMemoryMochaContextTest{Guid.NewGuid().ToString()}")
+                        .ConfigureWarnings(b => b.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+                });
             });
         });
     }
@@ -74,8 +75,8 @@ public class InMemoryMochaContextTest
             SpanId = UnsafeByteOperations.UnsafeWrap(spanIdBytes),
             ParentSpanId = parentSpanIdString,
             TraceState = "string.Empty",
-            StartTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
-            EndTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
+            StartTimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks,
+            EndTimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks,
             Status = new Status() { Message = "Success", Code = Status.Types.StatusCode.Ok, },
         };
         span.Links.Add(new Span.Types.Link()
@@ -86,7 +87,7 @@ public class InMemoryMochaContextTest
             Flags = 1,
         });
         span.Events.Add(
-            new Span.Types.Event() { Name = "mysql", TimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks, });
+            new Span.Types.Event() { Name = "mysql", TimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks, });
         span.Attributes.Add(new KeyValue()
         {
             Key = "http.url",

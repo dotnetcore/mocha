@@ -8,10 +8,11 @@ namespace Mocha.Storage.EntityFrameworkCore;
 
 public static class EntityFrameworkCoreOptionsBuilderExtensions
 {
-    public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder)
+    public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder,
+        Action<IServiceCollection> configure)
     {
         builder.Services.AddScoped<ISpanWriter, EntityFrameworkSpanWriter>();
-        builder.Services.AddScoped<OTelConverter>();
+        configure(builder.Services);
         return builder;
     }
 }
