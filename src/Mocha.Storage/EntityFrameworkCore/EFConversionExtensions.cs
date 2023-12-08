@@ -1,11 +1,14 @@
-using System.Text;
-using Mocha.Core.Enums;
-using Mocha.Storage.EntityFrameworkCore.Trace;
+// Licensed to the .NET Core Community under one or more agreements.
+// The .NET Core Community licenses this file to you under the MIT license.
+
 using OTelSpan = OpenTelemetry.Proto.Trace.V1.Span;
 using OTelLink = OpenTelemetry.Proto.Trace.V1.Span.Types.Link;
 using OTelEvent = OpenTelemetry.Proto.Trace.V1.Span.Types.Event;
 using OTelKeyValue = OpenTelemetry.Proto.Common.V1.KeyValue;
 using OTelSpanKind = OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind;
+using System.Text;
+using Mocha.Core.Enums;
+using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 public static class EFConversionExtensions
