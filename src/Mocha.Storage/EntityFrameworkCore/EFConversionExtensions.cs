@@ -66,20 +66,14 @@ public static class EFConversionExtensions
     {
         return new SpanLink
         {
-            TraceId = link.TraceId.ToString() ?? "",
-            SpanId = link.SpanId.ToString() ?? "",
+            TraceId = link.TraceId.ToString() ?? string.Empty,
+            SpanId = link.SpanId.ToString() ?? string.Empty,
             LinkedSpanId = traceId,
             TraceState = link.TraceState,
             Flags = link.Flags
         };
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="spanKind"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
     private static SpanKind ToMochaSpanKind(this OTelSpanKind spanKind)
     {
         return spanKind switch
