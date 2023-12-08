@@ -53,12 +53,10 @@ public static class EFConversionExtensions
         };
     }
 
-
     private static SpanEvent ToEFSpanEvent(this OTelEvent @event, string traceId)
     {
         return new SpanEvent { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
     }
-
 
     private static SpanLink ToEFSpanLink(this OTelLink link, string traceId)
     {

@@ -13,6 +13,6 @@ public class EFServiceCollectionExtensionsTests
     public void AddStorage()
     {
         var services = new ServiceCollection();
-        services.AddStorage(x => { x.UseEntityFrameworkCore(option => { option.AddDbContext<MochaContext>(); }); });
+        services.AddStorage(x => { x.UseEntityFrameworkCore(); });
     }
 }
