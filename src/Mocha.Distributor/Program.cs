@@ -4,7 +4,6 @@
 using System.Net;
 using Mocha.Core.Buffer;
 using Mocha.Distributor.Services;
-using Mocha.Storage.EntityFrameworkCore;
 using OpenTelemetry.Proto.Trace.V1;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,10 +29,6 @@ builder.Services.AddBuffer(options =>
     {
         bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount);
     });
-});
-builder.Services.AddStorage(options =>
-{
-    options.UseEntityFrameworkCore();
 });
 
 var app = builder.Build();
