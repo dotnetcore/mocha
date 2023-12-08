@@ -16,7 +16,7 @@ public class EntityFrameworkSpanWriter : ISpanWriter
 
     public async Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
-        var entityFrameworkSpans = spans.Select(span => span.OTelSpanToEntityFrameworkSpan());
+        var entityFrameworkSpans = spans.Select(span => span.OTelSpanToEFSpan());
         _mochaContext.Spans.AddRange(entityFrameworkSpans);
         await _mochaContext.SaveChangesAsync();
     }

@@ -4,16 +4,18 @@
 using System.Text;
 using Mocha.Core.Enums;
 using Mocha.Storage.EntityFrameworkCore.Trace;
+using OTelSpan = OpenTelemetry.Proto.Trace.V1.Span;
 using OTelLink = OpenTelemetry.Proto.Trace.V1.Span.Types.Link;
 using OTelEvent = OpenTelemetry.Proto.Trace.V1.Span.Types.Event;
 using OTelKeyValue = OpenTelemetry.Proto.Common.V1.KeyValue;
+using OTelSpanKind = OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind;
 
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public static class ConverterToEntityFrameworkStorageModelExtensions
+public static class EFConversionExtensions
 {
-    public static Span OTelSpanToEntityFrameworkSpan(this OpenTelemetry.Proto.Trace.V1.Span span)
+    public static Span OTelSpanToEFSpan(this OTelSpan span)
     {
         var traceId = Encoding.UTF8.GetString(span.TraceId.ToByteArray());
         var spanId = Encoding.UTF8.GetString(span.SpanId.ToByteArray());
@@ -25,24 +27,24 @@ public static class ConverterToEntityFrameworkStorageModelExtensions
             TraceId = traceId,
             SpanName = span.Name,
             ParentSpanId = parentSpanId,
-            StartTime = (long) span.StartTimeUnixNano,
-            EndTime = (long) span.EndTimeUnixNano,
-            Duration = (double) span.EndTimeUnixNano - span.StartTimeUnixNano,
-            StatusCode = (int) span.Status.Code,
+            StartTime = (long)span.StartTimeUnixNano,
+            EndTime = (long)span.EndTimeUnixNano,
+            Duration = (double)span.EndTimeUnixNano - span.StartTimeUnixNano,
+            StatusCode = (int)span.Status.Code,
             StatusMessage = span.Status.Message,
             TraceState = span.TraceState,
             SpanKind = span.Kind.ToMochaSpanKind(),
         };
-        var spanLinks = span.Links.Select(link => link.ConverterToSpanLink(traceId));
-        var spanEvents = span.Events.Select(@event => @event.ConverterToSpanEvent(traceId));
-        var spanAttributes = span.Attributes.Select(attribute => attribute.ConverterToSpanAttribute(traceId, spanId));
+        var spanLinks = span.Links.Select(link => link.ConverterToEFSpanLink(traceId));
+        var spanEvents = span.Events.Select(@event => @event.ConverterToEFSpanEvent(traceId));
+        var spanAttributes = span.Attributes.Select(attribute => attribute.ConverterToEFSpanAttribute(traceId, spanId));
         entityFrameworkSpan.SpanAttributes = spanAttributes.ToList();
         entityFrameworkSpan.SpanEvents = spanEvents.ToList();
         entityFrameworkSpan.SpanLinks = spanLinks.ToList();
         return entityFrameworkSpan;
     }
 
-    private static SpanAttribute ConverterToSpanAttribute(this OTelKeyValue keyValue, string traceId, string spanId)
+    private static SpanAttribute ConverterToEFSpanAttribute(this OTelKeyValue keyValue, string traceId, string spanId)
     {
         return new SpanAttribute
         {
@@ -54,13 +56,13 @@ public static class ConverterToEntityFrameworkStorageModelExtensions
     }
 
 
-    private static SpanEvent ConverterToSpanEvent(this OTelEvent @event, string traceId)
+    private static SpanEvent ConverterToEFSpanEvent(this OTelEvent @event, string traceId)
     {
-        return new SpanEvent { TraceId = traceId, EventName = @event.Name, TimeBucket = (long) @event.TimeUnixNano };
+        return new SpanEvent { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
     }
 
 
-    private static SpanLink ConverterToSpanLink(this OTelLink link, string traceId)
+    private static SpanLink ConverterToEFSpanLink(this OTelLink link, string traceId)
     {
         return new SpanLink
         {
@@ -78,16 +80,16 @@ public static class ConverterToEntityFrameworkStorageModelExtensions
     /// <param name="spanKind"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    private static SpanKind ToMochaSpanKind(this OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind spanKind)
+    private static SpanKind ToMochaSpanKind(this OTelSpanKind spanKind)
     {
         return spanKind switch
         {
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Unspecified => SpanKind.Unspecified,
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Internal => SpanKind.Internal,
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Server => SpanKind.Server,
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Client => SpanKind.Client,
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Producer => SpanKind.Producer,
-            OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind.Consumer => SpanKind.Consumer,
+            OTelSpanKind.Unspecified => SpanKind.Unspecified,
+            OTelSpanKind.Internal => SpanKind.Internal,
+            OTelSpanKind.Server => SpanKind.Server,
+            OTelSpanKind.Client => SpanKind.Client,
+            OTelSpanKind.Producer => SpanKind.Producer,
+            OTelSpanKind.Consumer => SpanKind.Consumer,
             _ => throw new ArgumentOutOfRangeException(nameof(spanKind), spanKind, null)
         };
     }
