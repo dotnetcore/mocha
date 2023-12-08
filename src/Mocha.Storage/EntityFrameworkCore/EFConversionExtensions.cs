@@ -35,16 +35,16 @@ public static class EFConversionExtensions
             TraceState = span.TraceState,
             SpanKind = span.Kind.ToMochaSpanKind(),
         };
-        var spanLinks = span.Links.Select(link => link.ConverterToEFSpanLink(traceId));
-        var spanEvents = span.Events.Select(@event => @event.ConverterToEFSpanEvent(traceId));
-        var spanAttributes = span.Attributes.Select(attribute => attribute.ConverterToEFSpanAttribute(traceId, spanId));
+        var spanLinks = span.Links.Select(link => link.ToEFSpanLink(traceId));
+        var spanEvents = span.Events.Select(@event => @event.ToEFSpanEvent(traceId));
+        var spanAttributes = span.Attributes.Select(attribute => attribute.ToEFSpanAttribute(traceId, spanId));
         entityFrameworkSpan.SpanAttributes = spanAttributes.ToList();
         entityFrameworkSpan.SpanEvents = spanEvents.ToList();
         entityFrameworkSpan.SpanLinks = spanLinks.ToList();
         return entityFrameworkSpan;
     }
 
-    private static SpanAttribute ConverterToEFSpanAttribute(this OTelKeyValue keyValue, string traceId, string spanId)
+    private static SpanAttribute ToEFSpanAttribute(this OTelKeyValue keyValue, string traceId, string spanId)
     {
         return new SpanAttribute
         {
@@ -56,13 +56,13 @@ public static class EFConversionExtensions
     }
 
 
-    private static SpanEvent ConverterToEFSpanEvent(this OTelEvent @event, string traceId)
+    private static SpanEvent ToEFSpanEvent(this OTelEvent @event, string traceId)
     {
         return new SpanEvent { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
     }
 
 
-    private static SpanLink ConverterToEFSpanLink(this OTelLink link, string traceId)
+    private static SpanLink ToEFSpanLink(this OTelLink link, string traceId)
     {
         return new SpanLink
         {

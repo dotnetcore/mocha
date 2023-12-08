@@ -75,8 +75,8 @@ public class InMemoryMochaContextTest
             SpanId = UnsafeByteOperations.UnsafeWrap(spanIdBytes),
             ParentSpanId = parentSpanIdString,
             TraceState = "string.Empty",
-            StartTimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks,
-            EndTimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks,
+            StartTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
+            EndTimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks,
             Status = new Status() { Message = "Success", Code = Status.Types.StatusCode.Ok, },
         };
         span.Links.Add(new Span.Types.Link()
@@ -87,7 +87,7 @@ public class InMemoryMochaContextTest
             Flags = 1,
         });
         span.Events.Add(
-            new Span.Types.Event() { Name = "mysql", TimeUnixNano = (ulong) DateTimeOffset.UtcNow.UtcTicks, });
+            new Span.Types.Event() { Name = "mysql", TimeUnixNano = (ulong)DateTimeOffset.UtcNow.UtcTicks, });
         span.Attributes.Add(new KeyValue()
         {
             Key = "http.url",
