@@ -7,7 +7,7 @@ using Mocha.Storage.EntityFrameworkCore;
 
 namespace Mocha.Storage.Tests.EntityFrameworkCore;
 
-public class EntityFrameworkCoreServiceCollectionExtensionsTests
+public class EFServiceCollectionExtensionsTests
 {
     [Fact]
     public void AddStorage()

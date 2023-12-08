@@ -6,12 +6,12 @@ using Mocha.Core.Storage;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public static class EntityFrameworkCoreOptionsBuilderExtensions
+public static class EFOptionsBuilderExtensions
 {
     public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder,
         Action<IServiceCollection> configure)
     {
-        builder.Services.AddScoped<ISpanWriter, EntityFrameworkSpanWriter>();
+        builder.Services.AddScoped<ISpanWriter, EFSpanWriter>();
         configure(builder.Services);
         return builder;
     }

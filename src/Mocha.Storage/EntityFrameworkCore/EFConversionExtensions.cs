@@ -10,12 +10,10 @@ using OTelEvent = OpenTelemetry.Proto.Trace.V1.Span.Types.Event;
 using OTelKeyValue = OpenTelemetry.Proto.Common.V1.KeyValue;
 using OTelSpanKind = OpenTelemetry.Proto.Trace.V1.Span.Types.SpanKind;
 
-
 namespace Mocha.Storage.EntityFrameworkCore;
-
 public static class EFConversionExtensions
 {
-    public static Span OTelSpanToEFSpan(this OTelSpan span)
+    public static Span ToEFSpan(this OTelSpan span)
     {
         var traceId = Encoding.UTF8.GetString(span.TraceId.ToByteArray());
         var spanId = Encoding.UTF8.GetString(span.SpanId.ToByteArray());

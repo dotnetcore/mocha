@@ -5,18 +5,18 @@ using Mocha.Core.Storage;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public class EntityFrameworkSpanWriter : ISpanWriter
+public class EFSpanWriter : ISpanWriter
 {
     private readonly MochaContext _mochaContext;
 
-    public EntityFrameworkSpanWriter(MochaContext mochaContext)
+    public EFSpanWriter(MochaContext mochaContext)
     {
         _mochaContext = mochaContext;
     }
 
     public async Task WriteAsync(IEnumerable<OpenTelemetry.Proto.Trace.V1.Span> spans)
     {
-        var entityFrameworkSpans = spans.Select(span => span.OTelSpanToEFSpan());
+        var entityFrameworkSpans = spans.Select(span => span.ToEFSpan());
         _mochaContext.Spans.AddRange(entityFrameworkSpans);
         await _mochaContext.SaveChangesAsync();
     }
