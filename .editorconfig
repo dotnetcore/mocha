@@ -21,7 +21,7 @@ insert_final_newline = true
 
 [*.cs]
 indent_size = 4
-dotnet_sort_system_directives_first = true
+dotnet_sort_system_directives_first = false
 max_line_length = 120
 
 # Don't use this. qualifier
