@@ -3,22 +3,18 @@
 
 using System.Text;
 using Mocha.Storage.EntityFrameworkCore.Trace;
-using OTelSpan = OpenTelemetry.Proto.Trace.V1.Span;
-using OTelLink = OpenTelemetry.Proto.Trace.V1.Span.Types.Link;
-using OTelEvent = OpenTelemetry.Proto.Trace.V1.Span.Types.Event;
-using OTelKeyValue = OpenTelemetry.Proto.Common.V1.KeyValue;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
 public static class EFConversionExtensions
 {
 
-    public static Span ToEFSpan(this OTelSpan span)
+    public static EFSpan ToEFSpan(this OpenTelemetry.Proto.Trace.V1.Span span)
     {
         var traceId = Encoding.UTF8.GetString(span.TraceId.ToByteArray());
         var spanId = Encoding.UTF8.GetString(span.SpanId.ToByteArray());
         var parentSpanId = Encoding.UTF8.GetString(span.ParentSpanId.ToByteArray());
-        var entityFrameworkSpan = new Span()
+        var entityFrameworkSpan = new EFSpan()
         {
             SpanId = spanId,
             TraceFlags = span.Flags,
@@ -42,9 +38,10 @@ public static class EFConversionExtensions
         return entityFrameworkSpan;
     }
 
-    private static SpanAttribute ToEFSpanAttribute(this OTelKeyValue keyValue, string traceId, string spanId)
+    private static EFSpanAttribute ToEFSpanAttribute(this OpenTelemetry.Proto.Common.V1.KeyValue keyValue, string traceId,
+        string spanId)
     {
-        return new SpanAttribute
+        return new EFSpanAttribute
         {
             AttributeKey = keyValue.Key,
             AttributeValue = keyValue.Value.StringValue,
@@ -53,14 +50,19 @@ public static class EFConversionExtensions
         };
     }
 
-    private static SpanEvent ToEFSpanEvent(this OTelEvent @event, string traceId)
+    private static EFSpanEvent ToEFSpanEvent(this OpenTelemetry.Proto.Trace.V1.Span.Types.Event @event, string traceId)
     {
-        return new SpanEvent { TraceId = traceId, EventName = @event.Name, TimeBucket = (long)@event.TimeUnixNano };
+        return new EFSpanEvent
+        {
+            TraceId = traceId,
+            EventName = @event.Name,
+            TimeBucket = (long)@event.TimeUnixNano
+        };
     }
 
-    private static SpanLink ToEFSpanLink(this OTelLink link, string traceId)
+    private static EFSpanLink ToEFSpanLink(this OpenTelemetry.Proto.Trace.V1.Span.Types.Link link, string traceId)
     {
-        return new SpanLink
+        return new EFSpanLink
         {
             TraceId = link.TraceId.ToString() ?? string.Empty,
             SpanId = link.SpanId.ToString() ?? string.Empty,

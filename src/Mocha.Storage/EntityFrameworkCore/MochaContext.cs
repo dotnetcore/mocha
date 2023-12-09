@@ -13,13 +13,13 @@ public class MochaContext : DbContext
     {
     }
 
-    public DbSet<SpanAttribute> SpanAttributes => Set<SpanAttribute>();
+    public DbSet<EFSpanAttribute> SpanAttributes => Set<EFSpanAttribute>();
 
-    public DbSet<SpanEvent> SpanEvents => Set<SpanEvent>();
+    public DbSet<EFSpanEvent> SpanEvents => Set<EFSpanEvent>();
 
-    public DbSet<SpanLink> SpanLinks => Set<SpanLink>();
+    public DbSet<EFSpanLink> SpanLinks => Set<EFSpanLink>();
 
-    public DbSet<Span> Spans => Set<Span>();
+    public DbSet<EFSpan> Spans => Set<EFSpan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

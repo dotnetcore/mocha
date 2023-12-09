@@ -5,7 +5,7 @@ using Mocha.Core.Enums;
 
 namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
-public class Span
+public class EFSpan
 {
     public long Id { get; set; }
 
@@ -35,9 +35,9 @@ public class Span
 
     public string? TraceState { get; set; }
 
-    public ICollection<SpanLink> SpanLinks { get; set; } = new List<SpanLink>();
+    public ICollection<EFSpanLink> SpanLinks { get; set; } = new List<EFSpanLink>();
 
-    public ICollection<SpanAttribute> SpanAttributes { get; set; } = new List<SpanAttribute>();
+    public ICollection<EFSpanAttribute> SpanAttributes { get; set; } = new List<EFSpanAttribute>();
 
-    public ICollection<SpanEvent> SpanEvents { get; set; } = new List<SpanEvent>();
+    public ICollection<EFSpanEvent> SpanEvents { get; set; } = new List<EFSpanEvent>();
 }

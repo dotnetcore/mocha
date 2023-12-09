@@ -4,7 +4,7 @@
 
 namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
-public class SpanEvent
+public class EFSpanEvent
 {
     public long Id { get; set; }
 
@@ -14,5 +14,5 @@ public class SpanEvent
 
     public string EventName { get; set; } = string.Empty;
 
-    public Span Span { get; set; } = default!;
+    public EFSpan EfSpan { get; set; } = default!;
 }

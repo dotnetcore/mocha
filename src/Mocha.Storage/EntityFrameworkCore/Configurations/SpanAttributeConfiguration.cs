@@ -7,9 +7,9 @@ using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Configurations;
 
-public class SpanAttributeConfiguration : IEntityTypeConfiguration<SpanAttribute>
+public class SpanAttributeConfiguration : IEntityTypeConfiguration<EFSpanAttribute>
 {
-    public void Configure(EntityTypeBuilder<SpanAttribute> builder)
+    public void Configure(EntityTypeBuilder<EFSpanAttribute> builder)
     {
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd().HasColumnType("bigint AUTO_INCREMENT");
