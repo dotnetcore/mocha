@@ -69,18 +69,4 @@ public static class EFConversionExtensions
             Flags = link.Flags
         };
     }
-
-    private static SpanKind ToMochaSpanKind(this OTelSpanKind spanKind)
-    {
-        return spanKind switch
-        {
-            OTelSpanKind.Unspecified => SpanKind.Unspecified,
-            OTelSpanKind.Internal => SpanKind.Internal,
-            OTelSpanKind.Server => SpanKind.Server,
-            OTelSpanKind.Client => SpanKind.Client,
-            OTelSpanKind.Producer => SpanKind.Producer,
-            OTelSpanKind.Consumer => SpanKind.Consumer,
-            _ => throw new ArgumentOutOfRangeException(nameof(spanKind), spanKind, null)
-        };
-    }
 }
