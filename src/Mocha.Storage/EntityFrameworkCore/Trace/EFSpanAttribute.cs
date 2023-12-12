@@ -15,5 +15,5 @@ public class EFSpanAttribute
 
     public string SpanId { get; set; } = string.Empty;
 
-    public EFSpan EfSpan { get; set; } = default!;
+    public EFSpan Span { get; set; } = default!;
 }

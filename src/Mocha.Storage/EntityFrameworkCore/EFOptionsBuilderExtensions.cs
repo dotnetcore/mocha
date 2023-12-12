@@ -9,11 +9,12 @@ namespace Mocha.Storage.EntityFrameworkCore;
 
 public static class EFOptionsBuilderExtensions
 {
-    public static StorageOptionsBuilder UseEntityFrameworkCore(this StorageOptionsBuilder builder,
+    public static StorageOptionsBuilder UseEntityFrameworkCore(
+        this StorageOptionsBuilder builder,
         Action<DbContextOptionsBuilder> optionsAction)
     {
         builder.Services.AddScoped<ISpanWriter, EFSpanWriter>();
-        builder.Services.AddDbContext<MochaContext>(optionsAction);
+        builder.Services.AddDbContextPool<MochaContext>(optionsAction);
         return builder;
     }
 }

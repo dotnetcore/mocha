@@ -17,5 +17,5 @@ public class EFSpanLink
 
     public uint Flags { get; set; }
 
-    public EFSpan EfSpan { get; set; } = default!;
+    public EFSpan Span { get; set; } = default!;
 }
