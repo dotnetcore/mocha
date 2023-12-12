@@ -3,10 +3,12 @@
 
 using Mocha.Core.Enums;
 
-namespace Mocha.Storage.EntityFrameworkStorage.Trace;
+namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
-public class Span
+public class EFSpan
 {
+    public long Id { get; set; }
+
     public string TraceId { get; set; } = string.Empty;
 
     public string SpanId { get; set; } = string.Empty;
@@ -33,9 +35,9 @@ public class Span
 
     public string? TraceState { get; set; }
 
-    public IEnumerable<SpanLink> SpanLinks { get; set; } = Enumerable.Empty<SpanLink>();
+    public ICollection<EFSpanLink> SpanLinks { get; set; } = new List<EFSpanLink>();
 
-    public IEnumerable<SpanAttribute> SpanAttributes { get; set; } = Enumerable.Empty<SpanAttribute>();
+    public ICollection<EFSpanAttribute> SpanAttributes { get; set; } = new List<EFSpanAttribute>();
 
-    public IEnumerable<SpanEvent> SpanEvents { get; set; } = Enumerable.Empty<SpanEvent>();
+    public ICollection<EFSpanEvent> SpanEvents { get; set; } = new List<EFSpanEvent>();
 }

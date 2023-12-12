@@ -15,6 +15,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj"/>
         <ProjectReference Include="..\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj"/>
+        <ProjectReference Include="..\Mocha.Storage\Mocha.Storage.csproj"/>
     </ItemGroup>
 
 </Project>

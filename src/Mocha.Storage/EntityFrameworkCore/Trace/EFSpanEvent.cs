@@ -2,15 +2,17 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 
-namespace Mocha.Storage.EntityFrameworkStorage.Trace;
+namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
-public class SpanEvent
+public class EFSpanEvent
 {
+    public long Id { get; set; }
+
     public string TraceId { get; set; } = string.Empty;
 
     public long TimeBucket { get; set; }
 
     public string EventName { get; set; } = string.Empty;
 
-    public Span Span { get; set; } = default!;
+    public EFSpan Span { get; set; } = default!;
 }
