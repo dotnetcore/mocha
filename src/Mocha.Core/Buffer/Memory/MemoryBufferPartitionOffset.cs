@@ -15,6 +15,16 @@ internal readonly record struct MemoryBufferPartitionOffset(ulong Generation, ul
         throw new OverflowException("Offset is too large to be converted to UInt64.");
     }
 
+    public int ToInt32()
+    {
+        if (Generation == 0 && Index <= int.MaxValue)
+        {
+            return (int)Index;
+        }
+
+        throw new OverflowException("Offset is too large to be converted to Int32.");
+    }
+
     public static explicit operator ulong(MemoryBufferPartitionOffset offset) => offset.ToUInt64();
 
     public static bool operator >(MemoryBufferPartitionOffset left, MemoryBufferPartitionOffset right)

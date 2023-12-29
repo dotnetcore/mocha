@@ -84,13 +84,13 @@ internal sealed class MemoryBufferPartition<T>
         }
     }
 
-    public bool TryPull(string groupName, [NotNullWhen(true)] out T item)
+    public bool TryPull(string groupName, int batchSize, [NotNullWhen(true)] out IEnumerable<T>? items)
     {
         var reader = _consumerReaders.GetOrAdd(
             groupName,
             _ => new Reader(_head, _head.StartOffset));
 
-        return reader.TryRead(out item);
+        return reader.TryRead(batchSize, out items);
     }
 
     public void Commit(string groupName)
@@ -166,6 +166,7 @@ internal sealed class MemoryBufferPartition<T>
     {
         private MemoryBufferSegment<T> _currentSegment;
         private MemoryBufferPartitionOffset _pendingOffset;
+        private int _lastReadCount;
 
         public Reader(MemoryBufferSegment<T> currentSegment, MemoryBufferPartitionOffset currentOffset)
         {
@@ -175,26 +176,73 @@ internal sealed class MemoryBufferPartition<T>
 
         public MemoryBufferPartitionOffset PendingOffset => _pendingOffset;
 
-        public bool TryRead(out T item)
+        public bool TryRead(int batchSize, [NotNullWhen(true)] out IEnumerable<T>? items)
         {
-            var segment = SelectSegment();
-            return segment.TryGet(_pendingOffset, out item);
-        }
-
-        public void MoveNext() => _pendingOffset++;
-
-        private MemoryBufferSegment<T> SelectSegment()
-        {
+            var remainingCount = batchSize;
+            var pendingOffset = _pendingOffset;
+            var result = Enumerable.Empty<T>();
             var currentSegment = _currentSegment;
-            var nextSegment = currentSegment.NextSegment;
-            var moveToNextSegment = currentSegment.EndOffset < _pendingOffset && nextSegment != null;
 
-            if (moveToNextSegment)
+            while (true)
             {
-                _currentSegment = nextSegment!;
+                if (currentSegment.EndOffset < pendingOffset)
+                {
+                    if (currentSegment.NextSegment == null)
+                    {
+                        break;
+                    }
+
+                    currentSegment = currentSegment.NextSegment;
+                }
+
+                var retrievalSuccess = currentSegment.TryGet(pendingOffset, remainingCount, out var segmentItems);
+                if (retrievalSuccess)
+                {
+                    var length = segmentItems!.Length;
+                    pendingOffset += (ulong)length;
+                    remainingCount -= length;
+                    result = result.Concat(segmentItems);
+                }
+                else
+                {
+                    break;
+                }
+
+                if (remainingCount == 0)
+                {
+                    break;
+                }
+
+                var nextSegment = currentSegment.NextSegment;
+                var continueReading = nextSegment != null;
+                if (continueReading)
+                {
+                    currentSegment = nextSegment!;
+                }
+                else
+                {
+                    break;
+                }
             }
 
-            return _currentSegment;
+            if (remainingCount == batchSize)
+            {
+                items = null;
+                return false;
+            }
+
+            _lastReadCount = batchSize - remainingCount;
+            items = result;
+            return true;
+        }
+
+        public void MoveNext()
+        {
+            _pendingOffset += (ulong)_lastReadCount;
+            while (_currentSegment.EndOffset < _pendingOffset && _currentSegment.NextSegment != null)
+            {
+                _currentSegment = _currentSegment.NextSegment!;
+            }
         }
     }
 

@@ -10,4 +10,6 @@ public class BufferConsumerOptions
     public string GroupName { get; init; } = default!;
 
     public bool AutoCommit { get; init; }
+
+    public int BatchSize { get; init; } = 100;
 }

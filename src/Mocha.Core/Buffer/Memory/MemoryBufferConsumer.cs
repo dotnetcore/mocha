@@ -1,6 +1,7 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Mocha.Core.Buffer.Memory;
@@ -39,7 +40,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         }
     }
 
-    public async IAsyncEnumerable<T> ConsumeAsync(
+    public async IAsyncEnumerable<IEnumerable<T>> ConsumeAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_assignedPartitions.Length == 0)
@@ -53,14 +54,16 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
             var partition = SelectPartition();
 
-            if (TryPull(partition, out var item))
+            var batchSize = _options.BatchSize;
+
+            if (TryPull(partition, batchSize, out var items))
             {
-                yield return item;
+                yield return items;
                 continue;
             }
 
             // Try to pull from other partitions
-            T itemFromOtherPartition = default!;
+            IEnumerable<T> itemsFromOtherPartition = default!;
             var hasItemFromOtherPartition = false;
 
             foreach (var t in _assignedPartitions)
@@ -72,9 +75,9 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
                     continue;
                 }
 
-                if (TryPull(partition, out item))
+                if (TryPull(partition, batchSize, out items))
                 {
-                    itemFromOtherPartition = item;
+                    itemsFromOtherPartition = items;
                     hasItemFromOtherPartition = true;
                     break;
                 }
@@ -82,7 +85,7 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
 
             if (hasItemFromOtherPartition)
             {
-                yield return itemFromOtherPartition;
+                yield return itemsFromOtherPartition;
                 continue;
             }
 
@@ -111,9 +114,9 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
                 ? pendingDataTask.Result
                 : await pendingDataTask;
 
-            if (TryPull(partitionWithNewData, out item))
+            if (TryPull(partitionWithNewData, batchSize, out items))
             {
-                yield return item;
+                yield return items;
             }
         }
     }
@@ -168,10 +171,11 @@ internal sealed class MemoryBufferConsumer<T> : IBufferConsumer<T>
         }
     }
 
-    private bool TryPull(MemoryBufferPartition<T> partition, out T item)
+    private bool TryPull(MemoryBufferPartition<T> partition, int batchSize,
+        [NotNullWhen(true)] out IEnumerable<T>? items)
     {
         _partitionBeingConsumed = partition;
-        var dataAvailable = partition.TryPull(_options.GroupName, out item);
+        var dataAvailable = partition.TryPull(_options.GroupName, batchSize, out items);
 
         if (dataAvailable)
         {
