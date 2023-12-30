@@ -25,7 +25,9 @@ public class MemoryBufferQueueTests
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions
         {
-            GroupName = "TestGroup", AutoCommit = false, BatchSize = 2
+            GroupName = "TestGroup",
+            AutoCommit = false,
+            BatchSize = 2
         });
 
         var expectedValues = new int[10];
@@ -377,7 +379,9 @@ public class MemoryBufferQueueTests
                 .CreateConsumers(
                     new BufferConsumerOptions
                     {
-                        GroupName = "TestGroup" + (groupIndex + 1), AutoCommit = true, BatchSize = batchSize
+                        GroupName = "TestGroup" + (groupIndex + 1),
+                        AutoCommit = true,
+                        BatchSize = batchSize
                     },
                     consumerNumberPerGroup)
                 .ToList();
