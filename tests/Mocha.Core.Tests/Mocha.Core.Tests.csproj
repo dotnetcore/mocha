@@ -28,5 +28,4 @@
         <ProjectReference Include="..\..\src\Mocha.Core\Mocha.Core.csproj"/>
     </ItemGroup>
 
-
 </Project>
