@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Mocha.Core.Models.Trace;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Configurations;
@@ -11,12 +12,13 @@ public class SpanAttributeConfiguration : IEntityTypeConfiguration<EFSpanAttribu
 {
     public void Configure(EntityTypeBuilder<EFSpanAttribute> builder)
     {
+        builder.ToTable("span_attribute");
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd().HasColumnType("bigint AUTO_INCREMENT");
-        builder.HasIndex(x => x.SpanId, "idx_span_id");
-        builder.HasIndex(x => x.TraceId, "idx_trace_id");
-        builder.HasIndex(x => x.AttributeKey, "idx_attribute_key");
-        builder.HasIndex(x => x.AttributeValue, "idx_attribute_value");
-        builder.ToTable("span_attributes");
+        builder.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        builder.Property(e => e.TraceId).HasColumnName("trace_id").IsRequired();
+        builder.Property(e => e.SpanId).HasColumnName("span_id").IsRequired();
+        builder.Property(e => e.Key).HasColumnName("key").IsRequired();
+        builder.Property(e => e.ValueType).HasColumnName("value_type").IsRequired();
+        builder.Property(e => e.Value).HasColumnName("value").IsRequired();
     }
 }

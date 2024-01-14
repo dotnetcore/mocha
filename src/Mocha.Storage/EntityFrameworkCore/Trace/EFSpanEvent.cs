@@ -6,13 +6,15 @@ namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class EFSpanEvent
 {
-    public long Id { get; set; }
+    public long Id { get; init; }
 
-    public string TraceId { get; set; } = string.Empty;
+    public required string TraceId { get; init; }
 
-    public long TimeBucket { get; set; }
+    public required string SpanId { get; init; }
 
-    public string EventName { get; set; } = string.Empty;
+    public int Index { get; init; }
 
-    public EFSpan Span { get; set; } = default!;
+    public required string Name { get; init; }
+
+    public ulong TimestampUnixNano { get; init; }
 }

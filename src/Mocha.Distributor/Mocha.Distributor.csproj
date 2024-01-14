@@ -1,21 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore" Version="2.57.0.0"/>
-        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.57.0"/>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.59.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.59.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj"/>
         <ProjectReference Include="..\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj"/>
         <ProjectReference Include="..\Mocha.Storage\Mocha.Storage.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

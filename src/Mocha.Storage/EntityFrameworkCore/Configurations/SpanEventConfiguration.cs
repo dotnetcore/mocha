@@ -11,10 +11,13 @@ public class SpanEventConfiguration : IEntityTypeConfiguration<EFSpanEvent>
 {
     public void Configure(EntityTypeBuilder<EFSpanEvent> builder)
     {
+        builder.ToTable("span_event");
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd().HasColumnType("bigint AUTO_INCREMENT");
-        builder.HasIndex(x => x.TraceId, "idx_trace_id");
-        builder.HasIndex(x => x.EventName, "idx_event_name");
-        builder.ToTable("span_events");
+        builder.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        builder.Property(e => e.TraceId).HasColumnName("trace_id").IsRequired();
+        builder.Property(e => e.SpanId).HasColumnName("span_id").IsRequired();
+        builder.Property(e => e.Index).HasColumnName("index").IsRequired();
+        builder.Property(e => e.Name).HasColumnName("name").IsRequired();
+        builder.Property(e => e.TimestampUnixNano).HasColumnName("timestamp_unix_nano").IsRequired();
     }
 }

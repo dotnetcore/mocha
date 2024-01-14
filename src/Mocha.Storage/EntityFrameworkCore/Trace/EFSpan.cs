@@ -1,43 +1,40 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
-using Mocha.Core.Enums;
+using Mocha.Core.Models;
+using Mocha.Core.Models.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class EFSpan
 {
-    public long Id { get; set; }
+    public long Id { get; init; }
 
-    public string TraceId { get; set; } = string.Empty;
+    public required string TraceId { get; init; }
 
-    public string SpanId { get; set; } = string.Empty;
+    public required string SpanId { get; init; }
 
-    public string SpanName { get; set; } = string.Empty;
+    public required string SpanName { get; init; }
 
-    public string ParentSpanId { get; set; } = string.Empty;
+    public required string ParentSpanId { get; init; }
 
-    public string ServiceName { get; set; } = string.Empty;
+    public ulong StartTimeUnixNano { get; init; }
 
-    public long StartTime { get; set; }
+    public ulong EndTimeUnixNano { get; init; }
 
-    public long EndTime { get; set; }
+    public ulong DurationNanoseconds { get; init; }
 
-    public double Duration { get; set; }
+    public EFSpanStatusCode? StatusCode { get; init; }
 
-    public int StatusCode { get; set; }
+    public string? StatusMessage { get; init; }
 
-    public string? StatusMessage { get; set; } = string.Empty;
+    public EFSpanKind SpanKind { get; init; }
 
-    public SpanKind SpanKind { get; set; }
+    public required string ServiceName { get; init; }
 
-    public uint TraceFlags { get; set; }
+    public required string ServiceInstanceId { get; init; }
 
-    public string? TraceState { get; set; }
+    public uint TraceFlags { get; init; }
 
-    public ICollection<EFSpanLink> SpanLinks { get; set; } = new List<EFSpanLink>();
-
-    public ICollection<EFSpanAttribute> SpanAttributes { get; set; } = new List<EFSpanAttribute>();
-
-    public ICollection<EFSpanEvent> SpanEvents { get; set; } = new List<EFSpanEvent>();
+    public string? TraceState { get; init; }
 }

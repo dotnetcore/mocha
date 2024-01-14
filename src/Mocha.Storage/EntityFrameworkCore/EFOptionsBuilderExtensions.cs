@@ -4,6 +4,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Mocha.Core.Storage;
+using Mocha.Core.Storage.Jaeger;
+using Mocha.Storage.EntityFrameworkCore.Jaeger;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
@@ -13,8 +15,9 @@ public static class EFOptionsBuilderExtensions
         this StorageOptionsBuilder builder,
         Action<DbContextOptionsBuilder> optionsAction)
     {
-        builder.Services.AddScoped<ISpanWriter, EFSpanWriter>();
-        builder.Services.AddDbContextPool<MochaContext>(optionsAction);
+        builder.Services.AddSingleton<ISpanWriter, EFSpanWriter>();
+        builder.Services.AddSingleton<IJaegerSpanReader, EFJaegerSpanReader>();
+        builder.Services.AddPooledDbContextFactory<MochaContext>(optionsAction);
         return builder;
     }
 }

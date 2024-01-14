@@ -3,18 +3,12 @@
 
 namespace Mocha.Core.Buffer.Memory;
 
-internal sealed class MemoryBufferProducer<T> : IBufferProducer<T>
+internal sealed class MemoryBufferProducer<T>(string topicName, MemoryBufferPartition<T>[] partitions)
+    : IBufferProducer<T>
 {
-    private readonly MemoryBufferPartition<T>[] _partitions;
     private uint _partitionIndex;
 
-    public MemoryBufferProducer(string topicName, MemoryBufferPartition<T>[] partitions)
-    {
-        TopicName = topicName;
-        _partitions = partitions;
-    }
-
-    public string TopicName { get; }
+    public string TopicName { get; } = topicName;
 
     public ValueTask ProduceAsync(T item)
     {
@@ -25,7 +19,7 @@ internal sealed class MemoryBufferProducer<T> : IBufferProducer<T>
 
     private MemoryBufferPartition<T> SelectPartition()
     {
-        var index = (Interlocked.Increment(ref _partitionIndex) - 1) % _partitions.Length;
-        return _partitions[index];
+        var index = (Interlocked.Increment(ref _partitionIndex) - 1) % partitions.Length;
+        return partitions[index];
     }
 }

@@ -3,23 +3,26 @@
 
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Mocha.Core.Models.Trace;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore;
 
-public class MochaContext : DbContext
+public class MochaContext(DbContextOptions options) : DbContext(options)
 {
-    public MochaContext(DbContextOptions options) : base(options)
-    {
-    }
-
-    public DbSet<EFSpanAttribute> SpanAttributes => Set<EFSpanAttribute>();
+    public DbSet<EFSpan> Spans => Set<EFSpan>();
 
     public DbSet<EFSpanEvent> SpanEvents => Set<EFSpanEvent>();
 
     public DbSet<EFSpanLink> SpanLinks => Set<EFSpanLink>();
 
-    public DbSet<EFSpan> Spans => Set<EFSpan>();
+    public DbSet<EFSpanAttribute> SpanAttributes => Set<EFSpanAttribute>();
+
+    public DbSet<EFResourceAttribute> ResourceAttributes => Set<EFResourceAttribute>();
+
+    public DbSet<EFSpanEventAttribute> SpanEventAttributes => Set<EFSpanEventAttribute>();
+
+    public DbSet<EFSpanLinkAttribute> SpanLinkAttributes => Set<EFSpanLinkAttribute>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

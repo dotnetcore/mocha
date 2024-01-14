@@ -5,12 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Mocha.Core.Buffer;
 
-public class BufferOptionsBuilder
+public class BufferOptionsBuilder(IServiceCollection services)
 {
-    public BufferOptionsBuilder(IServiceCollection services)
-    {
-        Services = services;
-    }
-
-    public IServiceCollection Services { get; }
+    public IServiceCollection Services { get; } = services;
 }

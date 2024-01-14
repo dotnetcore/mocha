@@ -3,17 +3,11 @@
 
 namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
-public class EFSpanAttribute
+public class EFSpanAttribute : AbstractEFAttribute
 {
-    public long Id { get; set; }
+    public long Id { get; init; }
 
-    public string AttributeKey { get; set; } = string.Empty;
+    public required string TraceId { get; init; }
 
-    public string AttributeValue { get; set; } = string.Empty;
-
-    public string TraceId { get; set; } = string.Empty;
-
-    public string SpanId { get; set; } = string.Empty;
-
-    public EFSpan Span { get; set; } = default!;
+    public required string SpanId { get; init; }
 }

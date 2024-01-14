@@ -16,12 +16,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core.Tests", "tests\M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71D20701-E657-443F-8000-7958FB5E6BD7}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
 		LICENSE = LICENSE
 		README.md = README.md
 		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage", "src\Mocha.Storage\Mocha.Storage.csproj", "{8EEB6697-B975-430D-9CC3-3048E76C5ECA}"
@@ -29,6 +31,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core.Benchmarks", "tests\Mocha.Core.Benchmarks\Mocha.Core.Benchmarks.csproj", "{2107E75D-9717-4CCD-BE85-713BEF75366A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage.Tests", "tests\Mocha.Storage.Tests\Mocha.Storage.Tests.csproj", "{FC0D810E-4ACC-4567-95D8-D7F617E412FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Query.Jaeger", "src\Mocha.Query.Jaeger\Mocha.Query.Jaeger.csproj", "{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{53AF2923-4CB8-44C8-885B-B0EEB8574FEB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mysql", "mysql", "{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\mysql\init.sql = scripts\mysql\init.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +55,8 @@ Global
 		{8EEB6697-B975-430D-9CC3-3048E76C5ECA} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
 		{2107E75D-9717-4CCD-BE85-713BEF75366A} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 		{FC0D810E-4ACC-4567-95D8-D7F617E412FE} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
+		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
+		{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5} = {53AF2923-4CB8-44C8-885B-B0EEB8574FEB}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -78,5 +91,9 @@ Global
 		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC0D810E-4ACC-4567-95D8-D7F617E412FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
