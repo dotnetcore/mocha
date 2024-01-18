@@ -359,7 +359,10 @@ public class EFJaegerSpanReaderTests : IDisposable
         await context.Spans.AddRangeAsync(efSpans);
         await context.SaveChangesAsync();
 
-        var traces = await _jaegerSpanReader.FindTracesAsync(["TraceId1"]);
+        var traces = await _jaegerSpanReader.FindTracesAsync(
+            ["TraceId1"],
+            now.AddMinutes(-2).ToUnixTimeNanoseconds(),
+            now.AddMinutes(2).ToUnixTimeNanoseconds());
         Assert.Single(traces);
         Assert.Equal("TraceId1", traces[0].TraceID);
     }
