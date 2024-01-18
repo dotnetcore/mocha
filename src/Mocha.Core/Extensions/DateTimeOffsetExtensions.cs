@@ -1,8 +1,7 @@
-namespace Mocha.Core.Extensions
+namespace Mocha.Core.Extensions;
+
+public static class DateTimeOffsetExtensions
 {
-    public static class DateTimeOffsetExtensions
-    {
-        public static ulong ToUnixTimeNanoseconds(this DateTimeOffset dateTimeOffset) =>
-            (ulong)(dateTimeOffset - DateTimeOffset.UnixEpoch).Ticks * 100;
-    }
+    public static ulong ToUnixTimeNanoseconds(this DateTimeOffset dateTimeOffset) =>
+        (ulong)(dateTimeOffset - DateTimeOffset.UnixEpoch).Ticks * 100;
 }
