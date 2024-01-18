@@ -4,7 +4,6 @@
 using Mocha.Core.Buffer;
 using Mocha.Core.Models.Trace;
 using Mocha.Core.Storage;
-using OpenTelemetry.Proto.Trace.V1;
 
 namespace Mocha.Distributor.Exporters;
 

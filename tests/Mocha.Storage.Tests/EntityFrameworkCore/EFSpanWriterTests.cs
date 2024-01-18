@@ -23,7 +23,7 @@ public class EFSpanWriterTests : IDisposable
         {
             builder.UseEntityFrameworkCore(options =>
             {
-                options.UseInMemoryDatabase("Mocha.Storage.Tests.EntityFrameworkCore");
+                options.UseInMemoryDatabase(Guid.NewGuid().ToString());
             });
         });
         _serviceProvider = services.BuildServiceProvider();

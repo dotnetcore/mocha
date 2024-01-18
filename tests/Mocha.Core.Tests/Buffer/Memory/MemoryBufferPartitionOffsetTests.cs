@@ -84,9 +84,25 @@ public class MemoryBufferPartitionOffsetTests
         var offset1 = new MemoryBufferPartitionOffset(0, 1);
         var offset2 = new MemoryBufferPartitionOffset(0, ulong.MaxValue);
         var offset3 = new MemoryBufferPartitionOffset(1, 0);
+        var offset4 = new MemoryBufferPartitionOffset(0, 2);
 
         Assert.Equal(1UL, offset1.ToUInt64());
         Assert.Equal(ulong.MaxValue, offset2.ToUInt64());
         Assert.Throws<OverflowException>(() => offset3.ToUInt64());
+        Assert.Equal(2UL, (ulong)offset4);
+    }
+
+    [Fact]
+    public void ToInt32()
+    {
+        var offset1 = new MemoryBufferPartitionOffset(0, 1);
+        var offset2 = new MemoryBufferPartitionOffset(0, int.MaxValue);
+        var offset3 = new MemoryBufferPartitionOffset(1, 0);
+        var offset4 = new MemoryBufferPartitionOffset(0, 2);
+
+        Assert.Equal(1, offset1.ToInt32());
+        Assert.Equal(int.MaxValue, offset2.ToInt32());
+        Assert.Throws<OverflowException>(() => offset3.ToInt32());
+        Assert.Equal(2, (int)offset4);
     }
 }

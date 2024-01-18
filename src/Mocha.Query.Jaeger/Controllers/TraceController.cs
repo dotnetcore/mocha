@@ -14,7 +14,7 @@ namespace Mocha.Query.Jaeger.Controllers
         [HttpGet("services")]
         public async Task<JaegerResponse<string[]>> GetSeries()
         {
-            return new(await spanReader.GetSeriesAsync());
+            return new(await spanReader.GetServicesAsync());
         }
 
         [HttpGet("services/{serviceName}/operations")]
@@ -110,7 +110,7 @@ namespace Mocha.Query.Jaeger.Controllers
         [HttpGet("traces/{traceID}")]
         public async Task<JaegerResponse<JaegerTrace[]>> GetTrace(string traceID)
         {
-            var traces = await spanReader.FindTracesAsync(new string[] { traceID });
+            var traces = await spanReader.FindTracesAsync([traceID]);
 
             JaegerResponseError? error = null;
             if (traces.Length == 0)

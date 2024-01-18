@@ -10,7 +10,7 @@ using OpenTelemetry.Proto.Resource.V1;
 using OpenTelemetry.Proto.Trace.V1;
 using Status = OpenTelemetry.Proto.Trace.V1.Status;
 
-namespace Mocha.Core.Tests.Conversion;
+namespace Mocha.Core.Tests.Conversions;
 
 public class OTelToMochaSpanConversionTests
 {

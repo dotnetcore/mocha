@@ -10,7 +10,7 @@ namespace Mocha.Storage.EntityFrameworkCore.Jaeger;
 
 internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory) : IJaegerSpanReader
 {
-    public async Task<string[]> GetSeriesAsync()
+    public async Task<string[]> GetServicesAsync()
     {
         await using var context = await contextFactory.CreateDbContextAsync();
         var services = await context.Spans.Select(s => s.ServiceName).Distinct().ToArrayAsync();
@@ -43,21 +43,6 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
             queryableSpans = queryableSpans.Where(s => s.SpanName == query.OperationName);
         }
 
-        if (query.Tags?.Any() ?? false)
-        {
-            var queryableAttributes = context.SpanAttributes.AsQueryable();
-
-            foreach (var tag in query.Tags)
-            {
-                queryableAttributes =
-                    queryableAttributes.Where(a => a.Key == tag.Key && a.Value == tag.Value.ToString());
-            }
-
-            var ids = queryableAttributes.Select(a => a.SpanId).Distinct();
-
-            queryableSpans = queryableSpans.Where(s => ids.Contains(s.SpanId));
-        }
-
         if (query.StartTimeMinUnixNano.HasValue)
         {
             queryableSpans = queryableSpans.Where(s => s.StartTimeUnixNano >= query.StartTimeMinUnixNano.Value);
@@ -78,6 +63,23 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
         {
             queryableSpans =
                 queryableSpans.Where(s => s.DurationNanoseconds <= query.DurationMaxNanoseconds.Value);
+        }
+
+        if (query.Tags?.Any() ?? false)
+        {
+            // TODO: This is a hacky way to do this, but it works for now. We should find a better way to match tags.
+            var tags = query.Tags.Select(tag => $"{tag.Key}:{tag.Value}").ToHashSet();
+            var queryableAttributes =
+                context.SpanAttributes
+                    .Where(a => tags.Contains(a.Key + ":" + a.Value));
+
+            var spanIds = queryableAttributes.GroupBy(a => a.SpanId)
+                .Where(a => a.Count() == query.Tags.Count())
+                .Select(a => a.Key);
+
+            queryableSpans = from span in queryableSpans
+                join spanId in spanIds on span.SpanId equals spanId
+                select span;
         }
 
         if (query.NumTraces > 0)

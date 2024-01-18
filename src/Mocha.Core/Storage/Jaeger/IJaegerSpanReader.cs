@@ -7,7 +7,7 @@ namespace Mocha.Core.Storage.Jaeger;
 
 public interface IJaegerSpanReader
 {
-    Task<string[]> GetSeriesAsync();
+    Task<string[]> GetServicesAsync();
 
     Task<string[]> GetOperationsAsync(string serviceName);
 

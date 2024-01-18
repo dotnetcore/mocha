@@ -27,6 +27,8 @@ internal readonly record struct MemoryBufferPartitionOffset(ulong Generation, ul
 
     public static explicit operator ulong(MemoryBufferPartitionOffset offset) => offset.ToUInt64();
 
+    public static explicit operator int(MemoryBufferPartitionOffset offset) => offset.ToInt32();
+
     public static bool operator >(MemoryBufferPartitionOffset left, MemoryBufferPartitionOffset right)
     {
         var leftGeneration = left.Generation;

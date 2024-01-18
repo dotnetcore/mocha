@@ -32,7 +32,7 @@ docker-compose up -d
 选择 Jaeger。
 ![](./asserts/add-jaeger-data-source-3.png)
 
-配置 Jaeger 数据源的 URL 为 http://jaeger-query:5775。
+配置 Jaeger 数据源的 URL 为 `http://jaeger-query:5775`。
 ![](./asserts/add-jaeger-data-source-4.png)
 
 点击 Save & Test，如果显示如下信息，则说明配置成功。
