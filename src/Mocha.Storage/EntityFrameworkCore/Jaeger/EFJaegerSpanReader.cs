@@ -78,8 +78,8 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
                 .Select(a => a.Key);
 
             queryableSpans = from span in queryableSpans
-                join spanId in spanIds on span.SpanId equals spanId
-                select span;
+                             join spanId in spanIds on span.SpanId equals spanId
+                             select span;
         }
 
         if (query.NumTraces > 0)
