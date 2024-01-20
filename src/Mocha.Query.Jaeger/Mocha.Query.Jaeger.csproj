@@ -14,14 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj" />
-      <ProjectReference Include="..\Mocha.Storage\Mocha.Storage.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj"/>
+        <ProjectReference Include="..\Mocha.Storage\Mocha.Storage.csproj"/>
     </ItemGroup>
 
 </Project>

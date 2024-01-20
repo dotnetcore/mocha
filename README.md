@@ -1,16 +1,18 @@
 Mocha
 =====
 
-[![codecov](https://codecov.io/gh/dotnetcore/mocha/branch/main/graph/badge.svg)](https://app.codecov.io/gh/dotnetcore/mocha)
+[![codecov](https://codecov.io/gh/dotnetcore/mocha/graph/badge.svg?token=v9OE7dV8ZS)](https://codecov.io/gh/dotnetcore/mocha)
+
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
 Mocha is an application performance monitor tools based on [OpenTelemetry](https://opentelemetry.io), which also provides a scalable platform for observability data analysis and storage.
 
 ## Quick Start
 In the beta phase, we provide a Docker Compose file for users to experience our system locally.
 
-[Quick Start 简体中文](./docs/quick-start/docker-compose/quick-start.zh-CN.md)
++ [Quick Start](./docs/quick-start/docker-compose/quick-start.en-US.md)
 
-## Functional architecture
+## Functional Architecture
 ![](./docs/assets/functional_architecture.png)
 
 The set of features that Mocha will provide:
@@ -30,7 +32,7 @@ The set of features that Mocha will provide:
   - Alert notifications
 - Metrics/Logs/Traces data explore
 
-## Technical architecture
+## Technical Architecture
 ![](./docs/assets/technical_architecture.png)
 
 The components of Mocha are as follows:

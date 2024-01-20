@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE = LICENSE
 		README.md = README.md
 		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
-		docker-compose.yml = docker-compose.yml
+		README.zh-CN.md = README.zh-CN.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage", "src\Mocha.Storage\Mocha.Storage.csproj", "{8EEB6697-B975-430D-9CC3-3048E76C5ECA}"
@@ -39,6 +39,21 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mysql", "mysql", "{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5}"
 	ProjectSection(SolutionItems) = preProject
 		scripts\mysql\init.sql = scripts\mysql\init.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{D598862A-999C-40FD-A190-EBD00376D077}"
+	ProjectSection(SolutionItems) = preProject
+		docker\docker-compose.yml = docker\docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "distributor", "distributor", "{959DCB4E-A070-4C66-A27F-D83CB933F0D8}"
+	ProjectSection(SolutionItems) = preProject
+		docker\distributor\Dockerfile = docker\distributor\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jaeger-query", "jaeger-query", "{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C}"
+	ProjectSection(SolutionItems) = preProject
+		docker\jaeger-query\Dockerfile = docker\jaeger-query\Dockerfile
 	EndProjectSection
 EndProject
 Global
@@ -57,6 +72,8 @@ Global
 		{FC0D810E-4ACC-4567-95D8-D7F617E412FE} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
 		{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5} = {53AF2923-4CB8-44C8-885B-B0EEB8574FEB}
+		{959DCB4E-A070-4C66-A27F-D83CB933F0D8} = {D598862A-999C-40FD-A190-EBD00376D077}
+		{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C} = {D598862A-999C-40FD-A190-EBD00376D077}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

@@ -1,6 +1,6 @@
 ## 启动项目
 
-在项目根目录下，执行以下命令启动项目：
+在项目根目录下的docker目录中，执行以下命令启动项目：
 
 ```bash
 docker-compose up -d
@@ -17,7 +17,7 @@ docker-compose up -d
 
 将 SDK 的 OTLP exporter 配置为 `http://localhost:4317` 即可将数据发送到 distributor。
 
-## Trace 数据的查询
+## 配置 Jaeger 数据源
 
 我们实现了支持 Jaeger 查询协议的 API，因此可以直接在 Grafana 中配置 Jaeger 数据源。
 
@@ -38,5 +38,12 @@ docker-compose up -d
 点击 Save & Test，如果显示如下信息，则说明配置成功。
 ![](./asserts/add-jaeger-data-source-5.png)
 
-这边建议先往 Distributor 发送一些数据，然后再点击 Save & Test，否则会报错。
-![](./asserts/add-jaeger-data-source-error.png)
+如果还没往 distributor 发送过数据，会显示如下警告信息。
+![](./asserts/add-jaeger-data-source-warning.png)
+
+## Trace 数据的查询
+
+点击左侧的菜单，选择 Explore，然后选择 Jaeger 数据源，即可看到 Trace 数据。
+![](./asserts/query-trace.png)
+
+![](./asserts/query-trace-2.png)

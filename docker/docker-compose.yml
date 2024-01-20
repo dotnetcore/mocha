@@ -3,6 +3,8 @@
 
 version: "3.8"
 
+name: mocha
+
 services:
   mysql:
     image: mysql:8.2.0
@@ -17,8 +19,9 @@ services:
     expose:
       - "3306"
     volumes:
-      - ./scripts/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../scripts/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
 #      - ./mysql:/var/lib/mysql
+    restart: always
     networks:
       - mocha
 
@@ -29,13 +32,14 @@ services:
       - "3000:3000"
 #    volumes:
 #      - ./grafana:/var/lib/grafana
+    restart: always
     networks:
       - mocha
 
   distributor:
     build:
-      context: .
-      dockerfile: ./src/Mocha.Distributor/Dockerfile
+      context: ..
+      dockerfile: ./docker/distributor/Dockerfile
     container_name: mocha-distributor
     ports:
       - "4317:4317"
@@ -53,8 +57,8 @@ services:
 
   jaeger-query:
     build:
-      context: .
-      dockerfile: ./src/Mocha.Query.Jaeger/Dockerfile
+      context: ..
+      dockerfile: ./docker/jaeger-query/Dockerfile
     container_name: mocha-jaeger-query
     ports:
       - "5775:5775"
@@ -66,6 +70,7 @@ services:
       - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
     depends_on:
       - mysql
+    restart: always
     networks:
       - mocha
 
