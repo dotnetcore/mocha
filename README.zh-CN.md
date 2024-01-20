@@ -1,9 +1,9 @@
 Mocha
 =====
 
-[![codecov](https://codecov.io/gh/dotnetcore/mocha/graph/badge.svg?token=v9OE7dV8ZS)](https://codecov.io/gh/dotnetcore/mocha)
+[![codecov](https://codecov.io/gh/dotnetcore/mocha/branch/main/graph/badge.svg?token=v9OE7dV8ZS)](https://codecov.io/gh/dotnetcore/mocha)
 
-[English](./README.md) | [简体中文](./README.zh-CN.md)
+[English](./README.md) | 简体中文
 
 Mocha 是一个基于 [OpenTelemetry](https://opentelemetry.io) 的 APM 系统，同时提供可伸缩的可观测性数据分析和存储平台。
 

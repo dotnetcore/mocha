@@ -1,9 +1,9 @@
 Mocha
 =====
 
-[![codecov](https://codecov.io/gh/dotnetcore/mocha/graph/badge.svg?token=v9OE7dV8ZS)](https://codecov.io/gh/dotnetcore/mocha)
+[![codecov](https://codecov.io/gh/dotnetcore/mocha/branch/main/graph/badge.svg?token=v9OE7dV8ZS)](https://codecov.io/gh/dotnetcore/mocha)
 
-[English](./README.md) | [简体中文](./README.zh-CN.md)
+English | [简体中文](./README.zh-CN.md)
 
 Mocha is an application performance monitor tools based on [OpenTelemetry](https://opentelemetry.io), which also provides a scalable platform for observability data analysis and storage.
 
