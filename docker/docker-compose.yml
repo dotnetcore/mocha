@@ -1,0 +1,81 @@
+# Licensed to the .NET Core Community under one or more agreements.
+# The .NET Core Community licenses this file to you under the MIT license.
+
+version: "3.8"
+
+name: mocha
+
+services:
+  mysql:
+    image: mysql:8.2.0
+    container_name: mocha-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mocha
+      MYSQL_USER: mocha
+      MYSQL_PASSWORD: mocha
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    volumes:
+      - ../scripts/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+#      - ./mysql:/var/lib/mysql
+    restart: always
+    networks:
+      - mocha
+
+  grafana:
+    image: grafana/grafana:10.0.10
+    container_name: mocha-grafana
+    ports:
+      - "3000:3000"
+#    volumes:
+#      - ./grafana:/var/lib/grafana
+    restart: always
+    networks:
+      - mocha
+
+  distributor:
+    build:
+      context: ..
+      dockerfile: ./docker/distributor/Dockerfile
+    container_name: mocha-distributor
+    ports:
+      - "4317:4317"
+    expose:
+        - "4317"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__EF=server=mysql;port=3306;database=mocha;userid=root;password=root
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
+    depends_on:
+      - mysql
+    restart: always
+    networks:
+      - mocha
+
+  jaeger-query:
+    build:
+      context: ..
+      dockerfile: ./docker/jaeger-query/Dockerfile
+    container_name: mocha-jaeger-query
+    ports:
+      - "5775:5775"
+    expose:
+      - "5775"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
+    depends_on:
+      - mysql
+    restart: always
+    networks:
+      - mocha
+
+networks:
+  mocha:
+    driver: bridge
+
+

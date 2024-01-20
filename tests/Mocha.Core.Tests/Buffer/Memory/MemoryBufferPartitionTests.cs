@@ -9,6 +9,81 @@ namespace Mocha.Core.Tests.Buffer.Memory;
 public class MemoryBufferPartitionTests
 {
     [Fact]
+    public void Enqueue_And_TryPull()
+    {
+        MemoryBufferPartition<int>.SegmentLength = 2;
+
+        var partition = new MemoryBufferPartition<int>();
+
+        for (var i = 0; i < 12; i++)
+        {
+            partition.Enqueue(i);
+        }
+
+        Assert.True(partition.TryPull("TestGroup", 4, out var items));
+        Assert.Equal(new[] { 0, 1, 2, 3 }, items);
+        partition.Commit("TestGroup");
+
+        Assert.True(partition.TryPull("TestGroup", 3, out items));
+        Assert.Equal(new[] { 4, 5, 6 }, items);
+        partition.Commit("TestGroup");
+
+        Assert.True(partition.TryPull("TestGroup", 2, out items));
+        Assert.Equal(new[] { 7, 8 }, items);
+        partition.Commit("TestGroup");
+
+        Assert.True(partition.TryPull("TestGroup", 4, out items));
+        Assert.Equal(new[] { 9, 10, 11 }, items);
+        partition.Commit("TestGroup");
+
+        Assert.False(partition.TryPull("TestGroup", 2, out _));
+
+        partition.Enqueue(12);
+
+        Assert.True(partition.TryPull("TestGroup", 3, out items));
+        Assert.Equal(new[] { 12 }, items);
+    }
+
+    [Fact]
+    public void Repeatable_Pull_If_Not_Commit()
+    {
+        MemoryBufferPartition<int>.SegmentLength = 2;
+
+        var partition = new MemoryBufferPartition<int>();
+
+        for (var i = 0; i < 11; i++)
+        {
+            partition.Enqueue(i);
+        }
+
+        Assert.True(partition.TryPull("TestGroup", 4, out var items));
+        Assert.Equal(new[] { 0, 1, 2, 3 }, items);
+
+        Assert.True(partition.TryPull("TestGroup", 3, out items));
+        Assert.Equal(new[] { 0, 1, 2 }, items);
+
+        partition.Commit("TestGroup");
+
+        Assert.True(partition.TryPull("TestGroup", 3, out items));
+        Assert.Equal(new[] { 3, 4, 5 }, items);
+
+        Assert.True(partition.TryPull("TestGroup", 5, out items));
+        Assert.Equal(new[] { 3, 4, 5, 6, 7 }, items);
+
+        partition.Commit("TestGroup");
+
+        Assert.True(partition.TryPull("TestGroup", 6, out items));
+        Assert.Equal(new[] { 8, 9, 10 }, items);
+
+        Assert.True(partition.TryPull("TestGroup", 3, out items));
+        Assert.Equal(new[] { 8, 9, 10 }, items);
+
+        partition.Commit("TestGroup");
+
+        Assert.False(partition.TryPull("TestGroup", 2, out _));
+    }
+
+    [Fact]
     public void Segment_Will_Be_Recycled_If_All_Consumers_Consumed_Single_Group()
     {
         MemoryBufferPartition<int>.SegmentLength = 3;
@@ -22,10 +97,10 @@ public class MemoryBufferPartitionTests
 
         var segments1 = GetSegments(partition);
 
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 2; i++)
         {
-            partition.TryPull("TestGroup", out var item);
-            Assert.Equal(i, item);
+            Assert.True(partition.TryPull("TestGroup", 3, out var items));
+            Assert.Equal(new[] { i * 3, i * 3 + 1, i * 3 + 2 }, items);
             partition.Commit("TestGroup");
         }
 
@@ -33,8 +108,8 @@ public class MemoryBufferPartitionTests
 
         for (var i = 0; i < 4; i++)
         {
-            partition.TryPull("TestGroup", out var item);
-            Assert.Equal(i + 6, item);
+            Assert.True(partition.TryPull("TestGroup", 1, out var items));
+            Assert.Equal(i + 6, items.Single());
             partition.Commit("TestGroup");
         }
 
@@ -60,13 +135,13 @@ public class MemoryBufferPartitionTests
 
         for (var i = 0; i < 3; i++)
         {
-            Assert.True(partition.TryPull("TestGroup1", out var item));
+            Assert.True(partition.TryPull("TestGroup1", 1, out _));
             partition.Commit("TestGroup1");
         }
 
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 2; i++)
         {
-            Assert.True(partition.TryPull("TestGroup2", out var item));
+            Assert.True(partition.TryPull("TestGroup2", 3, out _));
             partition.Commit("TestGroup2");
         }
 
@@ -94,13 +169,13 @@ public class MemoryBufferPartitionTests
 
         for (var i = 0; i < 3; i++)
         {
-            Assert.True(partition.TryPull("TestGroup1", out var item));
+            Assert.True(partition.TryPull("TestGroup1", 1, out _));
             partition.Commit("TestGroup1");
         }
 
         for (var i = 0; i < 2; i++)
         {
-            Assert.True(partition.TryPull("TestGroup2", out var item));
+            Assert.True(partition.TryPull("TestGroup2", 1, out _));
             partition.Commit("TestGroup2");
         }
 

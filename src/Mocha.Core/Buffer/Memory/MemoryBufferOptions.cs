@@ -5,18 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Mocha.Core.Buffer.Memory;
 
-public class MemoryBufferOptions
+public class MemoryBufferOptions(IServiceCollection services)
 {
-    private readonly IServiceCollection _services;
-
-    public MemoryBufferOptions(IServiceCollection services)
-    {
-        _services = services;
-    }
-
     public MemoryBufferOptions AddTopic<T>(string topicName, int partitionNumber)
     {
-        _services.AddKeyedSingleton<IBufferQueue<T>>(topicName, new MemoryBufferQueue<T>(topicName, partitionNumber));
+        services.AddKeyedSingleton<IBufferQueue<T>>(topicName, new MemoryBufferQueue<T>(topicName, partitionNumber));
         return this;
     }
 }

@@ -2,19 +2,15 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Trace;
+using Mocha.Distributor.Exporters;
 using Mocha.Distributor.Services;
-using OpenTelemetry.Proto.Trace.V1;
+using Mocha.Storage;
+using Mocha.Storage.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// builder.Configuration.AddEnvironmentVariables(prefix: "Mocha");
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    var port = builder.Configuration.GetValue<int>("OTel:Grpc:Server:Port");
-    options.Listen(IPAddress.Any, port);
-});
 
 // Additional configuration is required to successfully run gRPC on macOS.
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
@@ -27,9 +23,21 @@ builder.Services.AddBuffer(options =>
 {
     options.UseMemory(bufferOptions =>
     {
-        bufferOptions.AddTopic<Span>("otlp_spans", Environment.ProcessorCount);
+        bufferOptions.AddTopic<MochaSpan>("otlp-span", Environment.ProcessorCount);
     });
 });
+
+builder.Services.AddStorage(options =>
+{
+    options.UseEntityFrameworkCore(efOptions =>
+    {
+        var connectionString = builder.Configuration.GetConnectionString("EF");
+        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        efOptions.UseMySql(connectionString, serverVersion);
+    });
+});
+
+builder.Services.AddHostedService<StorageExporter>();
 
 var app = builder.Build();
 

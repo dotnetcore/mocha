@@ -15,6 +15,7 @@ public class MemoryBufferQueueConsumeBenchmark
     private IEnumerable<IBufferConsumer<int>> _consumers = default!;
 
     [Params(4096, 8192)] public int MessageSize { get; set; }
+    [Params(1, 10, 100, 1000)] public int BatchSize { get; set; }
 
     [IterationSetup]
     public void Setup()
@@ -30,7 +31,8 @@ public class MemoryBufferQueueConsumeBenchmark
         }
 
         _consumers = _memoryBufferQueue!.CreateConsumers(
-            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true }, Environment.ProcessorCount);
+            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true, BatchSize = BatchSize, },
+            Environment.ProcessorCount);
     }
 
     [Benchmark]
@@ -53,7 +55,7 @@ public class MemoryBufferQueueConsumeBenchmark
     }
 
     [Benchmark]
-    public void MemoryBufferQueue_Concurrent_Producing_Partition_ProcessorCount()
+    public void MemoryBufferQueue_Concurrent_Consuming_Partition_ProcessorCount()
     {
         var countDownEvent = new CountdownEvent(MessageSize);
 
@@ -61,9 +63,9 @@ public class MemoryBufferQueueConsumeBenchmark
         {
             _ = Task.Run(async () =>
             {
-                await foreach (var _ in consumer.ConsumeAsync())
+                await foreach (var items in consumer.ConsumeAsync())
                 {
-                    countDownEvent.Signal();
+                    countDownEvent.Signal(items.Count());
                 }
             });
         }

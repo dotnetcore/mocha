@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Mocha.Core.Buffer.Memory;
 
@@ -45,6 +46,7 @@ internal sealed class MemoryBufferSegment<T>
         var writePosition = Interlocked.Increment(ref _writePosition);
         if (writePosition >= _slots.Length)
         {
+            _writePosition = _slots.Length - 1;
             return false;
         }
 
@@ -52,23 +54,25 @@ internal sealed class MemoryBufferSegment<T>
         return true;
     }
 
-    public bool TryGet(MemoryBufferPartitionOffset offset, out T item)
+    public bool TryGet(MemoryBufferPartitionOffset offset, int count, [NotNullWhen(true)] out T[]? items)
     {
         if (offset < _startOffset || offset > _endOffset)
         {
-            item = default!;
+            items = null;
             return false;
         }
 
-        var readPosition = (offset - _startOffset).ToUInt64();
+        var readPosition = (offset - _startOffset).ToInt32();
 
-        if (_writePosition < 0 || readPosition > (ulong)_writePosition)
+        if (_writePosition < 0 || readPosition > _writePosition)
         {
-            item = default!;
+            items = default!;
             return false;
         }
 
-        item = _slots[readPosition];
+        var writePosition = Math.Min(_writePosition, _slots.Length - 1);
+        var actualCount = Math.Min(count, writePosition - readPosition + 1);
+        items = _slots[readPosition..(readPosition + actualCount)];
         return true;
     }
 

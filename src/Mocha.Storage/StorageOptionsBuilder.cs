@@ -5,12 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Mocha.Storage;
 
-public class StorageOptionsBuilder
+public class StorageOptionsBuilder(IServiceCollection services)
 {
-    public StorageOptionsBuilder(IServiceCollection services)
-    {
-        Services = services;
-    }
-
-    public IServiceCollection Services { get; }
+    public IServiceCollection Services { get; } = services;
 }

@@ -5,17 +5,19 @@ namespace Mocha.Storage.EntityFrameworkCore.Trace;
 
 public class EFSpanLink
 {
-    public long Id { get; set; }
+    public long Id { get; init; }
 
-    public string TraceId { get; set; } = string.Empty;
+    public required string TraceId { get; init; }
 
-    public string SpanId { get; set; } = string.Empty;
+    public required string SpanId { get; init; }
 
-    public string LinkedSpanId { get; set; } = string.Empty;
+    public int Index { get; init; }
 
-    public string TraceState { get; set; } = string.Empty;
+    public required string LinkedTraceId { get; init; }
 
-    public uint Flags { get; set; }
+    public required string LinkedSpanId { get; init; }
 
-    public EFSpan Span { get; set; } = default!;
+    public required string LinkedTraceState { get; init; }
+
+    public uint LinkedTraceFlags { get; init; }
 }

@@ -8,6 +8,7 @@ namespace Mocha.Core.Buffer.Memory;
 internal sealed class PendingDataValueTaskSource<T> : IValueTaskSource<T>
 {
     private ManualResetValueTaskSourceCore<T> _core = new() { RunContinuationsAsynchronously = true };
+
     // Default value for ValueTask is a completed task.
     private ValueTask<T> _valueTask;
     private volatile bool _isWaiting;
