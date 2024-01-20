@@ -145,9 +145,7 @@ internal static class EFToJaegerSpanConversionExtensions
 
         yield return new JaegerTag
         {
-            Key = "span.kind",
-            Type = JaegerTagType.String,
-            Value = span.SpanKind.ToJaegerSpanKind()
+            Key = "span.kind", Type = JaegerTagType.String, Value = span.SpanKind.ToJaegerSpanKind()
         };
 
         foreach (var attribute in spanAttributes)
@@ -172,9 +170,7 @@ internal static class EFToJaegerSpanConversionExtensions
                 Fields = attributesBySpanEvent.TryGetValue(spanEvent.Index, out var attributes)
                     ? attributes.Select(a => new JaegerTag
                     {
-                        Key = a.Key,
-                        Type = a.ValueType.ToJaegerTagType(),
-                        Value = a.Value
+                        Key = a.Key, Type = a.ValueType.ToJaegerTagType(), Value = a.Value
                     }).ToArray()
                     : Array.Empty<JaegerTag>()
             };
@@ -198,12 +194,12 @@ internal static class EFToJaegerSpanConversionExtensions
 
     private static string ToJaegerSpanKind(this EFSpanKind spanKind) => spanKind switch
     {
-        EFSpanKind.Unspecified => JaegerSpanKind.Unspecified,
         EFSpanKind.Internal => JaegerSpanKind.Internal,
         EFSpanKind.Server => JaegerSpanKind.Server,
         EFSpanKind.Client => JaegerSpanKind.Client,
         EFSpanKind.Producer => JaegerSpanKind.Producer,
         EFSpanKind.Consumer => JaegerSpanKind.Consumer,
+        _ => JaegerSpanKind.Unspecified
     };
 
     private static object ConvertTagValue(this EFAttributeValueType valueType, string value) => valueType switch
