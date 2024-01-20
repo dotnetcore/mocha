@@ -55,11 +55,10 @@ internal static class EFToJaegerSpanConversionExtensions
             .GroupBy(s => s.TraceID)
             .Select(g =>
             {
-                var spans = g.ToArray();
-
+                var spansOfCurrentTrace = g.ToArray();
                 var jaegerProcesses = new List<JaegerProcess>();
 
-                foreach (var span in spans)
+                foreach (var span in spansOfCurrentTrace)
                 {
                     resourceAttributesBySpanId.TryGetValue(span.SpanID, out var attributes);
                     attributes ??= Array.Empty<EFResourceAttribute>();
@@ -80,7 +79,7 @@ internal static class EFToJaegerSpanConversionExtensions
                     Processes = jaegerProcesses
                         .DistinctBy(p => p.ProcessID)
                         .ToDictionary(p => p.ProcessID),
-                    Spans = spans
+                    Spans = spansOfCurrentTrace
                 };
             });
 
@@ -115,7 +114,7 @@ internal static class EFToJaegerSpanConversionExtensions
                             RefType = JaegerSpanReferenceType.ChildOf,
                         }
                     ],
-                Tags = spanAttributes.Select(ToJaegerTag).ToArray(),
+                Tags = spanAttributes.ToJaegerSpanTags(span).ToArray(),
                 Logs = spanEvents.ToJaegerSpanLogs(spanEventAttributes).ToArray()
             };
 
@@ -133,6 +132,28 @@ internal static class EFToJaegerSpanConversionExtensions
         };
 
         return jaegerTag;
+    }
+
+    private static IEnumerable<JaegerTag> ToJaegerSpanTags(
+        this IEnumerable<EFSpanAttribute> spanAttributes,
+        EFSpan span)
+    {
+        if (span.StatusCode == EFSpanStatusCode.Error)
+        {
+            yield return new JaegerTag { Key = "error", Type = JaegerTagType.Bool, Value = true };
+        }
+
+        yield return new JaegerTag
+        {
+            Key = "span.kind",
+            Type = JaegerTagType.String,
+            Value = span.SpanKind.ToJaegerSpanKind()
+        };
+
+        foreach (var attribute in spanAttributes)
+        {
+            yield return attribute.ToJaegerTag();
+        }
     }
 
     private static IEnumerable<JaegerSpanLog> ToJaegerSpanLogs(
@@ -173,6 +194,16 @@ internal static class EFToJaegerSpanConversionExtensions
         EFAttributeValueType.KvlistValue => JaegerTagType.String,
         EFAttributeValueType.BytesValue => JaegerTagType.String,
         _ => throw new ArgumentOutOfRangeException()
+    };
+
+    private static string ToJaegerSpanKind(this EFSpanKind spanKind) => spanKind switch
+    {
+        EFSpanKind.Unspecified => JaegerSpanKind.Unspecified,
+        EFSpanKind.Internal => JaegerSpanKind.Internal,
+        EFSpanKind.Server => JaegerSpanKind.Server,
+        EFSpanKind.Client => JaegerSpanKind.Client,
+        EFSpanKind.Producer => JaegerSpanKind.Producer,
+        EFSpanKind.Consumer => JaegerSpanKind.Consumer,
     };
 
     private static object ConvertTagValue(this EFAttributeValueType valueType, string value) => valueType switch
