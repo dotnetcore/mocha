@@ -173,6 +173,33 @@ public class MemoryBufferQueueTests
     }
 
     [Fact]
+    public void Throw_If_Wrong_Consumer_Number()
+    {
+        var queue = new MemoryBufferQueue<int>("test", 2);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            queue.CreateConsumers(
+                new BufferConsumerOptions
+                {
+                    TopicName = "test",
+                    GroupName = "TestGroup",
+                    AutoCommit = false,
+                    BatchSize = 6
+                },
+                3).ToList());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            queue.CreateConsumers(
+                new BufferConsumerOptions
+                {
+                    TopicName = "test",
+                    GroupName = "TestGroup",
+                    AutoCommit = false,
+                    BatchSize = 6
+                },
+                0).ToList());
+    }
+
+    [Fact]
     public async Task Offset_Will_Not_Change_If_Consumer_Not_Commit()
     {
         var queue = new MemoryBufferQueue<int>("test", 1);
