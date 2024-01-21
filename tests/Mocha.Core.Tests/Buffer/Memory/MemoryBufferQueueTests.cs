@@ -25,9 +25,7 @@ public class MemoryBufferQueueTests
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(new BufferConsumerOptions
         {
-            GroupName = "TestGroup",
-            AutoCommit = false,
-            BatchSize = 2
+            TopicName = "test", GroupName = "TestGroup", AutoCommit = false, BatchSize = 2
         });
 
         var expectedValues = new int[10];
@@ -64,7 +62,10 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(
-            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true, BatchSize = 2 });
+            new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = true, BatchSize = 2
+            });
 
         var expectedValues = new int[10];
         for (var i = 0; i < 10; i++)
@@ -94,7 +95,10 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>("test", 2);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(
-            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false, BatchSize = 2 });
+            new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = false, BatchSize = 2
+            });
 
         var expectedValues = new int[10];
         for (var i = 0; i < 10; i++)
@@ -129,7 +133,11 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>("test", 2);
         var producer = queue.CreateProducer();
         var consumers = queue
-            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false, BatchSize = 6 },
+            .CreateConsumers(
+                new BufferConsumerOptions
+                {
+                    TopicName = "test", GroupName = "TestGroup", AutoCommit = false, BatchSize = 6
+                },
                 2).ToList();
         var consumer1 = consumers[0];
         var consumer2 = consumers[1];
@@ -158,7 +166,10 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
         var consumer = queue.CreateConsumer(
-            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false, BatchSize = 7 });
+            new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = false, BatchSize = 7
+            });
 
         for (var i = 0; i < 10; i++)
         {
@@ -195,7 +206,11 @@ public class MemoryBufferQueueTests
     {
         var queue = new MemoryBufferQueue<int>("test", 1);
         var producer = queue.CreateProducer();
-        var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = false });
+        var consumer =
+            queue.CreateConsumer(new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = false
+            });
 
         var task = Task.Run(async () =>
         {
@@ -221,19 +236,23 @@ public class MemoryBufferQueueTests
         var assignedPartitionsFieldInfo = typeof(MemoryBufferConsumer<int>)
             .GetField("_assignedPartitions", BindingFlags.Instance | BindingFlags.NonPublic)!;
         var group1Consumers =
-            queue.CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup1", AutoCommit = false }, 3)
+            queue.CreateConsumers(
+                    new BufferConsumerOptions { TopicName = "test", GroupName = "TestGroup1", AutoCommit = false }, 3)
                 .ToList();
 
         var group2Consumers = queue
-            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup2", AutoCommit = false }, 4)
+            .CreateConsumers(
+                new BufferConsumerOptions { TopicName = "test", GroupName = "TestGroup2", AutoCommit = false }, 4)
             .ToList();
 
         var group3Consumers = queue
-            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup3", AutoCommit = false }, 5)
+            .CreateConsumers(
+                new BufferConsumerOptions { TopicName = "test", GroupName = "TestGroup3", AutoCommit = false }, 5)
             .ToList();
 
         var group4Consumers = queue
-            .CreateConsumers(new BufferConsumerOptions { GroupName = "TestGroup4", AutoCommit = false }, 16)
+            .CreateConsumers(
+                new BufferConsumerOptions { TopicName = "test", GroupName = "TestGroup4", AutoCommit = false }, 16)
             .ToList();
 
         for (var i = 0; i < 3; i++)
@@ -273,7 +292,11 @@ public class MemoryBufferQueueTests
         var queue = new MemoryBufferQueue<int>("test", 1);
 
         var countDownEvent = new CountdownEvent(messageSize);
-        var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
+        var consumer =
+            queue.CreateConsumer(new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = true
+            });
         _ = Task.Run(async () =>
         {
             await foreach (var items in consumer.ConsumeAsync())
@@ -313,7 +336,11 @@ public class MemoryBufferQueueTests
 
         var queue = new MemoryBufferQueue<int>("test", Environment.ProcessorCount);
 
-        var consumer = queue.CreateConsumer(new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true });
+        var consumer =
+            queue.CreateConsumer(new BufferConsumerOptions
+            {
+                TopicName = "test", GroupName = "TestGroup", AutoCommit = true
+            });
         var countDownEvent = new CountdownEvent(messageSize);
         _ = Task.Run(async () =>
         {
@@ -379,6 +406,7 @@ public class MemoryBufferQueueTests
                 .CreateConsumers(
                     new BufferConsumerOptions
                     {
+                        TopicName = "test",
                         GroupName = "TestGroup" + (groupIndex + 1),
                         AutoCommit = true,
                         BatchSize = batchSize
@@ -436,7 +464,10 @@ public class MemoryBufferQueueTests
         {
             var consumers = queue
                 .CreateConsumers(
-                    new BufferConsumerOptions { GroupName = "TestGroup" + (groupIndex + 1), AutoCommit = true },
+                    new BufferConsumerOptions
+                    {
+                        TopicName = "test", GroupName = "TestGroup" + (groupIndex + 1), AutoCommit = true
+                    },
                     consumerNumberPerGroup)
                 .ToList();
 

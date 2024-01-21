@@ -15,7 +15,7 @@ public interface IBufferQueue
 
     /// <summary>
     /// Create a consumer for the specified topic.
-    /// This method can only be called once for each consumer group.
+    /// This method can only be called once for each consumer group within the same topic.
     /// Use the <see cref="CreateConsumers{T}"/> method to create multiple consumers.
     /// </summary>
     /// <param name="options">The consumer options.</param>
@@ -28,7 +28,7 @@ public interface IBufferQueue
 
     /// <summary>
     /// Create multiple consumers for the specified topic.
-    /// This method can only be called once for each consumer group.
+    /// This method can only be called once for each consumer group within the same topic.
     /// </summary>
     /// <param name="options">The consumer options.</param>
     /// <param name="consumerNumber">The number of consumers.</param>
