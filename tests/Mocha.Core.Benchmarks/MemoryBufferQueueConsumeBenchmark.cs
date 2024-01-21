@@ -31,7 +31,13 @@ public class MemoryBufferQueueConsumeBenchmark
         }
 
         _consumers = _memoryBufferQueue!.CreateConsumers(
-            new BufferConsumerOptions { GroupName = "TestGroup", AutoCommit = true, BatchSize = BatchSize, },
+            new BufferConsumerOptions
+            {
+                GroupName = "TestGroup",
+                TopicName = "test",
+                AutoCommit = true,
+                BatchSize = BatchSize,
+            },
             Environment.ProcessorCount);
     }
 

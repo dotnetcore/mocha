@@ -66,7 +66,7 @@ internal sealed class MemoryBufferSegment<T>
 
         if (_writePosition < 0 || readPosition > _writePosition)
         {
-            items = default!;
+            items = null;
             return false;
         }
 
