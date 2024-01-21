@@ -7,6 +7,8 @@ Mocha
 
 Mocha 是一个基于 [OpenTelemetry](https://opentelemetry.io) 的 APM 系统，同时提供可伸缩的可观测性数据分析和存储平台。
 
+**注意：使用 `git clone --recursive` 克隆本仓库以及子模块。**
+
 ## 快速开始
 现阶段，我们提供了 Docker Compose 文件，方便用户在本地体验我们的系统。
 

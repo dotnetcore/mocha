@@ -7,6 +7,8 @@ English | [简体中文](./README.zh-CN.md)
 
 Mocha is an application performance monitor tools based on [OpenTelemetry](https://opentelemetry.io), which also provides a scalable platform for observability data analysis and storage.
 
+**Note: Use `git clone --recursive` to clone this repository with submodules.**
+
 ## Quick Start
 In the beta phase, we provide a Docker Compose file for users to experience our system locally.
 
