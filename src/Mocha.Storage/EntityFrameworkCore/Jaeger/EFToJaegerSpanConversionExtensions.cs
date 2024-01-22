@@ -1,7 +1,6 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
-using Mocha.Core.Extensions;
 using Mocha.Core.Storage.Jaeger.Trace;
 using Mocha.Storage.EntityFrameworkCore.Trace;
 

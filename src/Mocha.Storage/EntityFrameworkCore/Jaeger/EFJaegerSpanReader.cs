@@ -10,28 +10,33 @@ namespace Mocha.Storage.EntityFrameworkCore.Jaeger;
 
 internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory) : IJaegerSpanReader
 {
-    public async Task<string[]> GetServicesAsync()
+    public async Task<IEnumerable<string>> GetServicesAsync()
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        var services = await context.Spans.Select(s => s.ServiceName).Distinct().ToArrayAsync();
+        var services = await context.Spans
+            .AsNoTracking()
+            .Select(s => s.ServiceName)
+            .Distinct()
+            .ToListAsync();
         return services;
     }
 
-    public async Task<string[]> GetOperationsAsync(string serviceName)
+    public async Task<IEnumerable<string>> GetOperationsAsync(string serviceName)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
         var operations = await context.Spans
+            .AsNoTracking()
             .Where(s => s.ServiceName == serviceName)
             .Select(s => s.SpanName)
             .Distinct()
-            .ToArrayAsync();
+            .ToListAsync();
         return operations;
     }
 
     public async Task<JaegerTrace[]> FindTracesAsync(JaegerTraceQueryParameters query)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        var queryableSpans = context.Spans.AsQueryable();
+        var queryableSpans = context.Spans.AsNoTracking();
 
         if (!string.IsNullOrEmpty(query.ServiceName))
         {
@@ -99,7 +104,7 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        var queryableSpans = context.Spans.AsQueryable();
+        var queryableSpans = context.Spans.AsNoTracking();
 
         if (traceIDs?.Any() ?? false)
         {
@@ -128,18 +133,22 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
         var spanIds = spans.Select(s => s.SpanId).ToArray();
 
         var spanAttributes = await context.SpanAttributes
+            .AsNoTracking()
             .Where(a => spanIds.Contains(a.SpanId))
             .ToListAsync();
 
         var resourceAttributes = await context.ResourceAttributes
+            .AsNoTracking()
             .Where(a => spanIds.Contains(a.SpanId))
             .ToListAsync();
 
         var spanEvents = await context.SpanEvents
+            .AsNoTracking()
             .Where(e => spanIds.Contains(e.SpanId))
             .ToListAsync();
 
         var spanEventAttributes = await context.SpanEventAttributes
+            .AsNoTracking()
             .Where(a => spanIds.Contains(a.SpanId))
             .ToListAsync();
 
