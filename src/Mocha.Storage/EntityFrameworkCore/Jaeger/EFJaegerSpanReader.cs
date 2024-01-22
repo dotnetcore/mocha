@@ -123,25 +123,25 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
         IQueryable<EFSpan> queryableSpans,
         MochaContext context)
     {
-        var spans = await queryableSpans.ToArrayAsync();
+        var spans = await queryableSpans.ToListAsync();
 
         var spanIds = spans.Select(s => s.SpanId).ToArray();
 
         var spanAttributes = await context.SpanAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var resourceAttributes = await context.ResourceAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var spanEvents = await context.SpanEvents
             .Where(e => spanIds.Contains(e.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var spanEventAttributes = await context.SpanEventAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var jaegerTraces = spans.ToJaegerTraces(
             spanAttributes, resourceAttributes, spanEvents, spanEventAttributes).ToArray();
