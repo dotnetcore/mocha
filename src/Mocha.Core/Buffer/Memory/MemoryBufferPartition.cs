@@ -11,10 +11,10 @@ namespace Mocha.Core.Buffer.Memory;
 [DebuggerTypeProxy(typeof(MemoryBufferPartition<>.DebugView))]
 internal sealed class MemoryBufferPartition<T>
 {
-    // internal for testing
-    internal static int SegmentLength = 1024;
+    // internal for test
+    internal readonly int _segmentLength;
 
-    private static int _idIncreasement;
+    private static int _idIncreacement;
 
     private volatile MemoryBufferSegment<T> _head;
     private volatile MemoryBufferSegment<T> _tail;
@@ -25,10 +25,11 @@ internal sealed class MemoryBufferPartition<T>
 
     private readonly object _createSegmentLock;
 
-    public MemoryBufferPartition()
+    public MemoryBufferPartition(int segmentLength = 1024)
     {
-        PartitionId = _idIncreasement++;
-        _head = _tail = new MemoryBufferSegment<T>(SegmentLength, default);
+        _segmentLength = segmentLength;
+        PartitionId = _idIncreacement++;
+        _head = _tail = new MemoryBufferSegment<T>(_segmentLength, default);
         _consumerReaders = new ConcurrentDictionary<string, Reader>();
         _consumers = new HashSet<MemoryBufferConsumer<T>>();
 
@@ -77,7 +78,7 @@ internal sealed class MemoryBufferPartition<T>
                 var newSegmentStartOffset = tail.EndOffset + 1;
                 var newSegment = TryRecycleSegment(newSegmentStartOffset, out var recycledSegment)
                     ? recycledSegment
-                    : new MemoryBufferSegment<T>(SegmentLength, newSegmentStartOffset);
+                    : new MemoryBufferSegment<T>(_segmentLength, newSegmentStartOffset);
                 tail.NextSegment = newSegment;
                 _tail = newSegment;
             }
