@@ -14,8 +14,6 @@ internal sealed class MemoryBufferPartition<T>
     // internal for test
     internal readonly int _segmentLength;
 
-    private static int _idIncreacement;
-
     private volatile MemoryBufferSegment<T> _head;
     private volatile MemoryBufferSegment<T> _tail;
 
@@ -25,10 +23,10 @@ internal sealed class MemoryBufferPartition<T>
 
     private readonly object _createSegmentLock;
 
-    public MemoryBufferPartition(int segmentLength = 1024)
+    public MemoryBufferPartition(int id, int segmentLength = 1024)
     {
         _segmentLength = segmentLength;
-        PartitionId = _idIncreacement++;
+        PartitionId = id;
         _head = _tail = new MemoryBufferSegment<T>(_segmentLength, default);
         _consumerReaders = new ConcurrentDictionary<string, Reader>();
         _consumers = new HashSet<MemoryBufferConsumer<T>>();

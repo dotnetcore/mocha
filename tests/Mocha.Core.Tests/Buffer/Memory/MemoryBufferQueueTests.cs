@@ -9,7 +9,7 @@ namespace Mocha.Core.Tests.Buffer.Memory;
 
 public class MemoryBufferQueueTests
 {
-    private static int MemoryBufferPartitionSegmentLength => new MemoryBufferPartition<int>()._segmentLength;
+    private static int MemoryBufferPartitionSegmentLength => new MemoryBufferPartition<int>(0)._segmentLength;
 
     [Fact]
     public async Task Produce_And_Consume()
