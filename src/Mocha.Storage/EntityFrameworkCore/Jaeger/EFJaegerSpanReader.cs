@@ -10,25 +10,25 @@ namespace Mocha.Storage.EntityFrameworkCore.Jaeger;
 
 internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory) : IJaegerSpanReader
 {
-    public async Task<string[]> GetServicesAsync()
+    public async Task<IEnumerable<string>> GetServicesAsync()
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        var services = await context.Spans.Select(s => s.ServiceName).Distinct().ToArrayAsync();
+        var services = await context.Spans.Select(s => s.ServiceName).Distinct().ToListAsync();
         return services;
     }
 
-    public async Task<string[]> GetOperationsAsync(string serviceName)
+    public async Task<IEnumerable<string>> GetOperationsAsync(string serviceName)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
         var operations = await context.Spans
             .Where(s => s.ServiceName == serviceName)
             .Select(s => s.SpanName)
             .Distinct()
-            .ToArrayAsync();
+            .ToListAsync();
         return operations;
     }
 
-    public async Task<JaegerTrace[]> FindTracesAsync(JaegerTraceQueryParameters query)
+    public async Task<IEnumerable<JaegerTrace>> FindTracesAsync(JaegerTraceQueryParameters query)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
         var queryableSpans = context.Spans.AsQueryable();
@@ -92,7 +92,7 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
         return await QueryJaegerTracesAsync(queryableSpans, context);
     }
 
-    public async Task<JaegerTrace[]> FindTracesAsync(
+    public async Task<IEnumerable<JaegerTrace>> FindTracesAsync(
         string[]? traceIDs,
         ulong? startTimeUnixNano,
         ulong? endTimeUnixNano)
@@ -119,29 +119,29 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaContext> contextFactory
         return await QueryJaegerTracesAsync(queryableSpans, context);
     }
 
-    private static async Task<JaegerTrace[]> QueryJaegerTracesAsync(
+    private static async Task<IEnumerable<JaegerTrace>> QueryJaegerTracesAsync(
         IQueryable<EFSpan> queryableSpans,
         MochaContext context)
     {
-        var spans = await queryableSpans.ToArrayAsync();
+        var spans = await queryableSpans.ToListAsync();
 
         var spanIds = spans.Select(s => s.SpanId).ToArray();
 
         var spanAttributes = await context.SpanAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var resourceAttributes = await context.ResourceAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var spanEvents = await context.SpanEvents
             .Where(e => spanIds.Contains(e.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var spanEventAttributes = await context.SpanEventAttributes
             .Where(a => spanIds.Contains(a.SpanId))
-            .ToArrayAsync();
+            .ToListAsync();
 
         var jaegerTraces = spans.ToJaegerTraces(
             spanAttributes, resourceAttributes, spanEvents, spanEventAttributes).ToArray();

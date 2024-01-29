@@ -364,7 +364,7 @@ public class EFJaegerSpanReaderTests : IDisposable
             now.AddMinutes(-2).ToUnixTimeNanoseconds(),
             now.AddMinutes(2).ToUnixTimeNanoseconds());
         Assert.Single(traces);
-        Assert.Equal("TraceId1", traces[0].TraceID);
+        Assert.Equal("TraceId1", traces.First().TraceID);
     }
 
     public void Dispose()

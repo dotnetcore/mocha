@@ -12,19 +12,19 @@ namespace Mocha.Query.Jaeger.Controllers
     public class TraceController(IJaegerSpanReader spanReader) : Controller
     {
         [HttpGet("services")]
-        public async Task<JaegerResponse<string[]>> GetSeries()
+        public async Task<JaegerResponse<IEnumerable<string>>> GetSeries()
         {
             return new(await spanReader.GetServicesAsync());
         }
 
         [HttpGet("services/{serviceName}/operations")]
-        public async Task<JaegerResponse<string[]>> GetOperations(string serviceName)
+        public async Task<JaegerResponse<IEnumerable<string>>> GetOperations(string serviceName)
         {
             return new(await spanReader.GetOperationsAsync(serviceName));
         }
 
         [HttpGet("traces")]
-        public async Task<JaegerResponse<JaegerTrace[]>> FindTraces([FromQuery] FindTracesRequest request)
+        public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> FindTraces([FromQuery] FindTracesRequest request)
         {
             static ulong? ParseAsNanoseconds(string? input)
             {
@@ -71,7 +71,7 @@ namespace Mocha.Query.Jaeger.Controllers
                 startTimeMax = now;
             }
 
-            JaegerTrace[] traces;
+            IEnumerable<JaegerTrace> traces;
 
             if (request.TraceID?.Any() ?? false)
             {
@@ -99,26 +99,26 @@ namespace Mocha.Query.Jaeger.Controllers
             }
 
             JaegerResponseError? error = null;
-            if (traces.Length == 0)
+            if (traces.Any() is false)
             {
                 error = new JaegerResponseError { Code = (int)HttpStatusCode.NotFound, Message = "trace not found" };
             }
 
-            return new JaegerResponse<JaegerTrace[]>(traces) { Error = error };
+            return new JaegerResponse<IEnumerable<JaegerTrace>>(traces) { Error = error };
         }
 
         [HttpGet("traces/{traceID}")]
-        public async Task<JaegerResponse<JaegerTrace[]>> GetTrace(string traceID)
+        public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> GetTrace(string traceID)
         {
             var traces = await spanReader.FindTracesAsync([traceID]);
 
             JaegerResponseError? error = null;
-            if (traces.Length == 0)
+            if (traces.Any() is false)
             {
                 error = new JaegerResponseError { Code = (int)HttpStatusCode.NotFound, Message = "trace not found" };
             }
 
-            return new JaegerResponse<JaegerTrace[]>(traces) { Error = error };
+            return new JaegerResponse<IEnumerable<JaegerTrace>>(traces) { Error = error };
         }
     }
 }
