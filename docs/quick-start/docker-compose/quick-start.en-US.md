@@ -32,7 +32,7 @@ After logging in, click the menu on the left, select Data Sources, and then clic
 Select Jaeger.
 ![](./asserts/add-jaeger-data-source-3.png)
 
-Configure the URL of the Jaeger data source as `http://jaeger-query:5775`.
+Configure the URL of the Jaeger data source as `http://query:5775/jaeger`.
 
 ![](./asserts/add-jaeger-data-source-4.png)
 

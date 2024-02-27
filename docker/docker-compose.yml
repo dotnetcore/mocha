@@ -55,11 +55,11 @@ services:
     networks:
       - mocha
 
-  jaeger-query:
+  query:
     build:
       context: ..
-      dockerfile: ./docker/jaeger-query/Dockerfile
-    container_name: mocha-jaeger-query
+      dockerfile: ./docker/query/Dockerfile
+    container_name: mocha-query
     ports:
       - "5775:5775"
     expose:
