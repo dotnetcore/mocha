@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Mocha.Core.Extensions;
 using Mocha.Core.Storage.Jaeger;
 using Mocha.Core.Storage.Jaeger.Trace;
-using Mocha.Query.Jagger.DTOs;
+using Mocha.Query.Jaeger.DTOs;
 
-namespace Mocha.Query.Jagger.Controllers;
+namespace Mocha.Query.Jaeger.Controllers;
 
 [Route("/jaeger/api")]
 public class JaegerTraceController(IJaegerSpanReader spanReader) : Controller

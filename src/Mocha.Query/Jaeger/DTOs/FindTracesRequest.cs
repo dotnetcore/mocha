@@ -1,4 +1,4 @@
-namespace Mocha.Query.Jagger.DTOs
+namespace Mocha.Query.Jaeger.DTOs
 {
     public class FindTracesRequest
     {
