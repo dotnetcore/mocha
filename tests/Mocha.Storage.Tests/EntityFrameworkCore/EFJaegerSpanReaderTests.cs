@@ -171,6 +171,18 @@ public class EFJaegerSpanReaderTests : IDisposable
             }
         };
 
+        var efResourceAttributes = new List<EFResourceAttribute>
+        {
+            new()
+            {
+                TraceId = "TraceId1",
+                SpanId = "SpanId1",
+                Key = "service.name",
+                ValueType = EFAttributeValueType.StringValue,
+                Value = "ServiceName1"
+            }
+        };
+
         var efSpanAttributes = new List<EFSpanAttribute>
         {
             new()
@@ -286,6 +298,7 @@ public class EFJaegerSpanReaderTests : IDisposable
 
         await using var context = await _dbContextFactory.CreateDbContextAsync();
         await context.Spans.AddRangeAsync(efSpans);
+        await context.ResourceAttributes.AddRangeAsync(efResourceAttributes);
         await context.SpanAttributes.AddRangeAsync(efSpanAttributes);
         await context.SpanEvents.AddRangeAsync(efSpanEvents);
         await context.SpanEventAttributes.AddRangeAsync(efSpanEventAttributes);
@@ -310,7 +323,16 @@ public class EFJaegerSpanReaderTests : IDisposable
         };
 
         var traces = await _jaegerSpanReader.FindTracesAsync(queryParameters);
-        Assert.Single(traces);
+        var trace = traces.Single();
+        var span = trace.Spans.Single();
+        var process = trace.Processes.Single();
+
+        Assert.Equal("TraceId1", trace.TraceID);
+        Assert.Equal("SpanId1", span.SpanID);
+        Assert.Equal("SpanName1", span.OperationName);
+        Assert.Equal("ServiceName1", process.Value.ServiceName);
+        Assert.Equivalent(new JaegerTag { Key = "span.kind", Type = JaegerTagType.String, Value = "server" },
+            span.Tags.Single(t => t.Key == "span.kind"));
     }
 
     [Fact]
