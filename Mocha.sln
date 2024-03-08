@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core.Benchmarks", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage.Tests", "tests\Mocha.Storage.Tests\Mocha.Storage.Tests.csproj", "{FC0D810E-4ACC-4567-95D8-D7F617E412FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Query.Jaeger", "src\Mocha.Query.Jaeger\Mocha.Query.Jaeger.csproj", "{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Query", "src\Mocha.Query\Mocha.Query.csproj", "{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{53AF2923-4CB8-44C8-885B-B0EEB8574FEB}"
 EndProject
@@ -51,9 +51,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "distributor", "distributor"
 		docker\distributor\Dockerfile = docker\distributor\Dockerfile
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jaeger-query", "jaeger-query", "{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "query", "query", "{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C}"
 	ProjectSection(SolutionItems) = preProject
-		docker\jaeger-query\Dockerfile = docker\jaeger-query\Dockerfile
+		docker\jaeger-query\Dockerfile = docker\query\Dockerfile
 	EndProjectSection
 EndProject
 Global
