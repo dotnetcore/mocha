@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Mocha.Storage;
 using Mocha.Storage.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
