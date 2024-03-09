@@ -22,7 +22,7 @@ internal sealed class MemoryBufferQueue<T> : IBufferQueue<T>
         _partitions = new MemoryBufferPartition<T>[partitionNumber];
         for (var i = 0; i < partitionNumber; i++)
         {
-            _partitions[i] = new MemoryBufferPartition<T>();
+            _partitions[i] = new MemoryBufferPartition<T>(i);
         }
 
         _producer = new MemoryBufferProducer<T>(topicName, _partitions);

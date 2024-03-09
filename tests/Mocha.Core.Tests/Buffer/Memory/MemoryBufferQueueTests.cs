@@ -9,14 +9,7 @@ namespace Mocha.Core.Tests.Buffer.Memory;
 
 public class MemoryBufferQueueTests
 {
-    public MemoryBufferQueueTests()
-    {
-        // Avoid deadlock when testing,
-        // xunit may set the SynchronizationContext to a single-threaded context
-        SynchronizationContext.SetSynchronizationContext(null);
-        // Avoid the impact of the default segment length on the test
-        MemoryBufferPartition<int>.SegmentLength = 1024;
-    }
+    private static int MemoryBufferPartitionSegmentLength => new MemoryBufferPartition<int>(0)._segmentLength;
 
     [Fact]
     public async Task Produce_And_Consume()
@@ -331,7 +324,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public void Concurrent_Producer_Single_Partition()
     {
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
+        var messageSize = MemoryBufferPartitionSegmentLength * 4;
 
         var queue = new MemoryBufferQueue<int>("test", 1);
 
@@ -378,7 +371,7 @@ public class MemoryBufferQueueTests
     [Fact]
     public void Concurrent_Producer_Multiple_Partition()
     {
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
+        var messageSize = MemoryBufferPartitionSegmentLength * 4;
 
         var queue = new MemoryBufferQueue<int>("test", Environment.ProcessorCount);
 
@@ -440,7 +433,7 @@ public class MemoryBufferQueueTests
     [InlineData(3, 10000)]
     public void Concurrent_Consumer_Multiple_Groups(int groupNumber, int batchSize)
     {
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
+        var messageSize = MemoryBufferPartitionSegmentLength * 4;
         var partitionNumber = Environment.ProcessorCount * 2;
         var consumerNumberPerGroup = Environment.ProcessorCount;
 
@@ -500,7 +493,7 @@ public class MemoryBufferQueueTests
     [InlineData(3)]
     public void Concurrent_Producer_And_Concurrent_Consumer_Multiple_Groups(int groupNumber)
     {
-        var messageSize = MemoryBufferPartition<int>.SegmentLength * 4;
+        var messageSize = MemoryBufferPartitionSegmentLength * 4;
         var partitionNumber = Environment.ProcessorCount * 2;
         var consumerNumberPerGroup = Environment.ProcessorCount;
 

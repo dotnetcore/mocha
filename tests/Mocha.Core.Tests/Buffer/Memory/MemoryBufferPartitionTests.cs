@@ -11,9 +11,7 @@ public class MemoryBufferPartitionTests
     [Fact]
     public void Enqueue_And_TryPull()
     {
-        MemoryBufferPartition<int>.SegmentLength = 2;
-
-        var partition = new MemoryBufferPartition<int>();
+        var partition = new MemoryBufferPartition<int>(0, 2);
 
         for (var i = 0; i < 12; i++)
         {
@@ -47,9 +45,7 @@ public class MemoryBufferPartitionTests
     [Fact]
     public void Repeatable_Pull_If_Not_Commit()
     {
-        MemoryBufferPartition<int>.SegmentLength = 2;
-
-        var partition = new MemoryBufferPartition<int>();
+        var partition = new MemoryBufferPartition<int>(0, 2);
 
         for (var i = 0; i < 11; i++)
         {
@@ -86,9 +82,7 @@ public class MemoryBufferPartitionTests
     [Fact]
     public void Segment_Will_Be_Recycled_If_All_Consumers_Consumed_Single_Group()
     {
-        MemoryBufferPartition<int>.SegmentLength = 3;
-
-        var partition = new MemoryBufferPartition<int>();
+        var partition = new MemoryBufferPartition<int>(0, 3);
 
         for (var i = 0; i < 9; i++)
         {
@@ -122,9 +116,7 @@ public class MemoryBufferPartitionTests
     [Fact]
     public void Segment_Will_Be_Recycled_If_All_Consumers_Consumed_MultipleGroup()
     {
-        MemoryBufferPartition<int>.SegmentLength = 3;
-
-        var partition = new MemoryBufferPartition<int>();
+        var partition = new MemoryBufferPartition<int>(0, 3);
 
         for (var i = 0; i < 9; i++)
         {
@@ -156,9 +148,7 @@ public class MemoryBufferPartitionTests
     [Fact]
     public void Segment_Will_Not_Be_Recycled_If_Not_All_Consumers_Consumed_MultipleGroup()
     {
-        MemoryBufferPartition<int>.SegmentLength = 3;
-
-        var partition = new MemoryBufferPartition<int>();
+        var partition = new MemoryBufferPartition<int>(0, 3);
 
         for (var i = 0; i < 6; i++)
         {

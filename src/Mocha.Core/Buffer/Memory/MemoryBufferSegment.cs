@@ -72,6 +72,13 @@ internal sealed class MemoryBufferSegment<T>
 
         var writePosition = Math.Min(_writePosition, _slots.Length - 1);
         var actualCount = Math.Min(count, writePosition - readPosition + 1);
+        var wholeSegment = readPosition == 0 && actualCount == _slots.Length;
+        if (wholeSegment)
+        {
+            items = _slots;
+            return true;
+        }
+
         items = _slots[readPosition..(readPosition + actualCount)];
         return true;
     }
