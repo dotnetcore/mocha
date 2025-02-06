@@ -4,8 +4,16 @@ EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
+
+# Install OpenJDK 17 for Antlr4
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /src
 COPY ["src/Mocha.Query/Mocha.Query.csproj", "src/Mocha.Query/"]
+COPY ["src/Mocha.Antlr4.Generated/Mocha.Antlr4.Generated.csproj", "src/Mocha.Antlr4.Generated/"]
 COPY ["src/Mocha.Core/Mocha.Core.csproj", "src/Mocha.Core/"]
 COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "src/Mocha.Protocol.Generated/"]
 COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "src/Mocha.Storage/"]

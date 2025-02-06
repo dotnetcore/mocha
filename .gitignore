@@ -400,3 +400,6 @@ FodyWeavers.xsd
 .idea
 
 generated/
+
+# Antlr4
+src/Mocha.Antlr4.Generated/PromoQL/gen/

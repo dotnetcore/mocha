@@ -8,25 +8,30 @@ using Mocha.Core.Storage.Jaeger;
 using Mocha.Core.Storage.Jaeger.Trace;
 using Mocha.Storage.EntityFrameworkCore;
 using Mocha.Storage.EntityFrameworkCore.Trace;
+using Mocha.Storage.EntityFrameworkCore.Trace.Models;
 
 namespace Mocha.Storage.Tests.EntityFrameworkCore;
 
 public class EFJaegerSpanReaderTests : IDisposable
 {
-    private readonly IDbContextFactory<MochaContext> _dbContextFactory;
+    private readonly IDbContextFactory<MochaTraceContext> _dbContextFactory;
     private readonly IJaegerSpanReader _jaegerSpanReader;
     private readonly ServiceProvider _serviceProvider;
 
     public EFJaegerSpanReaderTests()
     {
         var services = new ServiceCollection();
-        services.AddStorage(builder =>
-        {
-            builder.UseEntityFrameworkCore(options => { options.UseInMemoryDatabase(Guid.NewGuid().ToString()); });
-        });
+        services.AddStorage()
+            .WithTracing(tracingOptions =>
+            {
+                tracingOptions.UseEntityFrameworkCore(efOptions =>
+                {
+                    efOptions.UseInMemoryDatabase(Guid.NewGuid().ToString());
+                });
+            });
         _serviceProvider = services.BuildServiceProvider();
         _jaegerSpanReader = _serviceProvider.GetRequiredService<IJaegerSpanReader>();
-        _dbContextFactory = _serviceProvider.GetRequiredService<IDbContextFactory<MochaContext>>();
+        _dbContextFactory = _serviceProvider.GetRequiredService<IDbContextFactory<MochaTraceContext>>();
     }
 
     [Fact]

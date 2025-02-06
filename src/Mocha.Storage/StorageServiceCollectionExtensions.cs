@@ -7,9 +7,8 @@ namespace Mocha.Storage;
 
 public static class StorageServiceCollectionExtensions
 {
-    public static IServiceCollection AddStorage(this IServiceCollection services, Action<StorageOptionsBuilder> configure)
+    public static StorageOptionsBuilder AddStorage(this IServiceCollection services)
     {
-        configure(new StorageOptionsBuilder(services));
-        return services;
+        return new StorageOptionsBuilder(services);
     }
 }

@@ -8,26 +8,28 @@ using Mocha.Core.Models.Trace;
 using Mocha.Core.Storage;
 using Mocha.Storage.EntityFrameworkCore;
 using Mocha.Storage.EntityFrameworkCore.Trace;
+using Mocha.Storage.EntityFrameworkCore.Trace.Models;
 
 namespace Mocha.Storage.Tests.EntityFrameworkCore;
 
 public class EFSpanWriterTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly ISpanWriter _spanWriter;
+    private readonly ITelemetryDataWriter<MochaSpan> _spanWriter;
 
     public EFSpanWriterTests()
     {
         var services = new ServiceCollection();
-        services.AddStorage(builder =>
-        {
-            builder.UseEntityFrameworkCore(options =>
+        services.AddStorage()
+            .WithTracing(tracing =>
             {
-                options.UseInMemoryDatabase(Guid.NewGuid().ToString());
+                tracing.UseEntityFrameworkCore(options =>
+                {
+                    options.UseInMemoryDatabase("Mocha");
+                });
             });
-        });
         _serviceProvider = services.BuildServiceProvider();
-        _spanWriter = _serviceProvider.GetRequiredService<ISpanWriter>();
+        _spanWriter = _serviceProvider.GetRequiredService<ITelemetryDataWriter<MochaSpan>>();
     }
 
     [Fact]
@@ -236,7 +238,7 @@ public class EFSpanWriterTests : IDisposable
 
         await _spanWriter.WriteAsync(spans);
 
-        var dbContextFactory = _serviceProvider.GetRequiredService<IDbContextFactory<MochaContext>>();
+        var dbContextFactory = _serviceProvider.GetRequiredService<IDbContextFactory<MochaTraceContext>>();
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var efSpans = context.Spans.ToList();
