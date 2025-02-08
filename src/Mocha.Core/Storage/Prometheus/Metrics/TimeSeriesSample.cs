@@ -5,7 +5,7 @@ namespace Mocha.Core.Storage.Prometheus.Metrics;
 
 public class TimeSeriesSample
 {
-    public required long TimestampUnixSeconds { get; init; }
+    public required long TimestampUnixSec { get; init; }
 
     public required double Value { get; init; }
 }

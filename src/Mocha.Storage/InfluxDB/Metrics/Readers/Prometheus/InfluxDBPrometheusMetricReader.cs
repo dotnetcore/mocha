@@ -83,7 +83,7 @@ public class InfluxDbPrometheusMetricReader(
                     grouped.Add(labels, samples);
                 }
 
-                samples.Add(new TimeSeriesSample { Value = value, TimestampUnixSeconds = timestamp });
+                samples.Add(new TimeSeriesSample { Value = value, TimestampUnixSec = timestamp });
             }
         }
 

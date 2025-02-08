@@ -105,7 +105,6 @@ public class PrometheusController() : Controller
         return new QueryResponse<List<string>> { Status = ResultStatus.Success, Data = labelValues.ToList() };
     }
 
-    [HttpGet]
     [HttpPost]
     [Route("series")]
     public Task<IActionResult> GetSeries(
@@ -116,15 +115,29 @@ public class PrometheusController() : Controller
         throw new NotImplementedException();
     }
 
-    [HttpGet]
     [HttpPost]
     [Route("query")]
-    public Task<IActionResult> Query(
+    public async Task<QueryResponse<ResponseData>> Query(
         [FromForm] string query,
         [FromForm] long? time,
-        [FromForm] string? timeout)
+        [FromForm] string? timeout,
+        [FromServices] IPromQLEngine engine)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return InValidParameterResponse<ResponseData>(nameof(query), "query is required");
+        }
+
+        // TODO: parse timeout
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        var cancellationToken = CancellationTokenSource
+            .CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token).Token;
+
+        time ??= DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var result = await engine.QueryInstantAsync(query, time.Value, cancellationToken);
+
+        return SuccessResponse(result);
     }
 
     [HttpGet]
@@ -166,26 +179,7 @@ public class PrometheusController() : Controller
         var result = await engine.QueryRangeAsync(
             query, start, end, step > 0 ? TimeSpan.FromSeconds(step.Value) : null, cancellationToken);
 
-        var matrixResult = result as MatrixResult;
-        return new QueryResponse<ResponseData>
-        {
-            Status = ResultStatus.Success,
-            Data = new MatrixRspData
-            {
-                ResultType = result.Type,
-                Result = matrixResult.Select(r => new MatrixDataDTO
-                {
-                    Metric = r.Metric,
-                    Values = r.Points.Select(p =>
-                    {
-                        var values = new object[2];
-                        values[0] = p.TimestampUnixSeconds;
-                        values[1] = p.Value.ToString();
-                        return values;
-                    }).ToList()
-                }).ToList()
-            }
-        };
+        return SuccessResponse(result);
     }
 
     [HttpGet]
@@ -209,13 +203,51 @@ public class PrometheusController() : Controller
         };
     }
 
-    private QueryResponse<T> InValidParameterResponse<T>(string parameter, string message)
+    private static QueryResponse<T> InValidParameterResponse<T>(string parameter, string message)
     {
         return new QueryResponse<T>
         {
             Status = ResultStatus.Error,
             ErrorType = ErrorType.BadData,
             Error = $"Invalid parameter: {parameter}, {message}"
+        };
+    }
+
+    private static QueryResponse<ResponseData> SuccessResponse(IParseResult parseResult)
+    {
+        object data = parseResult switch
+        {
+            MatrixResult matrixResult => matrixResult.Select(s => new MatrixDataDTO
+            {
+                Metric = s.Metric,
+                Values = s.Points.Select(p =>
+                {
+                    var values = new object[2];
+                    values[0] = p.TimestampUnixSec;
+                    values[1] = p.Value.ToString();
+                    return values;
+                }).ToList()
+            }).ToList(),
+            VectorResult vectorResult => vectorResult.Select(s => new VectorDataDTO
+            {
+                Metric = s.Metric,
+                Value = [s.Point.TimestampUnixSec, s.Point.Value.ToString()]
+            }).ToList(),
+            ScalarResult scalarResult => new object[]
+            {
+                scalarResult.TimestampUnixSec, scalarResult.Value.ToString()
+            },
+            _ => throw new NotSupportedException($"Unsupported result type: {parseResult.GetType()}")
+        };
+
+        return new QueryResponse<ResponseData>
+        {
+            Status = ResultStatus.Success,
+            Data = new ResponseData
+            {
+                ResultType = parseResult.Type,
+                Result = data
+            }
         };
     }
 }

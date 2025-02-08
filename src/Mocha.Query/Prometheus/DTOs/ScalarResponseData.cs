@@ -3,7 +3,7 @@
 
 namespace Mocha.Query.Prometheus.DTOs;
 
-public class ScalarRspData : ResponseData
+public class ScalarResponseData : ResponseData
 {
 
 }

@@ -7,10 +7,14 @@ namespace Mocha.Query.Prometheus.PromQL.Engine;
 
 public interface IPromQLEngine
 {
-    Task<IParseResult> QueryRangeAsync(
-        string query,
+    Task<MatrixResult> QueryRangeAsync(string query,
         long startTimestampUnixSec,
         long endTimestampUnixSec,
         TimeSpan? step,
+        CancellationToken cancellationToken);
+
+    Task<IParseResult> QueryInstantAsync(
+        string query,
+        long timestampUnixSec,
         CancellationToken cancellationToken);
 }

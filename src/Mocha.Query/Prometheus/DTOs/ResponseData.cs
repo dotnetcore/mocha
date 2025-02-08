@@ -7,10 +7,11 @@ using Mocha.Query.Prometheus.PromQL.Values;
 
 namespace Mocha.Query.Prometheus.DTOs;
 
-[JsonPolymorphic]
-[JsonDerivedType(typeof(MatrixRspData))]
 public class ResponseData
 {
     [JsonConverter(typeof(JsonDescriptionEnumConverter<ResultValueType>))]
-    public ResultValueType ResultType { get; set; }
+    public required ResultValueType ResultType { get; set; }
+
+    public required object Result { get; set; }
 }
+

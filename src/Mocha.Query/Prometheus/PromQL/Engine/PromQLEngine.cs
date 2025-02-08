@@ -17,7 +17,7 @@ internal class PromQLEngine(
 {
     private readonly PromQLEngineOptions _options = optionsAccessor.Value;
 
-    public async Task<IParseResult> QueryRangeAsync(
+    public async Task<MatrixResult> QueryRangeAsync(
         string query,
         long startTimestampUnixSec,
         long endTimestampUnixSec,
@@ -75,32 +75,27 @@ internal class PromQLEngine(
 
         var result = evaluator.Eval(evalStatement.Expression);
 
-        if (result is not MatrixResult matrixResult)
-        {
-            throw new InvalidOperationException("Expected a matrix result.");
-        }
-
         switch (evalStatement.Expression.Type)
         {
             case PrometheusValueType.Vector:
                 // Convert matrix with one value per series into vector.
                 var vector = new VectorResult();
-                vector.AddRange(matrixResult.Select(s => new Sample
+                vector.AddRange(result.Select(s => new Sample
                 {
                     Metric = s.Metric,
                     // Point might have a different timestamp, force it to the evaluation
                     // timestamp as that is when we ran the evaluation.
-                    Point = new DoublePoint { Value = s.Points[0].Value, TimestampUnixSeconds = timestampUnixSec }
+                    Point = new DoublePoint { Value = s.Points[0].Value, TimestampUnixSec = timestampUnixSec }
                 }));
                 return vector;
             case PrometheusValueType.Scalar:
                 return new ScalarResult
                 {
-                    Value = matrixResult[0].Points[0].Value,
+                    Value = result[0].Points[0].Value,
                     TimestampUnixSec = timestampUnixSec
                 };
             case PrometheusValueType.Matrix:
-                return matrixResult;
+                return result;
             default:
                 throw new InvalidOperationException($"Unexpected expression type: {evalStatement.Expression.Type}");
         }

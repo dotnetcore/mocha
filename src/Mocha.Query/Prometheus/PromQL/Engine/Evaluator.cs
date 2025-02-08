@@ -25,7 +25,7 @@ internal class Evaluator
 
     private int _currentSamples;
 
-    public IParseResult Eval(Expression expr)
+    public MatrixResult Eval(Expression expr)
     {
         var numSteps = (int)((EndTimestampUnixSec - StartTimestampUnixSec) / Interval.TotalSeconds) + 1;
         MatrixResult result;
@@ -91,7 +91,7 @@ internal class Evaluator
                         result = RangeEval((values, enh) =>
                         {
                             var funcCallResult = call.Func.Call(
-                                [VectorSelector(vectorSelector, enh.TimestampUnixSeconds)],
+                                [VectorSelector(vectorSelector, enh.TimestampUnixSec)],
                                 call.Args,
                                 enh);
                             return funcCallResult;
@@ -172,9 +172,9 @@ internal class Evaluator
                         // Evaluate the matrix selector for this series for this step.
                         // TODO: optimize enumeration
                         var points = timeSeries.Samples
-                            .Where(s => s.TimestampUnixSeconds >= minTs && s.TimestampUnixSeconds <= maxTs)
+                            .Where(s => s.TimestampUnixSec >= minTs && s.TimestampUnixSec <= maxTs)
                             .Select(s =>
-                                new DoublePoint { TimestampUnixSeconds = s.TimestampUnixSeconds, Value = s.Value })
+                                new DoublePoint { TimestampUnixSec = s.TimestampUnixSec, Value = s.Value })
                             .ToList();
 
                         if (points.Count <= 0)
@@ -183,7 +183,7 @@ internal class Evaluator
                         }
 
                         inMatrix[0].Points = points;
-                        enh.TimestampUnixSeconds = ts;
+                        enh.TimestampUnixSec = ts;
                         enh.Output.Clear();
                         // Make the function call.
                         var callResult = call.Func.Call(inArgs, call.Args, enh);
@@ -191,7 +191,7 @@ internal class Evaluator
                         {
                             series.Points.Add(new DoublePoint
                             {
-                                TimestampUnixSeconds = ts,
+                                TimestampUnixSec = ts,
                                 Value = callResult[0].Point.Value
                             });
                         }
@@ -328,7 +328,7 @@ internal class Evaluator
                         }
 
                         var currentSample = enumerator.Current;
-                        if (currentSample.TimestampUnixSeconds < ts)
+                        if (currentSample.TimestampUnixSec < ts)
                         {
                             continue;
                         }
@@ -336,7 +336,7 @@ internal class Evaluator
                         if (_currentSamples < MaxSamples)
                         {
                             series.Points.Add(
-                                new DoublePoint { TimestampUnixSeconds = ts, Value = currentSample.Value });
+                                new DoublePoint { TimestampUnixSec = ts, Value = currentSample.Value });
                             _currentSamples++;
                         }
                         else
@@ -416,7 +416,7 @@ internal class Evaluator
                 {
                     foreach (var point in series.Points)
                     {
-                        if (point.TimestampUnixSeconds == ts)
+                        if (point.TimestampUnixSec == ts)
                         {
                             if (_currentSamples < MaxSamples)
                             {
@@ -442,7 +442,7 @@ internal class Evaluator
             }
 
             // Make the function call.
-            enh.TimestampUnixSeconds = ts;
+            enh.TimestampUnixSec = ts;
             // Reuse result vector.
             enh.Output.Clear();
             var result = func(args, enh);
@@ -467,7 +467,7 @@ internal class Evaluator
                 var matrix = new MatrixResult(result.Count);
                 foreach (var sample in result)
                 {
-                    sample.Point.TimestampUnixSeconds = ts;
+                    sample.Point.TimestampUnixSec = ts;
                     var series = new Series { Metric = sample.Metric, Points = [sample.Point] };
                     matrix.Add(series);
                 }
@@ -485,7 +485,7 @@ internal class Evaluator
                     seriess[sample.Metric] = series;
                 }
 
-                sample.Point.TimestampUnixSeconds = ts;
+                sample.Point.TimestampUnixSec = ts;
                 series.Points.Add(sample.Point);
             }
         }
@@ -936,7 +936,7 @@ internal class Evaluator
         {
             foreach (var sample in timeSeries.Samples)
             {
-                if (sample.TimestampUnixSeconds < ts)
+                if (sample.TimestampUnixSec < ts)
                 {
                     continue;
                 }

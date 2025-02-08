@@ -262,8 +262,8 @@ internal static class Functions
         var matrixSelector = (MatrixSelector)args[0];
 
         var matrix = (MatrixResult)values[0];
-        var rangeStartMs = enh.TimestampUnixSeconds - (matrixSelector.Range + matrixSelector.Offset).TotalMilliseconds;
-        var rangeEndMs = enh.TimestampUnixSeconds - matrixSelector.Offset.TotalMilliseconds;
+        var rangeStartMs = enh.TimestampUnixSec - (matrixSelector.Range + matrixSelector.Offset).TotalMilliseconds;
+        var rangeEndMs = enh.TimestampUnixSec - matrixSelector.Offset.TotalMilliseconds;
 
         foreach (var samples in matrix)
         {
@@ -289,10 +289,10 @@ internal static class Functions
             var resultValue = lastValue - samples.Points[0].Value + counterCorrection;
 
             // Duration between first/last samples and boundary of range.
-            var durationToStartSec = (samples.Points[0].TimestampUnixSeconds - rangeStartMs) / 1000;
-            var durationToEndSec = (rangeEndMs - samples.Points[^1].TimestampUnixSeconds) / 1000;
+            var durationToStartSec = (samples.Points[0].TimestampUnixSec - rangeStartMs) / 1000;
+            var durationToEndSec = (rangeEndMs - samples.Points[^1].TimestampUnixSec) / 1000;
             var sampledIntervalSec =
-                (double)(samples.Points[^1].TimestampUnixSeconds - samples.Points[0].TimestampUnixSeconds) / 1000;
+                (double)(samples.Points[^1].TimestampUnixSec - samples.Points[0].TimestampUnixSec) / 1000;
             var averageDurationBetweenSamples = sampledIntervalSec / (samples.Points.Count - 1);
 
             if (isCounter && resultValue > 0 && samples.Points[0].Value >= 0)

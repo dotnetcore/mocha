@@ -9,7 +9,7 @@ namespace Mocha.Query.Prometheus.PromQL.Engine;
 // EvalNodeHelper stores extra information and caches for evaluating a single node across steps.
 public class EvalNodeHelper
 {
-    public long TimestampUnixSeconds { get; set; }
+    public long TimestampUnixSec { get; set; }
 
     public required VectorResult Output { get; set; }
 
