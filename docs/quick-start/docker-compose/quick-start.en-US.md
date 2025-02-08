@@ -100,6 +100,7 @@ Select the Prometheus data source that we just created.
 ![](./assets/create-metrics-dashboard-3.png)
 
 After that, you can add panels as needed to display Metrics data.
+
 ![](./assets/create-metrics-dashboard-4.png)
 
 

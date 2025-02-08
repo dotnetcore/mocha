@@ -206,8 +206,9 @@ internal static class Functions
     // holt_winters
     // hour
     // idelta
-    // increase
-    // increase(v range-vector) calculates the increase in the time series in the range vector.
+
+    // increase(v range-vector)
+    // calculates the increase in the time series in the range vector.
     public static VectorResult FuncIncrease(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
         ExtrapolatedRate(values, args, enh, true, false);
     // irate
@@ -222,7 +223,6 @@ internal static class Functions
     // month
     // predict_linear
     // quantile_over_time
-    // rate
 
     // rate(v range-vector) calculates the per-second average rate of increase of the time series in the range vector.
     internal static VectorResult FuncRate(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
@@ -240,7 +240,6 @@ internal static class Functions
     // timestamp
     // vector
     // year
-
 
     private static VectorResult SimpleFunc(IParseResult[] values, EvalNodeHelper enh, Func<double, double> func)
     {
@@ -351,15 +350,9 @@ internal static class Functions
 
     #endregion
 
-    private struct Bucket
+    private struct Bucket(double upperBound, double count)
     {
-        public Bucket(double upperBound, double count)
-        {
-            UpperBound = upperBound;
-            Count = count;
-        }
-
-        public double UpperBound;
-        public double Count;
+        public readonly double UpperBound = upperBound;
+        public double Count = count;
     }
 }
