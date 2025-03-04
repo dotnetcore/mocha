@@ -51,6 +51,11 @@ public partial class Labels : Dictionary<string, string>, IEquatable<Labels>
 
         foreach (var (key, value) in this)
         {
+            if (key == MetricName)
+            {
+                continue;
+            }
+
             var shouldAdd = on ? names.Contains(key) : !names.Contains(key);
 
             if (shouldAdd)

@@ -7,7 +7,7 @@ internal class ScalarResult : IParseResult
 {
     public ResultValueType Type => ResultValueType.Scalar;
 
-    public double Value { get; init; }
-
     public long TimestampUnixSec { get; init; }
+
+    public double Value { get; init; }
 }

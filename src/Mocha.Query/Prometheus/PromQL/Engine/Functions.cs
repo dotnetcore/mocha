@@ -1,6 +1,7 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
+using Mocha.Core.Extensions;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Ast;
@@ -45,13 +46,11 @@ internal static class Functions
         return enh.Output;
     }
 
-    // avg_over_time
-
     // ceil
     // changes
     // clamp_max
     // clamp_min
-    // count_over_time
+
     // days_in_month
     // day_of_month
     // day_of_week
@@ -211,21 +210,21 @@ internal static class Functions
     // calculates the increase in the time series in the range vector.
     public static VectorResult FuncIncrease(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
         ExtrapolatedRate(values, args, enh, true, false);
+
     // irate
     // label_replace
     // label_join
     // ln
     // log10
     // log2
-    // max_over_time
-    // min_over_time
+
     // minute
     // month
     // predict_linear
     // quantile_over_time
 
     // rate(v range-vector) calculates the per-second average rate of increase of the time series in the range vector.
-    internal static VectorResult FuncRate(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+    public static VectorResult FuncRate(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
         ExtrapolatedRate(values, args, enh, true, true);
     // resets
     // round
@@ -233,13 +232,62 @@ internal static class Functions
     // sort
     // sort_desc
     // sqrt
-    // stddev_over_time
-    // stdvar_over_time
-    // sum_over_time
+
     // time
     // timestamp
     // vector
     // year
+
+    #region <aggregation>_over_time()
+
+    // The following functions allow aggregating each series of a given range vector over time and return an instant vector with per-series aggregation results:
+
+    // avg_over_time
+    // the average value of all points in the specified interval.
+    public static VectorResult FuncAvgOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points => points.Average(v => v.Value));
+
+    // min_over_time
+    // the minimum value of all points in the specified interval.
+    public static VectorResult FuncMinOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points => points.Min(v => v.Value));
+
+    // max_over_time
+    // the maximum value of all points in the specified interval.
+    public static VectorResult FuncMaxOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points => points.Max(v => v.Value));
+
+    // sum_over_time
+    // the sum of all values in the specified interval.
+    public static VectorResult FuncSumOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points => points.Sum(v => v.Value));
+
+    // count_over_time
+    // the count of all values in the specified interval.
+    public static VectorResult FuncCountOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points => points.Count);
+
+    // stdvar_over_time
+    // the population standard variance of the values in the specified interval.
+    public static VectorResult FuncStdVarOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points =>
+            points.Select(v => v.Value)
+                .Where(v => !double.IsNaN(v))
+                .StandardVariance());
+
+    // stddev_over_time
+    // the population standard deviation of the values in the specified interval.
+    public static VectorResult FuncStdDevOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
+        AggregateOverTime(values, enh, points =>
+            points.Select(v => v.Value)
+                .Where(v => !double.IsNaN(v))
+                .StandardDeviation());
+
+    #endregion
+
+    #endregion
+
+    #region Private Methods
 
     private static VectorResult SimpleFunc(IParseResult[] values, EvalNodeHelper enh, Func<double, double> func)
     {
@@ -261,8 +309,8 @@ internal static class Functions
         var matrixSelector = (MatrixSelector)args[0];
 
         var matrix = (MatrixResult)values[0];
-        var rangeStartMs = enh.TimestampUnixSec - (matrixSelector.Range + matrixSelector.Offset).TotalMilliseconds;
-        var rangeEndMs = enh.TimestampUnixSec - matrixSelector.Offset.TotalMilliseconds;
+        var rangeStartSec = enh.TimestampUnixSec - (matrixSelector.Range + matrixSelector.Offset).TotalSeconds;
+        var rangeEndSec = enh.TimestampUnixSec - matrixSelector.Offset.TotalSeconds;
 
         foreach (var samples in matrix)
         {
@@ -288,10 +336,10 @@ internal static class Functions
             var resultValue = lastValue - samples.Points[0].Value + counterCorrection;
 
             // Duration between first/last samples and boundary of range.
-            var durationToStartSec = (samples.Points[0].TimestampUnixSec - rangeStartMs) / 1000;
-            var durationToEndSec = (rangeEndMs - samples.Points[^1].TimestampUnixSec) / 1000;
+            var durationToStartSec = samples.Points[0].TimestampUnixSec - rangeStartSec;
+            var durationToEndSec = rangeEndSec - samples.Points[^1].TimestampUnixSec;
             var sampledIntervalSec =
-                (double)(samples.Points[^1].TimestampUnixSec - samples.Points[0].TimestampUnixSec) / 1000;
+                (double)(samples.Points[^1].TimestampUnixSec - samples.Points[0].TimestampUnixSec);
             var averageDurationBetweenSamples = sampledIntervalSec / (samples.Points.Count - 1);
 
             if (isCounter && resultValue > 0 && samples.Points[0].Value >= 0)
@@ -343,6 +391,31 @@ internal static class Functions
             }
 
             enh.Output.Add(new Sample { Metric = Labels.Empty, Point = new DoublePoint { Value = resultValue } });
+        }
+
+        return enh.Output;
+    }
+
+    private static VectorResult AggregateOverTime(
+        IParseResult[] values,
+        EvalNodeHelper enh,
+        Func<List<DoublePoint>,
+            double> aggregate)
+    {
+        var matrix = (MatrixResult)values[0];
+
+        foreach (var samples in matrix)
+        {
+            if (samples.Points.Count == 0)
+            {
+                continue;
+            }
+
+            enh.Output.Add(new Sample
+            {
+                Metric = Labels.Empty,
+                Point = new DoublePoint { Value = aggregate(samples.Points) }
+            });
         }
 
         return enh.Output;

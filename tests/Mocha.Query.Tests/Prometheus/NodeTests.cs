@@ -50,7 +50,8 @@ public class NodeTests
                                 LabelMatchers =
                                 [
                                     new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                                ]
+                                ],
+                                Series = []
                             }
                         ],
                     },
@@ -90,7 +91,8 @@ public class NodeTests
                             LabelMatchers =
                             [
                                 new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                            ]
+                            ],
+                            Series = []
                         }
                     ],
                 },
@@ -116,7 +118,8 @@ public class NodeTests
                         LabelMatchers =
                         [
                             new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                        ]
+                        ],
+                        Series = []
                     }
                 ],
             },
@@ -128,7 +131,8 @@ public class NodeTests
                 LabelMatchers =
                 [
                     new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                ]
+                ],
+                Series = []
             }
         };
 

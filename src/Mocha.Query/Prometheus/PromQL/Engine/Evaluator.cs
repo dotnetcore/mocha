@@ -1,6 +1,7 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
+using Mocha.Core.Extensions;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Ast;
 using Mocha.Query.Prometheus.PromQL.Exceptions;
@@ -32,8 +33,29 @@ internal class Evaluator
         switch (expr)
         {
             case AggregateExpression aggregate:
-                if (aggregate.Parameter is StringLiteral stringLiteral)
                 {
+                    if (aggregate.Parameter is StringLiteral stringLiteral)
+                    {
+                        result = RangeEval(
+                            (args, enh) =>
+                            {
+                                if (args.Length == 0)
+                                {
+                                    return [];
+                                }
+
+                                var aggregationResult = Aggregation(aggregate.Op,
+                                    aggregate.Grouping,
+                                    aggregate.Without,
+                                    stringLiteral.Value,
+                                    (VectorResult)args[0],
+                                    enh);
+                                return aggregationResult;
+                            },
+                            aggregate.Expression);
+                        return result;
+                    }
+
                     result = RangeEval(
                         (args, enh) =>
                         {
@@ -42,10 +64,17 @@ internal class Evaluator
                                 return [];
                             }
 
-                            var aggregationResult = Aggregation(aggregate.Op,
+                            double? param = null;
+                            if (aggregate.Parameter is not null)
+                            {
+                                param = ((NumberLiteral)aggregate.Parameter).Value;
+                            }
+
+                            var aggregationResult = Aggregation(
+                                aggregate.Op,
                                 aggregate.Grouping,
                                 aggregate.Without,
-                                stringLiteral.Value,
+                                param,
                                 (VectorResult)args[0],
                                 enh);
                             return aggregationResult;
@@ -54,244 +83,250 @@ internal class Evaluator
                     return result;
                 }
 
-                result = RangeEval(
-                    (args, enh) =>
-                    {
-                        if (args.Length == 0)
-                        {
-                            return [];
-                        }
-
-                        double? param = null;
-                        if (aggregate.Parameter is not null)
-                        {
-                            param = ((NumberLiteral)aggregate.Parameter).Value;
-                        }
-
-                        var aggregationResult = Aggregation(
-                            aggregate.Op,
-                            aggregate.Grouping,
-                            aggregate.Without,
-                            param,
-                            (VectorResult)args[0],
-                            enh);
-                        return aggregationResult;
-                    },
-                    aggregate.Expression);
-                return result;
-
             case Call call:
-                if (call.Func.Name == FunctionName.Timestamp)
                 {
-                    // Matrix evaluation always returns the evaluation time,
-                    // so this function needs special handling when given
-                    // a vector selector.
-                    if (call.Args[0] is VectorSelector vectorSelector)
+                    if (call.Func.Name == FunctionName.Timestamp)
                     {
-                        result = RangeEval((values, enh) =>
+                        // Matrix evaluation always returns the evaluation time,
+                        // so this function needs special handling when given
+                        // a vector selector.
+                        if (call.Args[0] is VectorSelector vectorSelector)
                         {
-                            var funcCallResult = call.Func.Call(
-                                [VectorSelector(vectorSelector, enh.TimestampUnixSec)],
-                                call.Args,
-                                enh);
-                            return funcCallResult;
-                        });
+                            result = RangeEval((_, enh) =>
+                            {
+                                var funcCallResult = call.Func.Call(
+                                    [VectorSelector(vectorSelector, enh.TimestampUnixSec)],
+                                    call.Args,
+                                    enh);
+                                return funcCallResult;
+                            });
+                            return result;
+                        }
+                    }
+
+                    // Check if the function has a matrix argument.
+                    var matrixArgIndex = Array.FindIndex(call.Args, e => e is MatrixSelector);
+                    var matrixArg = matrixArgIndex != -1;
+
+                    if (!matrixArg)
+                    {
+                        // Does not have a matrix argument.
+                        result = RangeEval((values, enh) => call.Func.Call(values, call.Args, enh), call.Args);
                         return result;
                     }
-                }
 
-                // Check if the function has a matrix argument.
-                var matrixArgIndex = Array.FindIndex(call.Args, e => e is MatrixSelector);
-                var matrixArg = matrixArgIndex != -1;
-
-                if (!matrixArg)
-                {
-                    // Does not have a matrix argument.
-                    result = RangeEval((values, enh) => call.Func.Call(values, call.Args, enh), call.Args);
-                    return result;
-                }
-
-                var inArgs = new IParseResult[call.Args.Length];
-                // Evaluate any non-matrix arguments.
-                var otherArgs = new MatrixResult[call.Args.Length];
-                var otherInArgs = new VectorResult[call.Args.Length];
-                for (var i = 0; i < call.Args.Length; i++)
-                {
-                    if (i == matrixArgIndex)
+                    var inArgs = new IParseResult[call.Args.Length];
+                    // Evaluate any non-matrix arguments.
+                    var otherArgs = new MatrixResult[call.Args.Length];
+                    var otherInArgs = new VectorResult[call.Args.Length];
+                    for (var i = 0; i < call.Args.Length; i++)
                     {
-                        continue;
-                    }
-
-                    otherArgs[i] = (MatrixResult)Eval(call.Args[i]);
-                    otherInArgs[i] = [];
-                    inArgs[i] = otherInArgs[i];
-                }
-
-                var matrixSelector = (MatrixSelector)call.Args[matrixArgIndex];
-                result = new MatrixResult(matrixSelector.Series.Count());
-                var offsetSeconds = (long)matrixSelector.Offset.TotalSeconds;
-                var selectorRangeSeconds = matrixSelector.Range.TotalSeconds;
-                var stepRangeSeconds = (long)Math.Min(selectorRangeSeconds, Interval.TotalSeconds);
-
-                // Reuse objects across steps to save memory allocations.
-                // TODO: use ArrayPool
-                var inMatrix = new MatrixResult(1) { new Series { Metric = Labels.Empty, Points = [] } };
-                inArgs[matrixArgIndex] = inMatrix;
-                var enh = new EvalNodeHelper { Output = new VectorResult(1) };
-
-                // Process all the calls for one time series at a time.
-                foreach (var timeSeries in matrixSelector.Series)
-                {
-                    var series = new Series
-                    {
-                        Metric = timeSeries.Labels.DropMetricName(),
-                        // TODO: use ArrayPool
-                        Points = new List<DoublePoint>(numSteps)
-                    };
-
-                    inMatrix[0].Metric = timeSeries.Labels;
-                    var step = -1;
-                    var refTimeStart = StartTimestampUnixSec - offsetSeconds;
-                    var refTimeEnd = EndTimestampUnixSec - offsetSeconds;
-                    for (var ts = refTimeStart; ts <= refTimeEnd; ts += stepRangeSeconds)
-                    {
-                        step++;
-                        // Set the non-matrix arguments.
-                        // They are scalar, so it is safe to use the step number
-                        // when looking up the argument, as there will be no gaps.
-                        for (var i = 0; i < call.Args.Length; i++)
-                        {
-                            if (i != matrixArgIndex)
-                            {
-                                otherInArgs[i][0].Point.Value = otherArgs[i][0].Points[step].Value;
-                            }
-                        }
-
-                        var maxTs = ts;
-                        var minTs = maxTs - selectorRangeSeconds;
-                        // Evaluate the matrix selector for this series for this step.
-                        // TODO: optimize enumeration
-                        var points = timeSeries.Samples
-                            .Where(s => s.TimestampUnixSec >= minTs && s.TimestampUnixSec <= maxTs)
-                            .Select(s =>
-                                new DoublePoint { TimestampUnixSec = s.TimestampUnixSec, Value = s.Value })
-                            .ToList();
-
-                        if (points.Count <= 0)
+                        if (i == matrixArgIndex)
                         {
                             continue;
                         }
 
-                        inMatrix[0].Points = points;
-                        enh.TimestampUnixSec = ts;
-                        enh.Output.Clear();
-                        // Make the function call.
-                        var callResult = call.Func.Call(inArgs, call.Args, enh);
-                        if (callResult.Count > 0)
+                        otherArgs[i] = Eval(call.Args[i]);
+                        otherInArgs[i] = [];
+                        inArgs[i] = otherInArgs[i];
+                    }
+
+                    var matrixSelector = (MatrixSelector)call.Args[matrixArgIndex];
+                    result = new MatrixResult(matrixSelector.Series.Count());
+                    var selectorOffsetSeconds = (long)matrixSelector.Offset.TotalSeconds;
+                    var selectorRangeSeconds = matrixSelector.Range.TotalSeconds;
+                    var stepRangeSeconds = (long)Math.Min(selectorRangeSeconds, Interval.TotalSeconds);
+
+                    // Reuse objects across steps to save memory allocations.
+                    // TODO: use ArrayPool
+                    var inMatrix = new MatrixResult(1) { new Series { Metric = Labels.Empty, Points = [] } };
+                    inArgs[matrixArgIndex] = inMatrix;
+                    var enh = new EvalNodeHelper { Output = new VectorResult(1) };
+
+                    // Process all the calls for one time series at a time.
+                    foreach (var timeSeries in matrixSelector.Series)
+                    {
+                        var series = new Series
                         {
-                            series.Points.Add(new DoublePoint
+                            Metric = timeSeries.Labels.DropMetricName(),
+                            // TODO: use ArrayPool
+                            Points = new List<DoublePoint>(numSteps)
+                        };
+
+                        inMatrix[0].Metric = timeSeries.Labels;
+                        var step = -1;
+                        var refTimeStart = StartTimestampUnixSec - selectorOffsetSeconds;
+                        var refTimeEnd = EndTimestampUnixSec - selectorOffsetSeconds;
+                        for (var ts = refTimeStart; ts <= refTimeEnd; ts += stepRangeSeconds)
+                        {
+                            step++;
+                            // Set the non-matrix arguments.
+                            // They are scalar, so it is safe to use the step number
+                            // when looking up the argument, as there will be no gaps.
+                            for (var i = 0; i < call.Args.Length; i++)
                             {
-                                TimestampUnixSec = ts,
-                                Value = callResult[0].Point.Value
-                            });
+                                if (i != matrixArgIndex)
+                                {
+                                    otherInArgs[i][0].Point.Value = otherArgs[i][0].Points[step].Value;
+                                }
+                            }
+
+                            var maxTs = ts;
+                            var minTs = maxTs - selectorRangeSeconds;
+                            // Evaluate the matrix selector for this series for this step.
+                            // TODO: optimize enumeration
+                            var points = timeSeries.Samples
+                                .Where(s => s.TimestampUnixSec >= minTs && s.TimestampUnixSec <= maxTs)
+                                .Select(s =>
+                                    new DoublePoint { TimestampUnixSec = s.TimestampUnixSec, Value = s.Value })
+                                .ToList();
+
+                            if (points.Count <= 0)
+                            {
+                                continue;
+                            }
+
+                            inMatrix[0].Points = points;
+                            enh.TimestampUnixSec = ts;
+                            enh.Output.Clear();
+                            // Make the function call.
+                            var callResult = call.Func.Call(inArgs, call.Args, enh);
+                            if (callResult.Count > 0)
+                            {
+                                series.Points.Add(new DoublePoint
+                                {
+                                    TimestampUnixSec = ts,
+                                    Value = callResult[0].Point.Value
+                                });
+                            }
+                        }
+
+                        if (series.Points.Count <= 0)
+                        {
+                            continue;
+                        }
+
+                        if (_currentSamples < MaxSamples)
+                        {
+                            result.Add(series);
+                            _currentSamples += series.Points.Count;
+                        }
+                        else
+                        {
+                            throw new TooManySamplesException();
                         }
                     }
 
-                    if (series.Points.Count <= 0)
+                    if (result.ContainsSameLabelSet())
                     {
-                        continue;
+                        throw new InvalidOperationException("Vector cannot contain metrics with the same labelset");
                     }
 
-                    if (_currentSamples < MaxSamples)
-                    {
-                        result.Add(series);
-                        _currentSamples += series.Points.Count;
-                    }
-                    else
-                    {
-                        throw new TooManySamplesException();
-                    }
+                    return result;
                 }
 
-                if (result.ContainsSameLabelSet())
+            case UnaryExpression unary:
                 {
-                    throw new InvalidOperationException("Matrix cannot contain metrics with the same labelset");
-                }
+                    result = Eval(unary.Expression);
+                    switch (unary.Operator)
+                    {
+                        case Operator.Add:
+                            return result;
+                        case Operator.Sub:
+                            foreach (var series in result)
+                            {
+                                series.Metric = series.Metric.DropMetricName();
+                                foreach (var point in series.Points)
+                                {
+                                    point.Value = -point.Value;
+                                }
+                            }
 
-                return result;
+                            if (result.ContainsSameLabelSet())
+                            {
+                                throw new InvalidOperationException("Matrix cannot contain metrics with the same labelset");
+                            }
+
+                            return result;
+                        default:
+                            throw new NotSupportedException($"Unary operation {unary.Operator} is not supported.");
+                    }
+                }
 
             case BinaryExpression binary:
-                switch (binary.LHS.Type, binary.RHS.Type)
                 {
-                    case (PrometheusValueType.Scalar, PrometheusValueType.Scalar):
-                        result = RangeEval((values, enh) =>
-                            {
-                                var lhsValue = ((VectorResult)values[0])[0].Point.Value;
-                                var rhsValue = ((VectorResult)values[1])[0].Point.Value;
-                                var value = ScalarBinaryOp(binary.Op,
-                                    lhsValue,
-                                    rhsValue);
-                                enh.Output.Add(new Sample
+                    switch (binary.LHS.Type, binary.RHS.Type)
+                    {
+                        case (PrometheusValueType.Scalar, PrometheusValueType.Scalar):
+                            result = RangeEval((values, enh) =>
                                 {
-                                    Metric = Labels.Empty,
-                                    Point = new DoublePoint { Value = value }
-                                });
-                                return enh.Output;
-                            },
-                            binary.LHS, binary.RHS);
-                        return result;
-                    case (PrometheusValueType.Vector, PrometheusValueType.Vector):
-                        var matching = binary.VectorMatching ??
-                                       throw new InvalidOperationException("Vector operations must have matching");
-                        result = RangeEval((values, enh) =>
-                            {
-                                var lhsValue = (VectorResult)values[0];
-                                var rhsValue = (VectorResult)values[1];
-                                return binary.Op switch
+                                    var lhsValue = ((VectorResult)values[0])[0].Point.Value;
+                                    var rhsValue = ((VectorResult)values[1])[0].Point.Value;
+                                    var value = ScalarBinaryOp(binary.Op,
+                                        lhsValue,
+                                        rhsValue);
+                                    enh.Output.Add(new Sample
+                                    {
+                                        Metric = Labels.Empty,
+                                        Point = new DoublePoint { Value = value }
+                                    });
+                                    return enh.Output;
+                                },
+                                binary.LHS, binary.RHS);
+                            return result;
+                        case (PrometheusValueType.Vector, PrometheusValueType.Vector):
+                            var matching = binary.VectorMatching ??
+                                           throw new InvalidOperationException("Vector operations must have matching");
+                            result = RangeEval((values, enh) =>
                                 {
-                                    Operator.And => VectorAnd(lhsValue, rhsValue, matching, enh),
-                                    Operator.Or => VectorOr(lhsValue, rhsValue, matching, enh),
-                                    Operator.Unless => VectorUnless(lhsValue, rhsValue, matching, enh),
-                                    _ => VectorBinaryOp(binary.Op, lhsValue, rhsValue, matching, binary.ReturnBool, enh)
-                                };
-                            },
-                            binary.LHS, binary.RHS);
-                        return result;
+                                    var lhsValue = (VectorResult)values[0];
+                                    var rhsValue = (VectorResult)values[1];
+                                    return binary.Op switch
+                                    {
+                                        Operator.And => VectorAnd(lhsValue, rhsValue, matching, enh),
+                                        Operator.Or => VectorOr(lhsValue, rhsValue, matching, enh),
+                                        Operator.Unless => VectorUnless(lhsValue, rhsValue, matching, enh),
+                                        _ => VectorBinaryOp(binary.Op, lhsValue, rhsValue, matching, binary.ReturnBool, enh)
+                                    };
+                                },
+                                binary.LHS, binary.RHS);
+                            return result;
 
-                    case (PrometheusValueType.Vector, PrometheusValueType.Scalar):
-                        result = RangeEval((values, enh) =>
-                            {
-                                var lhsValue = (VectorResult)values[0];
-                                var rhsValue = new ScalarResult { Value = ((VectorResult)values[1])[0].Point.Value };
-                                return VectorScalarBinaryOp(
-                                    binary.Op,
-                                    lhsValue,
-                                    rhsValue,
-                                    false,
-                                    binary.ReturnBool,
-                                    enh);
-                            },
-                            binary.LHS, binary.RHS);
-                        return result;
+                        case (PrometheusValueType.Vector, PrometheusValueType.Scalar):
+                            result = RangeEval((values, enh) =>
+                                {
+                                    var lhsValue = (VectorResult)values[0];
+                                    var rhsValue = new ScalarResult { Value = ((VectorResult)values[1])[0].Point.Value };
+                                    return VectorScalarBinaryOp(
+                                        binary.Op,
+                                        lhsValue,
+                                        rhsValue,
+                                        false,
+                                        binary.ReturnBool,
+                                        enh);
+                                },
+                                binary.LHS, binary.RHS);
+                            return result;
 
-                    case (PrometheusValueType.Scalar, PrometheusValueType.Vector):
-                        result = RangeEval((values, enh) =>
-                            {
-                                var lhsValue = (VectorResult)values[1];
-                                var rhsValue = new ScalarResult { Value = ((VectorResult)values[0])[0].Point.Value };
-                                return VectorScalarBinaryOp(
-                                    binary.Op,
-                                    lhsValue,
-                                    rhsValue,
-                                    true,
-                                    binary.ReturnBool,
-                                    enh);
-                            },
-                            binary.LHS, binary.RHS);
-                        return result;
-                    case (_, _):
-                        throw new NotSupportedException(
-                            $"Binary operation between {binary.LHS.Type} and {binary.RHS.Type} is not supported.");
+                        case (PrometheusValueType.Scalar, PrometheusValueType.Vector):
+                            result = RangeEval((values, enh) =>
+                                {
+                                    var lhsValue = (VectorResult)values[1];
+                                    var rhsValue = new ScalarResult { Value = ((VectorResult)values[0])[0].Point.Value };
+                                    return VectorScalarBinaryOp(
+                                        binary.Op,
+                                        lhsValue,
+                                        rhsValue,
+                                        true,
+                                        binary.ReturnBool,
+                                        enh);
+                                },
+                                binary.LHS, binary.RHS);
+                            return result;
+                        case (_, _):
+                            throw new NotSupportedException(
+                                $"Binary operation between {binary.LHS.Type} and {binary.RHS.Type} is not supported.");
+                    }
                 }
 
             case NumberLiteral numberLiteral:
@@ -306,55 +341,92 @@ internal class Evaluator
                 });
 
             case VectorSelector vectorSelector:
-                result = new MatrixResult(vectorSelector.Series.Count());
-                offsetSeconds = (long)vectorSelector.Offset.TotalSeconds;
-                foreach (var timeSeries in vectorSelector.Series)
                 {
-                    var series = new Series
+                    result = new MatrixResult(vectorSelector.Series.Count());
+                    var offsetSeconds = (long)vectorSelector.Offset.TotalSeconds;
+                    foreach (var timeSeries in vectorSelector.Series)
                     {
-                        Metric = new Labels(timeSeries.Labels),
-                        // TODO: use ArrayPool
-                        Points = new List<DoublePoint>(numSteps)
-                    };
-                    var intervalSeconds = (long)Interval.TotalSeconds;
-                    var refTimeStart = StartTimestampUnixSec - offsetSeconds;
-                    var refTimeEnd = EndTimestampUnixSec - offsetSeconds;
-                    using var enumerator = timeSeries.Samples.GetEnumerator();
-                    for (var ts = refTimeStart; ts <= refTimeEnd; ts += intervalSeconds)
-                    {
-                        if (!enumerator.MoveNext())
+                        var series = new Series
                         {
-                            break;
+                            Metric = new Labels(timeSeries.Labels),
+                            // TODO: use ArrayPool
+                            Points = new List<DoublePoint>(numSteps)
+                        };
+                        var intervalSeconds = (long)Interval.TotalSeconds;
+                        var refTimeStart = StartTimestampUnixSec - offsetSeconds;
+                        var refTimeEnd = EndTimestampUnixSec - offsetSeconds;
+                        using var enumerator = timeSeries.Samples.Reverse().GetEnumerator();
+
+                        var currentSample = enumerator.MoveNext() ? enumerator.Current : null;
+                        for (var ts = refTimeEnd; ts >= refTimeStart && currentSample != null; ts -= intervalSeconds)
+                        {
+                            while (currentSample.TimestampUnixSec > ts)
+                            {
+                                var noMoreSamples = !enumerator.MoveNext();
+                                if (noMoreSamples)
+                                {
+                                    break;
+                                }
+
+                                currentSample = enumerator.Current;
+                            }
+
+                            if (_currentSamples < MaxSamples)
+                            {
+                                series.Points.Add(
+                                    new DoublePoint { TimestampUnixSec = ts, Value = currentSample!.Value });
+                                _currentSamples++;
+                            }
+                            else
+                            {
+                                throw new TooManySamplesException();
+                            }
                         }
 
-                        var currentSample = enumerator.Current;
-                        if (currentSample.TimestampUnixSec < ts)
-                        {
-                            continue;
-                        }
+                        result.Add(series);
+                    }
 
-                        if (_currentSamples < MaxSamples)
+                    result.Reverse();
+                    return result;
+                }
+            case MatrixSelector matrixSelector:
+                {
+                    if (StartTimestampUnixSec != EndTimestampUnixSec)
+                    {
+                        throw new NotSupportedException("Cannot do range evaluation of matrix selector");
+                    }
+
+                    var offsetSeconds = (long)matrixSelector.Offset.TotalSeconds;
+                    var maxTs = StartTimestampUnixSec - offsetSeconds;
+                    var minTs = maxTs - (long)matrixSelector.Range.TotalSeconds;
+
+                    result = new MatrixResult(matrixSelector.Series.Count());
+                    foreach (var timeSeries in matrixSelector.Series)
+                    {
+                        var series = new Series
                         {
-                            series.Points.Add(
-                                new DoublePoint { TimestampUnixSec = ts, Value = currentSample.Value });
-                            _currentSamples++;
-                        }
-                        else
+                            Metric = new Labels(timeSeries.Labels),
+                            Points = timeSeries.Samples
+                                .Where(p => p.TimestampUnixSec >= minTs && p.TimestampUnixSec <= maxTs)
+                                .Select(p => new DoublePoint { TimestampUnixSec = p.TimestampUnixSec, Value = p.Value })
+                                .ToList()
+                        };
+                        _currentSamples += series.Points.Count;
+
+                        if (_currentSamples > MaxSamples)
                         {
                             throw new TooManySamplesException();
                         }
+
+                        result.Add(series);
                     }
 
-                    result.Add(series);
+                    return result;
                 }
-
-                return result;
 
             default:
                 throw new NotSupportedException($"Expression type {expr.GetType()} is not supported.");
         }
-
-        throw new NotSupportedException($"Expression type {expr.GetType()} is not supported.");
     }
 
 
@@ -383,7 +455,7 @@ internal class Evaluator
                 continue;
             }
 
-            matrixes[i] = (MatrixResult)Eval(expr);
+            matrixes[i] = Eval(expr);
         }
 
         var vectors = new VectorResult[expressions.Length]; // Input vectors for the function.
@@ -780,8 +852,6 @@ internal class Evaluator
 
                 enh.Output.Add(lhsSample);
             }
-
-            return enh.Output;
         }
 
         return enh.Output;
@@ -850,7 +920,7 @@ internal class Evaluator
                 throw new InvalidOperationException($"{op} requires a scalar parameter");
             }
 
-            var k = (long)param;
+            var k = (double)param;
 
             if (k < 1)
             {
@@ -912,16 +982,53 @@ internal class Evaluator
                 }
             }
 
-            var value = op switch
+            double? value = op switch
             {
                 AggregationOp.Sum => groupedAggregation.Sum(x => x.Point.Value),
-                AggregationOp.Min => groupedAggregation.Min(x => x.Point.Value),
+                AggregationOp.Min => groupedAggregation
+                    .Select(x => x.Point.Value)
+                    .Where(x => !double.IsNaN(x))
+                    .Min(x => x),
                 AggregationOp.Max => groupedAggregation.Max(x => x.Point.Value),
                 AggregationOp.Avg => groupedAggregation.Average(x => x.Point.Value),
-                // TODO
-                _ => throw new NotImplementedException($"Aggregation operation {op} is not implemented.")
+                AggregationOp.StdVar => groupedAggregation
+                    .Select(x => x.Point.Value)
+                    .Where(x => !double.IsNaN(x))
+                    .StandardVariance(),
+                AggregationOp.StdDev => groupedAggregation
+                    .Select(x => x.Point.Value)
+                    .Where(x => !double.IsNaN(x))
+                    .StandardDeviation(),
+                AggregationOp.Count => groupedAggregation.Count(),
+                _ => null
             };
-            enh.Output.Add(new Sample { Metric = metric, Point = new DoublePoint { Value = value } });
+            if (value.HasValue)
+            {
+                enh.Output.Add(new Sample { Metric = metric, Point = new DoublePoint { Value = value.Value } });
+                continue;
+            }
+
+            switch (op)
+            {
+                case AggregationOp.TopK:
+                    {
+                        var k = (int)(double)param!;
+                        var topK = groupedAggregation
+                            .OrderByDescending(x => x.Point.Value)
+                            .Take(k);
+                        enh.Output.AddRange(topK);
+                        break;
+                    }
+                case AggregationOp.BottomK:
+                    {
+                        var k = (int)(double)param!;
+                        var bottomK = groupedAggregation.OrderBy(x => x.Point.Value).Take(k);
+                        enh.Output.AddRange(bottomK);
+                        break;
+                    }
+                default:
+                    throw new NotSupportedException($"Aggregation operation {op} is not supported.");
+            }
         }
 
         return enh.Output;

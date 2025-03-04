@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Mocha.Query.Prometheus.PromQL.Values;
 
-[DebuggerDisplay("{" + nameof(TimestampUnixSec) + "}: {" + nameof(Value) + "}")]
+[DebuggerDisplay("TimestampUnixSec: {TimestampUnixSec}, Value: {Value}")]
 public class DoublePoint
 {
     public long TimestampUnixSec { get; set; }

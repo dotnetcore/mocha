@@ -163,6 +163,34 @@ public class AstBuilderTests
                 ReturnBool = true
             }
         },
+        new()
+        {
+            Input = "2 ^ 1",
+            Expected = new BinaryExpression
+            {
+                Op = Operator.Pow,
+                LHS = new NumberLiteral { ExpressionText = "2", Value = 2d },
+                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                ReturnBool = false
+            }
+        },
+        new()
+        {
+            Input = "3 ^ (2 ^ 1)",
+            Expected = new BinaryExpression
+            {
+                Op = Operator.Pow,
+                LHS = new NumberLiteral { ExpressionText = "3", Value = 3d },
+                RHS = new BinaryExpression
+                {
+                    Op = Operator.Pow,
+                    LHS = new NumberLiteral { ExpressionText = "2", Value = 2d },
+                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    ReturnBool = false
+                },
+                ReturnBool = false
+            }
+        },
 
         #endregion
 
@@ -1046,7 +1074,8 @@ public class AstBuilderTests
                 LabelMatchers =
                 [
                     new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                ]
+                ],
+                Series = []
             }
         },
 
@@ -1135,7 +1164,8 @@ public class AstBuilderTests
                         LabelMatchers =
                         [
                             new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                        ]
+                        ],
+                        Series = []
                     }
                 ]
             }
@@ -1176,7 +1206,8 @@ public class AstBuilderTests
                                     LabelMatchers =
                                     [
                                         new LabelMatcher(Labels.MetricName, "foo", LabelMatcherType.Equal)
-                                    ]
+                                    ],
+                                    Series = []
                                 }
                             ]
                         },

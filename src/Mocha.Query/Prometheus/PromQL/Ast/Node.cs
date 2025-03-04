@@ -32,6 +32,7 @@ public abstract class Node
                     _ => [n.Expression!, n.Parameter!]
                 },
 
+            UnaryExpression n => [n.Expression],
             BinaryExpression n => [n.LHS, n.RHS],
 
             Call n => n.Args,

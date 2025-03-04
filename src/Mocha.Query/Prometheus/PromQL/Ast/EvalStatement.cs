@@ -4,7 +4,7 @@
 namespace Mocha.Query.Prometheus.PromQL.Ast;
 
 /// <summary>
-/// EvalStatement holds an expression and information
+/// Holds an expression and information
 /// on the ranges it should be evaluated on.
 /// </summary>
 public class EvalStatement : Node

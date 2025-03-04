@@ -1,10 +1,23 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Mocha.Core.Storage.Prometheus.Metrics;
 
 public class TimeSeries
 {
+    public TimeSeries()
+    {
+    }
+
+    [SetsRequiredMembers]
+    public TimeSeries(Labels labels, IEnumerable<TimeSeriesSample> samples)
+    {
+        Labels = labels;
+        Samples = samples;
+    }
+
     public required Labels Labels { get; set; }
 
     /// <summary>

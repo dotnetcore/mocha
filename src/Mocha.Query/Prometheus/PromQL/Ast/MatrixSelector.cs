@@ -21,5 +21,5 @@ public class MatrixSelector : Expression
     /// </summary>
     public TimeSpan Offset { get; set; }
 
-    public IEnumerable<TimeSeries>? Series { get; set; }
+    public required IEnumerable<TimeSeries> Series { get; set; }
 }

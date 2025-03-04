@@ -7,7 +7,6 @@ using Mocha.Query.Prometheus.PromQL.Values;
 
 namespace Mocha.Query.Prometheus.PromQL.Ast;
 
-// Move out from Ast namespace
 // TODO: handle functions with variable number of arguments
 public class Function
 {
@@ -61,7 +60,77 @@ public class Function
                 ReturnType = PrometheusValueType.Vector,
                 Call = Functions.FuncRate
             }
-        }
+        },
+        {
+            "avg_over_time",
+            new Function
+            {
+                Name = FunctionName.AvgOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncAvgOverTime
+            }
+        },
+        {
+            "min_over_time",
+            new Function
+            {
+                Name = FunctionName.MinOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncMinOverTime
+            }
+        },
+        {
+            "max_over_time",
+            new Function
+            {
+                Name = FunctionName.MaxOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncMaxOverTime
+            }
+        },
+        {
+            "sum_over_time",
+            new Function
+            {
+                Name = FunctionName.SumOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncSumOverTime
+            }
+        },
+        {
+            "count_over_time",
+            new Function
+            {
+                Name = FunctionName.CountOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncCountOverTime
+            }
+        },
+        {
+            "stddev_over_time",
+            new Function
+            {
+                Name = FunctionName.StdDevOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncStdDevOverTime
+            }
+        },
+        {
+            "stdvar_over_time",
+            new Function
+            {
+                Name = FunctionName.StdVarOverTime,
+                ArgTypes = [PrometheusValueType.Matrix],
+                ReturnType = PrometheusValueType.Vector,
+                Call = Functions.FuncStdVarOverTime
+            }
+        },
     };
 
     public FunctionName Name { get; init; }

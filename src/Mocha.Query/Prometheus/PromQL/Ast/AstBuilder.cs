@@ -15,13 +15,29 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
 {
     #region Operators
 
-    #region Binary Operators
+    #region Unary Operators
 
-    // TODO
+    public override Expression VisitUnaryNode(PromQLParser.UnaryNodeContext context)
+    {
+        var opType = (Operator)((TerminalNodeImpl)context.GetChild(0).GetChild(0)).Symbol.Type;
+        var expr = Visit(context.GetChild(1));
+
+        return new UnaryExpression
+        {
+#if DEBUG
+            ExpressionText = BuildExpressionText(context),
+#endif
+
+            Operator = opType,
+            Expression = expr
+        };
+    }
 
     #endregion
 
-    #region Unary Operators
+    #region Binary Operators
+
+    public override Expression VisitPowNode(PromQLParser.PowNodeContext context) => ParseBinaryExpression(context);
 
     public override Expression VisitMultNode(PromQLParser.MultNodeContext context) => ParseBinaryExpression(context);
 
@@ -63,7 +79,7 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
         return new Call
         {
 #if DEBUG
-            ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+            ExpressionText = BuildExpressionText(context),
 #endif
             Func = function,
             Args = args
@@ -74,7 +90,7 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
     {
         // parameter is only required for count_values, quantile, topk, bottomk, limitk and limit_ratio
         // https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators
-        var op = context.AGGREGATION_OPERATOR().GetText();
+        var op = context.AGGREGATION_OPERATOR().GetText().ToLowerInvariant();
 
         var parameterContexts = context.parameterList().parameter();
         // if parameter is provided, it will be the first element in the list
@@ -101,7 +117,7 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
         return new AggregateExpression
         {
 #if DEBUG
-            ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+            ExpressionText = BuildExpressionText(context),
 #endif
             Op = MapAggregationOp(op),
             Expression = expression,
@@ -146,7 +162,7 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
         return new VectorSelector
         {
 #if DEBUG
-            ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+            ExpressionText = BuildExpressionText(context),
 #endif
             Name = metricName,
             LabelMatchers = labelMatchers,
@@ -168,12 +184,13 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
         return new MatrixSelector
         {
 #if DEBUG
-            ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+            ExpressionText = BuildExpressionText(context),
 #endif
             Name = vectorSelector.Name,
             Range = range,
             LabelMatchers = vectorSelector.LabelMatchers,
-            Offset = vectorSelector.Offset
+            Offset = vectorSelector.Offset,
+            Series = []
         };
     }
 
@@ -208,12 +225,13 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
     {
         if (context.NUMBER() != null)
         {
+            var numberText = context.NUMBER().GetText();
             return new NumberLiteral
             {
 #if DEBUG
-                ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+                ExpressionText = BuildExpressionText(context),
 #endif
-                Value = double.Parse(context.NUMBER().GetText())
+                Value = double.Parse(numberText),
             };
         }
 
@@ -222,7 +240,7 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
             return new StringLiteral
             {
 #if DEBUG
-                ExpressionText = string.Join(" ", context.children.Select(c => c.GetText())),
+                ExpressionText = BuildExpressionText(context),
 #endif
                 Value = context.STRING().GetText()
             };
@@ -231,9 +249,14 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
         throw new InvalidOperationException("Invalid literal");
     }
 
+    public override Expression VisitParens(PromQLParser.ParensContext context) => Visit(context.vectorOperation());
+
     #endregion
 
     #region Private Methods
+
+    private static string BuildExpressionText(ParserRuleContext context) =>
+        string.Join(" ", context.children.Select(c => c.GetText()));
 
     private BinaryExpression ParseBinaryExpression(RuleContext context)
     {
@@ -264,7 +287,8 @@ public class AstBuilder : PromQLParserBaseVisitor<Expression>
             {
                 vectorMatching = new VectorMatching
                 {
-                    Cardinality = isSetOperator ? VectorMatchCardinality.ManyToMany : VectorMatchCardinality.OneToOne,
+                    Cardinality =
+                        isSetOperator ? VectorMatchCardinality.ManyToMany : VectorMatchCardinality.OneToOne,
                     MatchingLabels = [],
                     On = false,
                     Include = []

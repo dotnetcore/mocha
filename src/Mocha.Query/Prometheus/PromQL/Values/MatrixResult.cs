@@ -5,8 +5,16 @@ using Mocha.Core.Storage.Prometheus;
 
 namespace Mocha.Query.Prometheus.PromQL.Values;
 
-public class MatrixResult(int capacity) : List<Series>(capacity), IParseResult
+public class MatrixResult : List<Series>, IParseResult
 {
+    public MatrixResult(int capacity) : base(capacity)
+    {
+    }
+
+    public MatrixResult()
+    {
+    }
+
     public ResultValueType Type => ResultValueType.Matrix;
 
     public int TotalSamples() => this.Sum(s => s.Points.Count);
