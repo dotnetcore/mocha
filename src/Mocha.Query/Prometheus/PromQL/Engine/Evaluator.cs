@@ -915,12 +915,12 @@ internal class Evaluator
     {
         if (op is AggregationOp.TopK or AggregationOp.BottomK)
         {
-            if (param is not double d)
+            if (param is not double k)
             {
                 throw new InvalidOperationException($"{op} requires a scalar parameter");
             }
 
-            if (d < 1)
+            if (k < 1)
             {
                 return new VectorResult();
             }
