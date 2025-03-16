@@ -374,7 +374,7 @@ internal class Evaluator
                             if (_currentSamples < MaxSamples)
                             {
                                 series.Points.Add(
-                                    new DoublePoint { TimestampUnixSec = ts, Value = currentSample!.Value });
+                                    new DoublePoint { TimestampUnixSec = ts, Value = currentSample.Value });
                                 _currentSamples++;
                             }
                             else
@@ -767,7 +767,7 @@ internal class Evaluator
                 return result;
             }
 
-            var labelsBuilder = new LabelsBuilder(lhs);
+            var labelsBuilder = Labels.Builder(lhs);
             if (ShouldDropMetricName(op))
             {
                 labelsBuilder.Remove(Labels.MetricName);
@@ -915,14 +915,12 @@ internal class Evaluator
     {
         if (op is AggregationOp.TopK or AggregationOp.BottomK)
         {
-            if (param is not double)
+            if (param is not double d)
             {
                 throw new InvalidOperationException($"{op} requires a scalar parameter");
             }
 
-            var k = (double)param;
-
-            if (k < 1)
+            if (d < 1)
             {
                 return new VectorResult();
             }

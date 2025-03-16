@@ -3,38 +3,18 @@
 
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
+using Mocha.Query.Prometheus.PromQL.Engine;
 
 namespace Mocha.Query.Tests.Prometheus.Engine;
 
-/// <summary>
-/// Generates time series for testing.
-/// </summary>
-public static class TimeSeriesGenerator
+public static class TimeSeriesTestUtils
 {
-    /// <summary>
-    /// Generates a time series with the given labels, interval, count, start value and step.
-    /// </summary>
-    /// <param name="labels">The labels of the time series.</param>
-    /// <param name="interval">The interval between samples.</param>
-    /// <param name="iterations">
-    /// The number of samples to generate, the first sample will not be counted.
-    /// The first sample is at 0, and the last sample is at iterations * interval.
-    /// </param>
-    /// <param name="startValue">The value of the first sample.</param>
-    /// <param name="step">The step between samples.</param>
-    /// <returns>The generated time series.</returns>
-    public static TimeSeries GenerateTimeSeries(
-        Labels labels,
-        TimeSpan interval,
-        int iterations,
-        double startValue,
-        double step) =>
-        GenerateTimeSeries(labels, 0, interval, iterations, startValue, step);
+    private static readonly IPromQLParser _parser = new MochaPromQLParserParser();
 
     /// <summary>
-    /// Generates a time series with the given labels, interval, count, start value and step.
+    /// Generates a time series with the given metric selector, interval, count, start value and step.
     /// </summary>
-    /// <param name="labels">The labels of the time series.</param>
+    /// <param name="metricSelector">The metric selector of the time series.</param>
     /// <param name="startTimestampUnixSec">The timestamp of the first sample.</param>
     /// <param name="interval">The interval between samples.</param>
     /// <param name="iterations">
@@ -45,7 +25,7 @@ public static class TimeSeriesGenerator
     /// <param name="step">The step between samples.</param>
     /// <returns>The generated time series.</returns>
     public static TimeSeries GenerateTimeSeries(
-        Labels labels,
+        string metricSelector,
         int startTimestampUnixSec,
         TimeSpan interval,
         int iterations,
@@ -62,7 +42,35 @@ public static class TimeSeriesGenerator
             });
         }
 
+        var labelMatchers=  _parser.ParseMetricSelector(metricSelector);
+        var labels = new Labels();
+        foreach (var matcher in labelMatchers)
+        {
+            labels.Add(matcher.Name, matcher.Value);
+        }
         return new TimeSeries(labels, samples);
+    }
+
+    /// <summary>
+    /// Generates a time series with the given metric selector, interval, count, start value and step.
+    /// </summary>
+    /// <param name="metricSelector">The metric selector of the time series.</param>
+    /// <param name="interval">The interval between samples.</param>
+    /// <param name="iterations">
+    /// The number of samples to generate, the first sample will not be counted.
+    /// The first sample is at 0, and the last sample is at iterations * interval.
+    /// </param>
+    /// <param name="startValue">The value of the first sample.</param>
+    /// <param name="step">The step between samples.</param>
+    /// <returns>The generated time series.</returns>
+    public static TimeSeries GenerateTimeSeries(
+        string metricSelector,
+        TimeSpan interval,
+        int iterations,
+        double startValue,
+        double step)
+    {
+        return GenerateTimeSeries(metricSelector, 0, interval, iterations, startValue, step);
     }
 
     public static TimeSeries Merge(params TimeSeries[] timeSeries)

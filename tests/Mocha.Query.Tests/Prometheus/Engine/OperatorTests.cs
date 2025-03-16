@@ -14,86 +14,37 @@ public class OperatorTests
     [MemberData(nameof(TestCases))]
     public async Task Eval_Instant_Operator(EngineTestCase testCase)
     {
+        if (testCase == null)
+        {
+            throw new ArgumentNullException(nameof(testCase));
+        }
+
+        if (testCase == null)
+        {
+            throw new ArgumentNullException(nameof(testCase));
+        }
+
         var series = new[]
         {
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "0" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"0\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 10),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "1" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"1\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 20),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "0" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"0\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 30),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "1" },
-                    { "group", "canary" }
-                },
-                TimeSpan.FromMinutes(5), 10, 0, 40),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "0" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"1\",group=\"canary\"}"
+                , TimeSpan.FromMinutes(5), 10, 0, 40),
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"0\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 50),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "1" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"1\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 60),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "0" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"0\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 70),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "1" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"1\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 80),
-            GenerateTimeSeries(new Labels { { Labels.MetricName, "vector_matching_a" }, { "l", "x" } },
-                TimeSpan.FromMinutes(1), 100, 0, 1),
-            GenerateTimeSeries(new Labels { { Labels.MetricName, "vector_matching_a" }, { "l", "y" } },
-                TimeSpan.FromMinutes(1), 50, 0, 2),
-            GenerateTimeSeries(new Labels { { Labels.MetricName, "vector_matching_b" }, { "l", "x" } },
-                TimeSpan.FromMinutes(1), 25, 0, 4),
+            GenerateTimeSeries("vector_matching_a{l=\"x\"}", TimeSpan.FromMinutes(1), 100, 0, 1),
+            GenerateTimeSeries("vector_matching_a{l=\"y\"}", TimeSpan.FromMinutes(1), 50, 0, 2),
+            GenerateTimeSeries("vector_matching_b{l=\"x\"}", TimeSpan.FromMinutes(1), 25, 0, 4)
         };
 
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
@@ -103,7 +54,7 @@ public class OperatorTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new Parser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
 
         var result =
             await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
@@ -126,12 +77,12 @@ public class OperatorTests
                     new Sample
                     {
                         Metric = new Labels { { "job", "api-server" } },
-                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = 996 },
+                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = 996 }
                     },
                     new Sample
                     {
                         Metric = new Labels { { "job", "app-server" } },
-                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = 2596 },
+                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = 2596 }
                     }
                 },
             StartTimestampUnixSec = 50 * 60
@@ -145,12 +96,12 @@ public class OperatorTests
                     new Sample
                     {
                         Metric = new Labels { { "job", "api-server" } },
-                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = -998 },
+                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = -998 }
                     },
                     new Sample
                     {
                         Metric = new Labels { { "job", "app-server" } },
-                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = -2598 },
+                        Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = -2598 }
                     }
                 },
             StartTimestampUnixSec = 50 * 60

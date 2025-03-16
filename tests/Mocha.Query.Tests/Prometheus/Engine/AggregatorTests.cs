@@ -17,88 +17,32 @@ public class AggregatorTests
     {
         var series = new List<TimeSeries>
         {
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "0" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"0\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 10),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "1" },
-                    { "group", "production" }
-                },
-                TimeSpan.FromMinutes(5), 10, 0, 20),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "0" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"0\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 30),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "api-server" },
-                    { "instance", "1" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"1\",group=\"production\"}",
+                TimeSpan.FromMinutes(5), 10, 0, 20),
+            GenerateTimeSeries("http_requests{job=\"api-server\",instance=\"1\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 40),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "0" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"0\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 50),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "1" },
-                    { "group", "production" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"1\",group=\"production\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 60),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "0" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"0\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 70),
-            GenerateTimeSeries(
-                new Labels
-                {
-                    { Labels.MetricName, "http_requests" },
-                    { "job", "app-server" },
-                    { "instance", "1" },
-                    { "group", "canary" }
-                },
+            GenerateTimeSeries("http_requests{job=\"app-server\",instance=\"1\",group=\"canary\"}",
                 TimeSpan.FromMinutes(5), 10, 0, 80)
         };
 
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
         mockOptions.SetupGet(x => x.Value).Returns(new PromQLEngineOptions
         {
-            DefaultEvaluationInterval = TimeSpan.FromSeconds(15),
-            MaxSamplesPerQuery = 50000000
+            DefaultEvaluationInterval = TimeSpan.FromSeconds(15), MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new Parser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+            mockOptions.Object);
 
         var result =
             await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
@@ -181,11 +125,11 @@ public class AggregatorTests
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
         mockOptions.SetupGet(x => x.Value).Returns(new PromQLEngineOptions
         {
-            DefaultEvaluationInterval = TimeSpan.FromSeconds(15),
-            MaxSamplesPerQuery = 50000000
+            DefaultEvaluationInterval = TimeSpan.FromSeconds(15), MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new Parser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+            mockOptions.Object);
 
         var result =
             await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
@@ -309,11 +253,11 @@ public class AggregatorTests
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
         mockOptions.SetupGet(x => x.Value).Returns(new PromQLEngineOptions
         {
-            DefaultEvaluationInterval = TimeSpan.FromSeconds(15),
-            MaxSamplesPerQuery = 50000000
+            DefaultEvaluationInterval = TimeSpan.FromSeconds(15), MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new Parser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+            mockOptions.Object);
 
         var result =
             await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);

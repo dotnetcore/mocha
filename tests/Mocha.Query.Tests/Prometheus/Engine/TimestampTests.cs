@@ -32,7 +32,7 @@ public class TimestampTests
             MaxSamplesPerQuery = 50000000,
         });
 
-        var engine = new PromQLEngine(new Parser(), mockReader.Object, mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), mockReader.Object, mockOptions.Object);
 
         if (testCase.Interval == TimeSpan.Zero)
         {

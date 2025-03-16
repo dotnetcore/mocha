@@ -7,7 +7,7 @@ using Mocha.Query.Prometheus.PromQL.Ast;
 
 namespace Mocha.Query.Prometheus.PromQL.Engine;
 
-internal class Parser : IPromQLParser
+internal class MochaPromQLParserParser : IPromQLParser
 {
     public Expression ParseExpression(string query) => Parse(query);
 

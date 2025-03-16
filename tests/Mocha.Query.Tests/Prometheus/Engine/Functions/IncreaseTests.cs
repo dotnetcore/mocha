@@ -16,13 +16,10 @@ public class IncreaseTests
     {
         var series = new[]
         {
-            GenerateTimeSeries(new Labels { { "__name__", "http_requests" }, { "path", "/foo" } },
-                TimeSpan.FromMinutes(5), 10, 0, 10),
+            GenerateTimeSeries("http_requests{path=\"/foo\"}", TimeSpan.FromMinutes(5), 10, 0, 10),
             Merge(
-                GenerateTimeSeries(new Labels { { "__name__", "http_requests" }, { "path", "/bar" } },
-                    TimeSpan.FromMinutes(5), 5, 0, 10),
-                GenerateTimeSeries(new Labels { { "__name__", "http_requests" }, { "path", "/bar" } },
-                    6 * 5 * 60, TimeSpan.FromMinutes(5), 5, 0, 10))
+                GenerateTimeSeries("http_requests{path=\"/bar\"}", TimeSpan.FromMinutes(5), 5, 0, 10),
+                GenerateTimeSeries("http_requests{path=\"/bar\"}", 6 * 5 * 60, TimeSpan.FromMinutes(5), 5, 0, 10))
         };
 
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
@@ -32,7 +29,7 @@ public class IncreaseTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new Parser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
 
         var result =
             await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);

@@ -21,7 +21,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
-builder.Services.AddSingleton<IPromQLParser, Parser>();
+builder.Services.AddSingleton<IPromQLParser, MochaPromQLParserParser>();
 builder.Services.AddSingleton<IPromQLEngine, PromQLEngine>();
 builder.Services.AddSingleton<PrometheusExceptionFilter>();
 
