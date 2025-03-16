@@ -42,7 +42,7 @@ public static class TimeSeriesTestUtils
             });
         }
 
-        var labelMatchers=  _parser.ParseMetricSelector(metricSelector);
+        var labelMatchers = _parser.ParseMetricSelector(metricSelector);
         var labels = new Labels();
         foreach (var matcher in labelMatchers)
         {
