@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Mocha.Antlr4.Generated\Mocha.Antlr4.Generated.csproj" />
         <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj"/>
         <ProjectReference Include="..\Mocha.Storage\Mocha.Storage.csproj"/>
     </ItemGroup>

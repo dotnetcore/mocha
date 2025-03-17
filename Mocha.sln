@@ -38,7 +38,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{53AF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mysql", "mysql", "{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5}"
 	ProjectSection(SolutionItems) = preProject
-		scripts\mysql\init.sql = scripts\mysql\init.sql
+		scripts\mysql\init\trace.sql = scripts\mysql\init\trace.sql
+		scripts\mysql\init\metadata.sql = scripts\mysql\init\metadata.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{D598862A-999C-40FD-A190-EBD00376D077}"
@@ -55,6 +56,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "query", "query", "{C7222A9C
 	ProjectSection(SolutionItems) = preProject
 		docker\jaeger-query\Dockerfile = docker\query\Dockerfile
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Query.Tests", "tests\Mocha.Query.Tests\Mocha.Query.Tests.csproj", "{D56CA47A-A948-4FB5-9E16-C61E12535521}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Antlr4.Generated", "src\Mocha.Antlr4.Generated\Mocha.Antlr4.Generated.csproj", "{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +79,8 @@ Global
 		{1DCDFC33-1401-4CCA-AAAE-FC150AD147F5} = {53AF2923-4CB8-44C8-885B-B0EEB8574FEB}
 		{959DCB4E-A070-4C66-A27F-D83CB933F0D8} = {D598862A-999C-40FD-A190-EBD00376D077}
 		{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C} = {D598862A-999C-40FD-A190-EBD00376D077}
+		{D56CA47A-A948-4FB5-9E16-C61E12535521} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
+		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -112,5 +119,13 @@ Global
 		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC281C3B-455F-4391-92EF-D5D99FC2B9AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D56CA47A-A948-4FB5-9E16-C61E12535521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D56CA47A-A948-4FB5-9E16-C61E12535521}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D56CA47A-A948-4FB5-9E16-C61E12535521}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D56CA47A-A948-4FB5-9E16-C61E12535521}.Release|Any CPU.Build.0 = Release|Any CPU
+		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

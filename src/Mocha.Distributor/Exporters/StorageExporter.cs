@@ -2,41 +2,64 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Models.Trace;
 using Mocha.Core.Storage;
 
 namespace Mocha.Distributor.Exporters;
 
 public class StorageExporter(
-        ISpanWriter spanWriter,
-        IBufferQueue bufferQueue,
-        ILogger<StorageExporter> logger)
+    IBufferQueue bufferQueue,
+    ITelemetryDataWriter<MochaSpan> spanWriter,
+    ITelemetryDataWriter<MochaMetric> metricWriter,
+    ITelemetryDataWriter<MochaMetricMetadata> metricMetadataWriter,
+    ILogger<StorageExporter> logger)
     : IHostedService
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var consumerNumber = Environment.ProcessorCount;
-        var consumers = bufferQueue.CreateConsumers<MochaSpan>(
+        var groupName = "storage_exporter";
+        StartConsumers<MochaSpan>(
             new BufferConsumerOptions
             {
                 TopicName = "otlp-span",
-                GroupName = "storage-exporter",
+                GroupName = groupName,
                 AutoCommit = false,
                 BatchSize = 100
-            }, consumerNumber);
+            },
+            Environment.ProcessorCount,
+            spanWriter.WriteAsync,
+            cancellationToken);
 
-        var token = CancellationTokenSource
-            .CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token).Token;
+        StartConsumers<MochaMetric>(
+            new BufferConsumerOptions
+            {
+                TopicName = "otlp-metric",
+                GroupName = groupName,
+                AutoCommit = false,
+                BatchSize = 100
+            },
+            Environment.ProcessorCount,
+            metricWriter.WriteAsync,
+            cancellationToken);
 
-        foreach (var consumer in consumers)
-        {
-            _ = ConsumeAsync(consumer, token);
-        }
-
-        logger.LogInformation(
-            "Storage exporter started, consuming from {ConsumerCount} consumers.", consumerNumber);
+        StartConsumers<MochaMetricMetadata>(
+            new BufferConsumerOptions
+            {
+                TopicName = "otlp-metric-metadata",
+                GroupName = groupName,
+                AutoCommit = false,
+                BatchSize = 10000
+            },
+            1,
+            async data =>
+            {
+                var metadataList = data.DistinctBy(m => (m.Metric, m.ServiceName));
+                await metricMetadataWriter.WriteAsync(metadataList);
+            },
+            cancellationToken);
         return Task.CompletedTask;
     }
 
@@ -47,18 +70,43 @@ public class StorageExporter(
         return Task.CompletedTask;
     }
 
-    private async Task ConsumeAsync(IBufferConsumer<MochaSpan> consumer, CancellationToken cancellationToken)
+    private void StartConsumers<T>(
+        BufferConsumerOptions options,
+        int consumerNumber,
+        Func<IEnumerable<T>, Task> callback,
+        CancellationToken cancellationToken)
+    {
+        var consumers = bufferQueue.CreateConsumers<T>(options, consumerNumber);
+
+        var token = CancellationTokenSource
+            .CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token).Token;
+
+        foreach (var consumer in consumers)
+        {
+            _ = ConsumeAsync(consumer, callback, token);
+        }
+
+        logger.LogInformation(
+            "{Type} Storage exporter started, consuming from {ConsumerCount} consumers.",
+            typeof(T).Name,
+            consumerNumber);
+    }
+
+    private async Task ConsumeAsync<T>(
+        IBufferConsumer<T> consumer,
+        Func<IEnumerable<T>, Task> callback,
+        CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await foreach (var spans in consumer.ConsumeAsync(cancellationToken))
+            await foreach (var data in consumer.ConsumeAsync(cancellationToken))
             {
                 var tryCount = 0;
                 while (true)
                 {
                     try
                     {
-                        await spanWriter.WriteAsync(spans);
+                        await callback(data);
                         break;
                     }
                     catch (Exception ex)
@@ -66,12 +114,13 @@ public class StorageExporter(
                         tryCount++;
                         if (tryCount <= 3) // TODO: Make this configurable.
                         {
-                            logger.LogWarning(ex, "Failed to write spans to storage, retrying...");
+                            logger.LogWarning(ex, "Failed to write {Type} to storage, retrying.", typeof(T).Name);
                             await Task.Delay(1000, cancellationToken);
                         }
                         else
                         {
-                            logger.LogError(ex, "Failed to write spans to storage.");
+                            logger.LogError(ex, "Failed to write {Type} to storage after {TryCount} retries.",
+                                typeof(T).Name, tryCount);
                             break;
                         }
                     }
