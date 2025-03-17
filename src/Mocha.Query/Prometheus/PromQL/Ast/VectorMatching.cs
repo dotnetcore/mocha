@@ -22,5 +22,5 @@ public class VectorMatching
 
     // Include contains additional labels that should be included in
     // the result from the side with the lower cardinality.
-    public required HashSet<string>? Include { get; init; }
+    public required HashSet<string> Include { get; init; }
 }

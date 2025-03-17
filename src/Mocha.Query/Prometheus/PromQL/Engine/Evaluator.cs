@@ -907,7 +907,7 @@ internal class Evaluator
 
     private VectorResult Aggregation(
         AggregationOp op,
-        HashSet<string>? grouping,
+        HashSet<string> grouping,
         bool without,
         object? param,
         VectorResult vector,

@@ -5,15 +5,15 @@ namespace Mocha.Query.Tests.Prometheus.Engine;
 
 public class EngineTestCase : IXunitSerializable
 {
-    public string? Query { get; set; }
+    public required string Query { get; set; }
 
-    public IParseResult? Result { get; set; }
+    public required IParseResult Result { get; set; }
 
-    public long StartTimestampUnixSec { get; set; }
+    public long StartTimestampUnixSec { get; init; }
 
-    public long EndTimestampUnixSec { get; set; }
+    public long EndTimestampUnixSec { get; init; }
 
-    public TimeSpan Interval { get; set; }
+    public TimeSpan Interval { get; init; }
 
     public void Deserialize(IXunitSerializationInfo info)
     {

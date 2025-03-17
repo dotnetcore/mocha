@@ -33,7 +33,7 @@ public class AstBuilderTests
     {
         #region Scalars and scalar-to-scalar operations
 
-        new() { Input = "1", Expected = new NumberLiteral { Value = 1d }, }, new()
+        new() { Input = "1", Expected = new NumberLiteral { Value = 1d } }, new()
         {
             Input = "1 + 1",
             Expected =

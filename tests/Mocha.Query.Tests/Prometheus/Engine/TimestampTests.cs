@@ -29,7 +29,7 @@ public class TimestampTests
         mockOptions.SetupGet(x => x.Value).Returns(new PromQLEngineOptions
         {
             DefaultEvaluationInterval = TimeSpan.FromSeconds(15),
-            MaxSamplesPerQuery = 50000000,
+            MaxSamplesPerQuery = 50000000
         });
 
         var engine = new PromQLEngine(new MochaPromQLParserParser(), mockReader.Object, mockOptions.Object);
@@ -60,13 +60,13 @@ public class TimestampTests
         }
     }
 
-    public static IEnumerable<object[]> TestCases = new EngineTestCase[]
+    public static IEnumerable<object[]> TestCases = new[]
     {
         #region Instant queries
 
         new()
         {
-            Query = "1", Result = new ScalarResult { TimestampUnixSec = 1, Value = 1 }, StartTimestampUnixSec = 1,
+            Query = "1", Result = new ScalarResult { TimestampUnixSec = 1, Value = 1 }, StartTimestampUnixSec = 1
         },
         new EngineTestCase
         {
@@ -77,7 +77,7 @@ public class TimestampTests
                 {
                     Point = new DoublePoint { TimestampUnixSec = 1, Value = 1 },
                     Metric = new Labels { ["__name__"] = "metric" }
-                },
+                }
             },
             StartTimestampUnixSec = 1,
         },
@@ -96,7 +96,7 @@ public class TimestampTests
                     Metric = new Labels { ["__name__"] = "metric" }
                 },
             },
-            StartTimestampUnixSec = 10,
+            StartTimestampUnixSec = 10
         },
         new()
         {
@@ -138,7 +138,7 @@ public class TimestampTests
             },
             StartTimestampUnixSec = 0,
             EndTimestampUnixSec = 2,
-            Interval = TimeSpan.FromSeconds(1),
+            Interval = TimeSpan.FromSeconds(1)
         },
         new()
         {

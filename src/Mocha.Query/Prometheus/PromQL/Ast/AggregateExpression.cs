@@ -13,7 +13,7 @@ public class AggregateExpression : Expression
 
     public Expression? Parameter { get; init; }
 
-    public required HashSet<string>? Grouping { get; init; }
+    public required HashSet<string> Grouping { get; init; }
 
     public bool Without { get; init; }
 }
