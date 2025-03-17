@@ -15,7 +15,6 @@ public class NodeTests
     {
         var expression = new Call
         {
-            ExpressionText = "histogram_quantile(0.9, sum(rate(foo[5m])) by (le))",
             Func = new Function
             {
                 Name = FunctionName.HistogramQuantile,
@@ -25,14 +24,12 @@ public class NodeTests
             },
             Args =
             [
-                new NumberLiteral { ExpressionText = "0.9", Value = 0.9 },
+                new NumberLiteral { Value = 0.9 },
                 new AggregateExpression
                 {
-                    ExpressionText = "sum(rate(foo[5m]))",
                     Op = AggregationOp.Sum,
                     Expression = new Call
                     {
-                        ExpressionText = "rate(foo[5m])",
                         Func = new Function
                         {
                             Name = FunctionName.Rate,
@@ -44,7 +41,6 @@ public class NodeTests
                         [
                             new MatrixSelector
                             {
-                                ExpressionText = "foo[5m]",
                                 Name = "foo",
                                 Range = TimeSpan.FromMinutes(5),
                                 LabelMatchers =
@@ -66,14 +62,12 @@ public class NodeTests
         var expected = new List<Expression>
         {
             expression,
-            new NumberLiteral { ExpressionText = "0.9", Value = 0.9 },
+            new NumberLiteral { Value = 0.9 },
             new AggregateExpression
             {
-                ExpressionText = "sum(rate(foo[5m]))",
                 Op = AggregationOp.Sum,
                 Expression = new Call
                 {
-                    ExpressionText = "rate(foo[5m])",
                     Func = new Function
                     {
                         Name = FunctionName.Rate,
@@ -85,7 +79,6 @@ public class NodeTests
                     [
                         new MatrixSelector
                         {
-                            ExpressionText = "foo[5m]",
                             Name = "foo",
                             Range = TimeSpan.FromMinutes(5),
                             LabelMatchers =
@@ -100,7 +93,6 @@ public class NodeTests
             },
             new Call
             {
-                ExpressionText = "rate(foo[5m])",
                 Func = new Function
                 {
                     Name = FunctionName.Rate,
@@ -112,7 +104,6 @@ public class NodeTests
                 [
                     new MatrixSelector
                     {
-                        ExpressionText = "foo[5m]",
                         Name = "foo",
                         Range = TimeSpan.FromMinutes(5),
                         LabelMatchers =
@@ -125,7 +116,6 @@ public class NodeTests
             },
             new MatrixSelector
             {
-                ExpressionText = "foo[5m]",
                 Name = "foo",
                 Range = TimeSpan.FromMinutes(5),
                 LabelMatchers =

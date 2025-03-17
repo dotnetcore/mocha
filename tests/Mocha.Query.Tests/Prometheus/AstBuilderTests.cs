@@ -33,15 +33,15 @@ public class AstBuilderTests
     {
         #region Scalars and scalar-to-scalar operations
 
-        new() { Input = "1", Expected = new NumberLiteral { ExpressionText = "1", Value = 1d }, }, new()
+        new() { Input = "1", Expected = new NumberLiteral { Value = 1d }, }, new()
         {
             Input = "1 + 1",
             Expected =
                 new BinaryExpression
                 {
                     Op = Operator.Add,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 }
         },
@@ -52,8 +52,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Sub,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 }
         },
@@ -64,8 +64,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Mul,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 }
         },
@@ -76,8 +76,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Mod,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 }
         },
@@ -88,8 +88,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Div,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 }
         },
@@ -100,8 +100,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Eql,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = true
                 }
         },
@@ -112,8 +112,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Neq,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = true
                 }
         },
@@ -124,8 +124,8 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Gtr,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = true
                 }
         },
@@ -136,43 +136,46 @@ public class AstBuilderTests
                 new BinaryExpression
                 {
                     Op = Operator.Gte,
-                    LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = true
                 }
         },
         new()
         {
             Input = "1 < bool 1",
-            Expected = new BinaryExpression
-            {
-                Op = Operator.Lss,
-                LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                ReturnBool = true
-            },
+            Expected =
+                new BinaryExpression
+                {
+                    Op = Operator.Lss,
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
+                    ReturnBool = true
+                },
         },
         new()
         {
             Input = "1 <= bool 1",
-            Expected = new BinaryExpression
-            {
-                Op = Operator.Lte,
-                LHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                ReturnBool = true
-            }
+            Expected =
+                new BinaryExpression
+                {
+                    Op = Operator.Lte,
+                    LHS = new NumberLiteral { Value = 1d },
+                    RHS = new NumberLiteral { Value = 1d },
+                    ReturnBool = true
+                }
         },
         new()
         {
             Input = "2 ^ 1",
-            Expected = new BinaryExpression
-            {
-                Op = Operator.Pow,
-                LHS = new NumberLiteral { ExpressionText = "2", Value = 2d },
-                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
-                ReturnBool = false
-            }
+            Expected =
+                new BinaryExpression
+                {
+                    Op = Operator.Pow,
+                    LHS = new NumberLiteral { Value = 2d },
+                    RHS = new NumberLiteral { Value = 1d },
+                    ReturnBool = false
+                }
         },
         new()
         {
@@ -180,12 +183,12 @@ public class AstBuilderTests
             Expected = new BinaryExpression
             {
                 Op = Operator.Pow,
-                LHS = new NumberLiteral { ExpressionText = "3", Value = 3d },
+                LHS = new NumberLiteral { Value = 3d },
                 RHS = new BinaryExpression
                 {
                     Op = Operator.Pow,
-                    LHS = new NumberLiteral { ExpressionText = "2", Value = 2d },
-                    RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                    LHS = new NumberLiteral { Value = 2d },
+                    RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = false
                 },
                 ReturnBool = false
@@ -242,7 +245,7 @@ public class AstBuilderTests
                     ],
                     Series = []
                 },
-                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d }
+                RHS = new NumberLiteral { Value = 1d }
             }
         },
         new()
@@ -260,7 +263,7 @@ public class AstBuilderTests
                     ],
                     Series = []
                 },
-                RHS = new NumberLiteral { ExpressionText = "1", Value = 1d },
+                RHS = new NumberLiteral { Value = 1d },
                 ReturnBool = true
             }
         },
@@ -270,7 +273,7 @@ public class AstBuilderTests
             Expected = new BinaryExpression
             {
                 Op = Operator.Div,
-                LHS = new NumberLiteral { ExpressionText = "2.5", Value = 2.5 },
+                LHS = new NumberLiteral { Value = 2.5 },
                 RHS = new VectorSelector
                 {
                     Name = "bar",
@@ -1134,7 +1137,7 @@ public class AstBuilderTests
                     ],
                     Series = []
                 },
-                Parameter = new NumberLiteral { ExpressionText = "5", Value = 5 },
+                Parameter = new NumberLiteral { Value = 5 },
                 Grouping = []
             }
         },
@@ -1184,7 +1187,7 @@ public class AstBuilderTests
                 },
                 Args =
                 [
-                    new NumberLiteral { ExpressionText = "0.9", Value = 0.9 },
+                    new NumberLiteral { Value = 0.9 },
                     new AggregateExpression
                     {
                         Op = AggregationOp.Sum,
