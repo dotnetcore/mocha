@@ -60,15 +60,12 @@ public class TimestampTests
         }
     }
 
-    public static IEnumerable<object[]> TestCases = new[]
+    public static IEnumerable<object[]> TestCases = new EngineTestCase[]
     {
         #region Instant queries
 
+        new() { Query = "1", Result = new ScalarResult { TimestampUnixSec = 1, Value = 1 }, StartTimestampUnixSec = 1 },
         new()
-        {
-            Query = "1", Result = new ScalarResult { TimestampUnixSec = 1, Value = 1 }, StartTimestampUnixSec = 1
-        },
-        new EngineTestCase
         {
             Query = "metric",
             Result = new VectorResult
@@ -79,9 +76,9 @@ public class TimestampTests
                     Metric = new Labels { ["__name__"] = "metric" }
                 }
             },
-            StartTimestampUnixSec = 1,
+            StartTimestampUnixSec = 1
         },
-        new EngineTestCase
+        new()
         {
             Query = "metric[20s]",
             Result = new MatrixResult
@@ -94,7 +91,7 @@ public class TimestampTests
                         new DoublePoint { TimestampUnixSec = 10, Value = 2 }
                     ],
                     Metric = new Labels { ["__name__"] = "metric" }
-                },
+                }
             },
             StartTimestampUnixSec = 10
         },
@@ -111,7 +108,7 @@ public class TimestampTests
                         new DoublePoint { TimestampUnixSec = 10, Value = 2 }
                     ],
                     Metric = new Labels { ["__name__"] = "metric" }
-                },
+                }
             },
             StartTimestampUnixSec = 10,
         },
@@ -158,7 +155,7 @@ public class TimestampTests
             },
             StartTimestampUnixSec = 0,
             EndTimestampUnixSec = 2,
-            Interval = TimeSpan.FromSeconds(1),
+            Interval = TimeSpan.FromSeconds(1)
         },
         new()
         {
@@ -182,6 +179,5 @@ public class TimestampTests
         },
 
         #endregion
-
     }.Select(x => new object[] { x });
 }

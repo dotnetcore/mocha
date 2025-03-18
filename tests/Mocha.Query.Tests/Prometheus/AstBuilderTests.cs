@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Antlr4.Runtime;
+using Mocha.Core.Extensions;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Ast;
@@ -33,7 +34,8 @@ public class AstBuilderTests
     {
         #region Scalars and scalar-to-scalar operations
 
-        new() { Input = "1", Expected = new NumberLiteral { Value = 1d } }, new()
+        new() { Input = "1", Expected = new NumberLiteral { Value = 1d } },
+        new()
         {
             Input = "1 + 1",
             Expected =
@@ -151,7 +153,7 @@ public class AstBuilderTests
                     LHS = new NumberLiteral { Value = 1d },
                     RHS = new NumberLiteral { Value = 1d },
                     ReturnBool = true
-                },
+                }
         },
         new()
         {
@@ -196,7 +198,6 @@ public class AstBuilderTests
         },
 
         #endregion
-
         #region Vector binary operations
 
         new()
@@ -1224,22 +1225,20 @@ public class AstBuilderTests
     }.Select(x => new object[] { x });
 
     // In order to have the test cases show up as individual tests,
-    // each parameter needs to be serializable by XUnit.
+    // we need to implement IXunitSerializable.
     public class TestCase : IXunitSerializable
     {
         public required string Input { get; set; }
-        public required Expression Expected { get; set; }
+        public required Expression Expected { get; init; }
 
         public void Deserialize(IXunitSerializationInfo info)
         {
             Input = info.GetValue<string>(nameof(Input));
-            Expected = info.GetValue<Expression>(nameof(Expected));
         }
 
         public void Serialize(IXunitSerializationInfo info)
         {
             info.AddValue(nameof(Input), Input);
-            info.AddValue(nameof(Expected), Expected);
         }
     }
 }
