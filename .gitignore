@@ -400,3 +400,5 @@ FodyWeavers.xsd
 .idea
 
 generated/
+
+src/Mocha.Antlr4.Generated/**/gen/
