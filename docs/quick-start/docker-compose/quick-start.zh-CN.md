@@ -8,10 +8,11 @@ docker-compose up --build -d
 
 启动成功后，可以看到以下容器：
 
-+ distributor: 提供用于接收 OTLP 数据的 gRPC API
-+ query: 提供用于接收查询协议的 HTTP API
-+ mysql: 用于存储数据
-+ grafana: 用于展示数据
++ mocha-distributor: 提供用于接收 OTLP 数据的 gRPC API
++ mocha-query: 提供用于接收查询协议的 HTTP API
++ mocha-mysql: 用于存储数据
++ mocha-influxdb: 用于存储数据
++ mocha-grafana: 用于展示数据
 
 ## 数据的发送
 

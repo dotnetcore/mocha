@@ -8,10 +8,11 @@ docker-compose up --build -d
 
 After the startup is successful, you can see the following containers:
 
-+ distributor: Provides gRPC API for receiving OTLP data
-+ query: Provides HTTP API for receiving query protocol
-+ mysql: Used to store data
-+ grafana: Used to display data
++ mocha-distributor: Provides gRPC API for receiving OTLP data
++ mocha-query: Provides HTTP API for receiving query protocol
++ mocha-mysql: Used to store data
++ mocha-influxdb: Used to store data
++ mocha-grafana: Used to display data
 
 ## Send Data
 
