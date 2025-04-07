@@ -23,7 +23,7 @@ public static class EnumerableExtensions
         }
 
         var mean = sum / count;
-        return sumSq / count - mean * mean;
+        return Math.Max(0, sumSq / count - mean * mean);
     }
 
     public static double StandardDeviation(this IEnumerable<double> values) => Math.Sqrt(values.StandardVariance());
