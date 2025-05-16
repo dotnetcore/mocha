@@ -1,4 +1,1 @@
-coverage:
-  status:
-    project: off
-    patch: off
+github_checks: false
