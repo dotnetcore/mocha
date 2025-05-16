@@ -24,7 +24,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
 		README.zh-CN.md = README.zh-CN.md
-		codecov.yml = codecov.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage", "src\Mocha.Storage\Mocha.Storage.csproj", "{8EEB6697-B975-430D-9CC3-3048E76C5ECA}"
