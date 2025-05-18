@@ -70,7 +70,7 @@ public class MemoryBufferServiceCollectionExtensionsTests
         {
             await foreach (var item in topic2Consumer.ConsumeAsync())
             {
-                Assert.True(false, "Should not consume any item.");
+                Assert.Fail("Should not consume any item.");
             }
         });
 

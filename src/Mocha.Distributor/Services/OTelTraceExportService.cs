@@ -29,7 +29,11 @@ public class OTelTraceExportService(IBufferQueue bufferQueue) : TraceService.Tra
         {
             for (; acceptedSpanCount < totalSpanCount; acceptedSpanCount++)
             {
-                await _bufferProducer.ProduceAsync(spans[acceptedSpanCount]);
+                var valueTask = _bufferProducer.ProduceAsync(spans[acceptedSpanCount]);
+                if (!valueTask.IsCompletedSuccessfully)
+                {
+                    await valueTask.AsTask();
+                }
             }
         }
         catch (Exception ex)
