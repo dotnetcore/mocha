@@ -10,7 +10,7 @@ using Mocha.Core.Storage.Prometheus;
 using Mocha.Storage.InfluxDB.Metrics.Readers.Prometheus;
 using Mocha.Storage.InfluxDB.Metrics.Writers;
 
-namespace Mocha.Storage.InfluxDB;
+namespace Mocha.Storage.InfluxDB.Metrics;
 
 public static class InfluxDBMetricsStorageOptionsBuilderExtensions
 {

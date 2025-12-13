@@ -66,6 +66,9 @@ services:
       - "4317"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - Metadata__Storage__Provider=EF
+      - Trace__Storage__Provider=EF
+      - Metrics__Storage__Provider=InfluxDB
       - Metadata__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Trace__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Metrics__Storage__InfluxDB__Url=http://influxdb:8086
@@ -91,6 +94,9 @@ services:
       - "5775"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - Metadata__Storage__Provider=EF
+      - Trace__Storage__Provider=EF
+      - Metrics__Storage__Provider=InfluxDB
       - Metadata__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Trace__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Metrics__Storage__InfluxDB__Url=http://influxdb:8086

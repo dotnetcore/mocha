@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Mocha.Core.Extensions;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Ast;
 using Mocha.Query.Prometheus.PromQL.Exceptions;
@@ -580,8 +581,7 @@ internal class Evaluator
         // The set of signatures for the right-hand side Vector.
         var rightSignatures =
             new HashSet<Labels>(
-                rhs.Select(s => s.Metric.MatchLabels(matching.On, matching.MatchingLabels)),
-                new LabelsComparer());
+                rhs.Select(s => s.Metric.MatchLabels(matching.On, matching.MatchingLabels)));
         // Add all rhs samples to a map so we can easily find matches later.
         foreach (var leftSeries in lhs)
         {
@@ -602,7 +602,7 @@ internal class Evaluator
             throw new InvalidOperationException("Set operations must only use many-to-many matching");
         }
 
-        var leftSignatures = new HashSet<Labels>(new LabelsComparer());
+        var leftSignatures = new HashSet<Labels>();
         // Add everything from the left-hand-side Vector.
         foreach (var leftSeries in lhs)
         {
@@ -631,8 +631,7 @@ internal class Evaluator
         }
 
         var rightSignatures = new HashSet<Labels>(
-            rhs.Select(s => s.Metric.MatchLabels(matching.On, matching.MatchingLabels)),
-            new LabelsComparer());
+            rhs.Select(s => s.Metric.MatchLabels(matching.On, matching.MatchingLabels)));
         foreach (var leftSeries in lhs)
         {
             var leftSignature = leftSeries.Metric.MatchLabels(matching.On, matching.MatchingLabels);
@@ -668,7 +667,7 @@ internal class Evaluator
         }
 
         // Add all rhs samples to a Dictionary so we can easily find matches later.
-        var rightSignatures = new Dictionary<Labels, Sample>(new LabelsComparer());
+        var rightSignatures = new Dictionary<Labels, Sample>();
         foreach (var rightSeries in rhs)
         {
             if (rightSignatures.TryGetValue(rightSeries.Metric, out var rightSignature))
@@ -688,7 +687,7 @@ internal class Evaluator
         var matchedSignatures = enh.MatchedSignatures;
         if (matchedSignatures == null)
         {
-            enh.MatchedSignatures = matchedSignatures = new Dictionary<Labels, HashSet<Labels>>(new LabelsComparer());
+            enh.MatchedSignatures = matchedSignatures = new Dictionary<Labels, HashSet<Labels>>();
         }
         else
         {
@@ -741,7 +740,7 @@ internal class Evaluator
                 // the same matching labels.
                 if (!exists)
                 {
-                    insertedSignatures = new HashSet<Labels>(new LabelsComparer());
+                    insertedSignatures = new HashSet<Labels>();
                     matchedSignatures[leftSample.Metric] = insertedSignatures;
                 }
                 else if (insertedSignatures!.Contains(metric))
@@ -956,7 +955,7 @@ internal class Evaluator
         }
 
         foreach (var groupedAggregation in vector
-                     .GroupBy(s => s.Metric.MatchLabels(!without, grouping), new LabelsComparer()))
+                     .GroupBy(s => s.Metric.MatchLabels(!without, grouping)))
         {
             var metric = new Labels();
             if (without)

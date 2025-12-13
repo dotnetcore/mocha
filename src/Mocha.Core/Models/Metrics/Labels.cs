@@ -1,11 +1,10 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Mocha.Core.Extensions;
 
-namespace Mocha.Core.Storage.Prometheus;
+namespace Mocha.Core.Models.Metrics;
 
 public partial class Labels : Dictionary<string, string>, IEquatable<Labels>
 {
@@ -132,6 +131,10 @@ public partial class Labels : Dictionary<string, string>, IEquatable<Labels>
 
         return hash.ToHashCode();
     }
+
+    public static bool operator ==(Labels? left, Labels? right) => Equals(left, right);
+
+    public static bool operator !=(Labels? left, Labels? right) => !Equals(left, right);
 
     public override string ToString() => this.ToJson();
 

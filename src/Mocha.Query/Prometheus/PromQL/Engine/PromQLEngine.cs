@@ -99,11 +99,7 @@ internal class PromQLEngine(
                 }));
                 return vector;
             case PrometheusValueType.Scalar:
-                return new ScalarResult
-                {
-                    Value = result[0].Points[0].Value,
-                    TimestampUnixSec = timestampUnixSec
-                };
+                return new ScalarResult { Value = result[0].Points[0].Value, TimestampUnixSec = timestampUnixSec };
             case PrometheusValueType.Matrix:
                 return result;
             default:
@@ -126,7 +122,7 @@ internal class PromQLEngine(
                     {
                         LabelMatchers = vectorSelector.LabelMatchers,
                         StartTimestampUnixSec =
-                        evalStatement.StartTimestampUnixSec - (long)_options.LookBackDelta.TotalSeconds,
+                            evalStatement.StartTimestampUnixSec - (long)_options.LookBackDelta.TotalSeconds,
                         EndTimestampUnixSec = evalStatement.EndTimestampUnixSec,
                         Limit = _options.MaxSamplesPerQuery,
                     };
@@ -136,7 +132,7 @@ internal class PromQLEngine(
                         parameters.EndTimestampUnixSec -= (long)vectorSelector.Offset.TotalSeconds;
                     }
 
-                    series = await metricReader.GetTimeSeriesAsync(parameters);
+                    series = await metricReader.GetTimeSeriesAsync(parameters, cancellationToken);
                     vectorSelector.Series = series;
                     break;
 
@@ -155,7 +151,7 @@ internal class PromQLEngine(
                         parameters.EndTimestampUnixSec -= (long)matrixSelector.Offset.TotalSeconds;
                     }
 
-                    series = await metricReader.GetTimeSeriesAsync(parameters);
+                    series = await metricReader.GetTimeSeriesAsync(parameters, cancellationToken);
                     matrixSelector.Series = series;
                     break;
             }

@@ -12,13 +12,13 @@ public class TimeSeries
     }
 
     [SetsRequiredMembers]
-    public TimeSeries(Labels labels, IEnumerable<TimeSeriesSample> samples)
+    public TimeSeries(Models.Metrics.Labels labels, IEnumerable<TimeSeriesSample> samples)
     {
         Labels = labels;
         Samples = samples;
     }
 
-    public required Labels Labels { get; set; }
+    public required Models.Metrics.Labels Labels { get; set; }
 
     /// <summary>
     /// The samples of the time series, sorted by timestamp.

@@ -12,6 +12,7 @@
 // limitations under the License.
 
 using Mocha.Core.Extensions;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Ast;
@@ -79,7 +80,7 @@ internal static class Functions
 
         var metricsWithBuckets = inputVector
             .GroupBy(s =>
-                s.Metric.MatchLabels(false, [Labels.MetricName, Labels.BucketLabel]), new LabelsComparer());
+                s.Metric.MatchLabels(false, [Labels.MetricName, Labels.BucketLabel]));
 
         foreach (var mb in metricsWithBuckets)
         {

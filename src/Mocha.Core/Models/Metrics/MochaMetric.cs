@@ -13,7 +13,7 @@ public class MochaMetric
 
     public required string Unit { get; init; }
 
-    public required Dictionary<string, string> Labels { get; init; }
+    public required Labels Labels { get; init; }
 
     public required double Value { get; init; }
 

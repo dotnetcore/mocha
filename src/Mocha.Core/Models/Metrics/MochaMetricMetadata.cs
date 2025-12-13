@@ -3,7 +3,7 @@
 
 namespace Mocha.Core.Models.Metrics;
 
-public record class MochaMetricMetadata
+public record MochaMetricMetadata
 {
     public required string Metric { get; init; }
 

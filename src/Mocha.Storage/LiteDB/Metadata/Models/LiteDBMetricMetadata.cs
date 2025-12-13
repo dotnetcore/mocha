@@ -1,0 +1,22 @@
+// Licensed to the .NET Core Community under one or more agreements.
+// The .NET Core Community licenses this file to you under the MIT license.
+
+using LiteDB;
+using Mocha.Core.Models.Metrics;
+
+namespace Mocha.Storage.LiteDB.Metadata.Models;
+
+public class LiteDBMetricMetadata
+{
+    public ObjectId? Id { get; set; }
+
+    public required string Metric { get; init; }
+
+    public required string ServiceName { get; init; }
+
+    public required MochaMetricType Type { get; set; }
+
+    public required string Description { get; set; }
+
+    public required string Unit { get; set; }
+}

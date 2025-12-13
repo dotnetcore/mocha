@@ -7,7 +7,8 @@ namespace Mocha.Core.Storage.Prometheus;
 
 public interface IPrometheusMetricMetadataReader
 {
-    Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(string? metricName = null,
+    Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(
+        string? metricName = null,
         int? limit = null);
 
     Task<IEnumerable<string>> GetMetricNamesAsync();

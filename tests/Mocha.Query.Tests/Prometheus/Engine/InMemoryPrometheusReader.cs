@@ -9,7 +9,9 @@ namespace Mocha.Query.Tests.Prometheus.Engine;
 
 public class InMemoryPrometheusMetricReader(IEnumerable<TimeSeries> timeSeries) : IPrometheusMetricReader
 {
-    public Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(TimeSeriesQueryParameters query)
+    public Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(
+        TimeSeriesQueryParameters query,
+        CancellationToken cancellationToken)
     {
         IEnumerable<TimeSeries> result = timeSeries
             .Where(s =>

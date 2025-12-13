@@ -7,7 +7,7 @@ namespace Mocha.Core.Storage.Prometheus;
 
 public interface IPrometheusMetricReader
 {
-    Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(TimeSeriesQueryParameters query);
+    Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(TimeSeriesQueryParameters query, CancellationToken cancellationToken);
 
     Task<IEnumerable<string>> GetLabelNamesAsync(LabelNamesQueryParameters query);
 

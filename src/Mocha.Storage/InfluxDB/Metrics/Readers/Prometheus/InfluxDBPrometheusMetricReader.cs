@@ -4,6 +4,7 @@
 using System.Text;
 using InfluxDB.Client;
 using Microsoft.Extensions.Options;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 
@@ -17,8 +18,12 @@ public class InfluxDbPrometheusMetricReader(
     private readonly IQueryApi _reader = influxDbClient.GetQueryApi();
     private readonly InfluxDBOptions _options = options.Value;
 
-    public async Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(TimeSeriesQueryParameters query)
+    public async Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(
+        TimeSeriesQueryParameters query,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var metricName = string.Empty;
         var labelMatchers = new List<LabelMatcher>();
 
@@ -55,7 +60,7 @@ public class InfluxDbPrometheusMetricReader(
         sb.AppendLine(" |> sort(columns: [\"_time\"])");
         sb.AppendLine($" |> limit(n: {query.Limit})");
 
-        var result = await _reader.QueryAsync(sb.ToString(), _options.Org);
+        var result = await _reader.QueryAsync(sb.ToString(), _options.Org, cancellationToken);
 
         if (result.Count == 0)
         {
@@ -140,7 +145,6 @@ public class InfluxDbPrometheusMetricReader(
         {
             return [];
         }
-
 
         var labelNames = result.SelectMany(r => r.Records.Select(record => record.GetValue().ToString()!))
             .ToList();

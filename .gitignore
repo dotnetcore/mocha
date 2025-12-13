@@ -402,3 +402,6 @@ FodyWeavers.xsd
 generated/
 
 src/Mocha.Antlr4.Generated/**/gen/
+
+# LiteDB database files
+*.litedb
