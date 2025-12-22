@@ -5,7 +5,7 @@ using Mocha.Core.Models.Metrics;
 
 namespace Mocha.Storage.LiteDB.Metadata.Readers;
 
-public static class LiteDBToPrometheusConversionExtensions
+internal static class LiteDBToPrometheusConversionExtensions
 {
     public static string ToPrometheusType(this MochaMetricType type)
     {

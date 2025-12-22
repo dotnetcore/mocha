@@ -6,17 +6,23 @@ using Mocha.Core.Models.Metrics;
 
 namespace Mocha.Storage.LiteDB.Metadata.Models;
 
-public class LiteDBMetricMetadata
+internal class LiteDBMetricMetadata
 {
+    [BsonId]
     public ObjectId? Id { get; set; }
 
+    [BsonField("m")]
     public required string Metric { get; init; }
 
+    [BsonField("s")]
     public required string ServiceName { get; init; }
 
+    [BsonField("t")]
     public required MochaMetricType Type { get; set; }
 
+    [BsonField("d")]
     public required string Description { get; set; }
 
+    [BsonField("u")]
     public required string Unit { get; set; }
 }

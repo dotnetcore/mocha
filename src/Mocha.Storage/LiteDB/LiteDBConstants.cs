@@ -5,12 +5,19 @@ namespace Mocha.Storage.LiteDB;
 
 public static class LiteDBConstants
 {
-    public const string MetadataDatabaseFileName = "metadata.litedb";
+    public const string SpansMetadataDatabaseFileName = "spans_metadata.db";
+
+    public static string SpansMetadataCollectionName => "spans_metadata";
+
+    public const string SpansDatabaseFileName = "spans.db";
+
+    public const string SpansCollectionName = "spans";
+
+    public const string MetricsMetadataDatabaseFileName = "metrics_metadata.db";
 
     public const string MetricsMetadataCollectionName = "metrics_metadata";
 
-    public const string MetricsDatabaseFileName = "metrics.litedb";
+    public const string MetricsDatabaseFileName = "metrics.db";
 
     public const string MetricsCollectionName = "metrics";
-
 }

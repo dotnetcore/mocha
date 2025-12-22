@@ -5,8 +5,6 @@ namespace Mocha.Core.Models.Trace;
 
 public class MochaSpanLink
 {
-    public long Id { get; init; }
-
     public required string LinkedTraceId { get; init; }
 
     public required string LinkedSpanId { get; init; }

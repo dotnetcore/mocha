@@ -3,6 +3,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Models.Trace;
 using Mocha.Distributor.Exporters;
@@ -15,6 +16,7 @@ using Mocha.Storage.InfluxDB;
 using Mocha.Storage.InfluxDB.Metrics;
 using Mocha.Storage.LiteDB.Metadata;
 using Mocha.Storage.LiteDB.Metrics;
+using Mocha.Storage.LiteDB.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,16 +31,18 @@ builder.Services.AddBuffer(options =>
 {
     options.UseMemory(bufferOptions =>
     {
+        bufferOptions.AddTopic<MochaSpanMetadata>("otlp-span-metadata", 1);
+        bufferOptions.AddTopic<MochaMetricMetadata>("otlp-metric-metadata", 1);
+
         bufferOptions.AddTopic<MochaSpan>("otlp-span", Environment.ProcessorCount);
         bufferOptions.AddTopic<MochaMetric>("otlp-metric", Environment.ProcessorCount);
-        bufferOptions.AddTopic<MochaMetricMetadata>("otlp-metric-metadata", 1);
     });
 });
 
 builder.Services.AddStorage()
     .WithMetadata(metadataOptions =>
     {
-        var storageProvider = builder.Configuration.GetValue<MetadataStorageProvider>("Metadata:Storage:Provider");
+        var storageProvider = builder.Configuration.GetValue<string>("Metadata:Storage:Provider");
         switch (storageProvider)
         {
             case MetadataStorageProvider.LiteDB:
@@ -47,10 +51,10 @@ builder.Services.AddStorage()
                     builder.Configuration.GetSection("Metadata:Storage:LiteDB").Bind(liteDbOptions);
                 });
                 break;
-            case MetadataStorageProvider.EF:
+            case MetadataStorageProvider.EFCore:
                 metadataOptions.UseEntityFrameworkCore(efOptions =>
                 {
-                    var connectionString = builder.Configuration.GetSection("Metadata:Storage:EF").Value;
+                    var connectionString = builder.Configuration.GetSection("Metadata:Storage:EFCore").Value;
                     var serverVersion = ServerVersion.AutoDetect(connectionString);
                     efOptions.UseMySql(connectionString, serverVersion);
                 });
@@ -61,12 +65,26 @@ builder.Services.AddStorage()
     })
     .WithTracing(tracingOptions =>
     {
-        tracingOptions.UseEntityFrameworkCore(efOptions =>
+        var storageProvider = builder.Configuration.GetValue<string>("Tracing:Storage:Provider");
+        switch (storageProvider)
         {
-            var connectionString = builder.Configuration.GetSection("Trace:Storage:EF").Value;
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
-            efOptions.UseMySql(connectionString, serverVersion);
-        });
+            case TracingStorageProvider.LiteDB:
+                tracingOptions.UseLiteDB(liteDbOptions =>
+                {
+                    builder.Configuration.GetSection("Tracing:Storage:LiteDB").Bind(liteDbOptions);
+                });
+                break;
+            case TracingStorageProvider.EFCore:
+                tracingOptions.UseEntityFrameworkCore(efOptions =>
+                {
+                    var connectionString = builder.Configuration.GetSection("Tracing:Storage:EFCore").Value;
+                    var serverVersion = ServerVersion.AutoDetect(connectionString);
+                    efOptions.UseMySql(connectionString, serverVersion);
+                });
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported tracing storage provider: {storageProvider}");
+        }
     })
     .WithMetrics(metricsOptions =>
     {

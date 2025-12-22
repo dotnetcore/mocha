@@ -7,7 +7,6 @@ using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.DTOs;
 using Mocha.Query.Prometheus.PromQL.Engine;
-using Mocha.Query.Prometheus.PromQL.Exceptions;
 using Mocha.Query.Prometheus.PromQL.Values;
 
 namespace Mocha.Query.Prometheus.Controllers;

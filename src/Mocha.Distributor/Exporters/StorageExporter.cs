@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Models.Trace;
 using Mocha.Core.Storage;
@@ -10,9 +11,10 @@ namespace Mocha.Distributor.Exporters;
 
 public class StorageExporter(
     IBufferQueue bufferQueue,
+    ITelemetryDataWriter<MochaSpanMetadata> spanMetadataWriter,
+    ITelemetryDataWriter<MochaMetricMetadata> metricMetadataWriter,
     ITelemetryDataWriter<MochaSpan> spanWriter,
     ITelemetryDataWriter<MochaMetric> metricWriter,
-    ITelemetryDataWriter<MochaMetricMetadata> metricMetadataWriter,
     ILogger<StorageExporter> logger)
     : IHostedService
 {
@@ -21,6 +23,39 @@ public class StorageExporter(
     public Task StartAsync(CancellationToken cancellationToken)
     {
         var groupName = "storage_exporter";
+
+        StartConsumers<MochaSpanMetadata>(
+            new BufferConsumerOptions
+            {
+                TopicName = "otlp-span-metadata",
+                GroupName = groupName,
+                AutoCommit = false,
+                BatchSize = 10000
+            },
+            1,
+            async data =>
+            {
+                var metadataList = data.DistinctBy(m => (m.ServiceName, m.OperationName));
+                await spanMetadataWriter.WriteAsync(metadataList);
+            },
+            cancellationToken);
+
+        StartConsumers<MochaMetricMetadata>(
+            new BufferConsumerOptions
+            {
+                TopicName = "otlp-metric-metadata",
+                GroupName = groupName,
+                AutoCommit = false,
+                BatchSize = 10000
+            },
+            1,
+            async data =>
+            {
+                var metadataList = data.DistinctBy(m => (m.Metric, m.ServiceName));
+                await metricMetadataWriter.WriteAsync(metadataList);
+            },
+            cancellationToken);
+
         StartConsumers<MochaSpan>(
             new BufferConsumerOptions
             {
@@ -45,21 +80,6 @@ public class StorageExporter(
             metricWriter.WriteAsync,
             cancellationToken);
 
-        StartConsumers<MochaMetricMetadata>(
-            new BufferConsumerOptions
-            {
-                TopicName = "otlp-metric-metadata",
-                GroupName = groupName,
-                AutoCommit = false,
-                BatchSize = 10000
-            },
-            1,
-            async data =>
-            {
-                var metadataList = data.DistinctBy(m => (m.Metric, m.ServiceName));
-                await metricMetadataWriter.WriteAsync(metadataList);
-            },
-            cancellationToken);
         return Task.CompletedTask;
     }
 

@@ -10,12 +10,22 @@ public class MochaMetadataContext(DbContextOptions<MochaMetadataContext> options
 {
     public DbSet<EFMetricMetadata> MetricMetadata => Set<EFMetricMetadata>();
 
+    public DbSet<EFSpanMetadata> SpanMetadata => Set<EFSpanMetadata>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<EFSpanMetadata>(entity =>
+        {
+            entity.ToTable("span_metadata");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ServiceName).HasColumnName("service_name").IsRequired();
+            entity.Property(e => e.OperationName).HasColumnName("operation_name").IsRequired();
+        });
+
         modelBuilder.Entity<EFMetricMetadata>(entity =>
         {
             entity.ToTable("metric_metadata");
-            entity.HasKey(e => e.Metric);
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Metric).HasColumnName("metric").IsRequired();
             entity.Property(e => e.ServiceName).HasColumnName("service_name").IsRequired();
             entity.Property(e => e.Type).HasColumnName("type").IsRequired();

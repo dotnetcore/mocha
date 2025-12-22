@@ -67,10 +67,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Metadata__Storage__Provider=EF
-      - Trace__Storage__Provider=EF
+      - Tracing__Storage__Provider=EF
       - Metrics__Storage__Provider=InfluxDB
       - Metadata__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
-      - Trace__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Tracing__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Metrics__Storage__InfluxDB__Url=http://influxdb:8086
       - Metrics__Storage__InfluxDB__Token=mocha_influxdb_token
       - Metrics__Storage__InfluxDB__Org=mocha_org
@@ -95,10 +95,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Metadata__Storage__Provider=EF
-      - Trace__Storage__Provider=EF
+      - Tracing__Storage__Provider=EF
       - Metrics__Storage__Provider=InfluxDB
       - Metadata__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
-      - Trace__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Tracing__Storage__EF=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
       - Metrics__Storage__InfluxDB__Url=http://influxdb:8086
       - Metrics__Storage__InfluxDB__Token=mocha_influxdb_token
       - Metrics__Storage__InfluxDB__Org=mocha_org

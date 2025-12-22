@@ -10,24 +10,6 @@ namespace Mocha.Storage.EntityFrameworkCore.Trace.Readers.Jaeger;
 
 internal class EFJaegerSpanReader(IDbContextFactory<MochaTraceContext> contextFactory) : IJaegerSpanReader
 {
-    public async Task<IEnumerable<string>> GetServicesAsync()
-    {
-        await using var context = await contextFactory.CreateDbContextAsync();
-        var services = await context.Spans.Select(s => s.ServiceName).Distinct().ToListAsync();
-        return services;
-    }
-
-    public async Task<IEnumerable<string>> GetOperationsAsync(string serviceName)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync();
-        var operations = await context.Spans
-            .Where(s => s.ServiceName == serviceName)
-            .Select(s => s.SpanName)
-            .Distinct()
-            .ToListAsync();
-        return operations;
-    }
-
     public async Task<IEnumerable<JaegerTrace>> FindTracesAsync(JaegerTraceQueryParameters query)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -82,11 +64,11 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaTraceContext> contextFa
                              select span;
         }
 
+        queryableSpans = queryableSpans.OrderByDescending(s => s.Id);
+
         if (query.NumTraces > 0)
         {
-            queryableSpans = queryableSpans
-                .OrderByDescending(s => s.Id)
-                .Take(query.NumTraces);
+            queryableSpans = queryableSpans.Take(query.NumTraces);
         }
 
         return await QueryJaegerTracesAsync(queryableSpans, context);

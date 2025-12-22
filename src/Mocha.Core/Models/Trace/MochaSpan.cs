@@ -9,9 +9,9 @@ public class MochaSpan
 
     public required string SpanId { get; init; }
 
-    public required string SpanName { get; init; } = string.Empty;
+    public required string SpanName { get; init; }
 
-    public required string ParentSpanId { get; init; } = string.Empty;
+    public required string ParentSpanId { get; init; }
 
     public ulong StartTimeUnixNano { get; init; }
 

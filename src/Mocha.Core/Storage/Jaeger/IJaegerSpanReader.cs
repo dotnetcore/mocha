@@ -7,10 +7,6 @@ namespace Mocha.Core.Storage.Jaeger;
 
 public interface IJaegerSpanReader
 {
-    Task<IEnumerable<string>> GetServicesAsync();
-
-    Task<IEnumerable<string>> GetOperationsAsync(string serviceName);
-
     Task<IEnumerable<JaegerTrace>> FindTracesAsync(JaegerTraceQueryParameters query);
 
     Task<IEnumerable<JaegerTrace>> FindTracesAsync(string[] traceIDs, ulong? startTimeMinUnixNano = null, ulong? startTimeMaxUnixNano = null);

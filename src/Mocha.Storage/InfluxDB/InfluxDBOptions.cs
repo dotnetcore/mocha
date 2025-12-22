@@ -5,11 +5,11 @@ namespace Mocha.Storage.InfluxDB;
 
 public class InfluxDBOptions
 {
-    public string? Url { get; set; }
+    public required string Url { get; set; }
 
-    public string? Token { get; set; }
+    public required string Token { get; set; }
 
-    public string? Org { get; set; }
+    public required string Org { get; set; }
 
-    public string? Bucket { get; set; }
+    public required string Bucket { get; set; }
 }

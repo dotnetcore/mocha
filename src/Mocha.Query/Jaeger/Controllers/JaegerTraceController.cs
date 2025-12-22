@@ -9,22 +9,27 @@ using Mocha.Query.Jaeger.DTOs;
 namespace Mocha.Query.Jaeger.Controllers;
 
 [Route("/jaeger/api")]
-public class JaegerTraceController(IJaegerSpanReader spanReader) : Controller
+public class JaegerTraceController() : Controller
 {
     [HttpGet("services")]
-    public async Task<JaegerResponse<IEnumerable<string>>> GetSeries()
+    public async Task<JaegerResponse<IEnumerable<string>>> GetServices(
+        [FromServices] IJaegerSpanMetadataReader spanMetadataReader)
     {
-        return new(await spanReader.GetServicesAsync());
+        return new(await spanMetadataReader.GetServicesAsync());
     }
 
     [HttpGet("services/{serviceName}/operations")]
-    public async Task<JaegerResponse<IEnumerable<string>>> GetOperations(string serviceName)
+    public async Task<JaegerResponse<IEnumerable<string>>> GetOperations(
+        [FromServices] IJaegerSpanMetadataReader spanMetadataReader,
+        string serviceName)
     {
-        return new(await spanReader.GetOperationsAsync(serviceName));
+        return new(await spanMetadataReader.GetOperationsAsync(serviceName));
     }
 
     [HttpGet("traces")]
-    public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> FindTraces([FromQuery] FindTracesRequest request)
+    public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> FindTraces(
+        [FromServices] IJaegerSpanReader spanReader,
+        [FromQuery] FindTracesRequest request)
     {
         static ulong? ParseAsNanoseconds(string? input)
         {
@@ -58,7 +63,6 @@ public class JaegerTraceController(IJaegerSpanReader spanReader) : Controller
         }
 
         var startTimeMin = request.Start * 1000;
-
 
         var startTimeMax = request.End * 1000;
 
@@ -108,7 +112,9 @@ public class JaegerTraceController(IJaegerSpanReader spanReader) : Controller
     }
 
     [HttpGet("traces/{traceID}")]
-    public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> GetTrace(string traceID)
+    public async Task<JaegerResponse<IEnumerable<JaegerTrace>>> GetTrace(
+        [FromServices] IJaegerSpanReader spanReader,
+        string traceID)
     {
         var traces = await spanReader.FindTracesAsync([traceID]);
 

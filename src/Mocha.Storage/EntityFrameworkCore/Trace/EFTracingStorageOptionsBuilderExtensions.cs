@@ -15,11 +15,11 @@ public static class EFTracingStorageOptionsBuilderExtensions
 {
     public static TracingStorageOptionsBuilder UseEntityFrameworkCore(
         this TracingStorageOptionsBuilder builder,
-        Action<DbContextOptionsBuilder> optionsAction)
+        Action<DbContextOptionsBuilder> configure)
     {
         builder.Services.AddSingleton<ITelemetryDataWriter<MochaSpan>, EFSpanWriter>();
         builder.Services.AddSingleton<IJaegerSpanReader, EFJaegerSpanReader>();
-        builder.Services.AddPooledDbContextFactory<MochaTraceContext>(optionsAction);
+        builder.Services.AddPooledDbContextFactory<MochaTraceContext>(configure);
         return builder;
     }
 }

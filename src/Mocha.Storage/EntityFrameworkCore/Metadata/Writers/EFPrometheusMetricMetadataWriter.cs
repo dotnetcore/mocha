@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.EntityFrameworkCore;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage;
 using Mocha.Storage.EntityFrameworkCore.Metadata.Models;

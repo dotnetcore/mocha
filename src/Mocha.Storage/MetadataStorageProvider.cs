@@ -3,8 +3,9 @@
 
 namespace Mocha.Storage;
 
-public enum MetadataStorageProvider
+public static class MetadataStorageProvider
 {
-    LiteDB,
-    EF
+    public const string LiteDB = "LiteDB";
+
+    public const string EFCore = "EFCore";
 }

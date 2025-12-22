@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Mocha.Storage.EntityFrameworkCore.Metadata.Models;
 using Mocha.Storage.EntityFrameworkCore.Trace.Configurations;
 using Mocha.Storage.EntityFrameworkCore.Trace.Models;
 

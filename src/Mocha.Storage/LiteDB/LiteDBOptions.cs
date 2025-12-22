@@ -3,10 +3,10 @@
 
 namespace Mocha.Storage.LiteDB;
 
-public class LiteDBOptions
+public abstract class LiteDBOptions
 {
     /// <summary>
     /// Gets or sets the directory path for the LiteDB database file.
     /// </summary>
-    public required string DatabasePath { get; init; }
+    public required string DatabasePath { get; set; }
 }

@@ -9,28 +9,15 @@ using Mocha.Storage.LiteDB.Metadata.Models;
 
 namespace Mocha.Storage.LiteDB.Metadata.Readers;
 
-public class LiteDBPrometheusMetricMetadataReader : IPrometheusMetricMetadataReader, IDisposable
+internal class LiteDBPrometheusMetricMetadataReader(
+    ILiteDBCollectionAccessor<LiteDBMetricMetadata> collectionAccessor)
+    : IPrometheusMetricMetadataReader
 {
-    private readonly ILiteDatabase _db;
-    private readonly ILiteCollection<LiteDBMetricMetadata> _collection;
-
-    public LiteDBPrometheusMetricMetadataReader(IOptions<LiteDBMetadataOptions> optionsAccessor)
-    {
-        var options = optionsAccessor.Value;
-        var dbPath = Path.Combine(options.DatabasePath, LiteDBConstants.MetadataDatabaseFileName);
-        _db = LiteDBUtils.OpenDatabase(dbPath);
-        _collection = _db.GetCollection<LiteDBMetricMetadata>(LiteDBConstants.MetricsMetadataCollectionName);
-
-        BsonMapper.Global.Entity<LiteDBMetricMetadata>().Id(x => x.Id);
-        _collection.EnsureIndex(x => x.Metric);
-        _collection.EnsureIndex(x => x.ServiceName);
-    }
-
     public Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(
         string? metricName = null,
         int? limit = null)
     {
-        var queryable = _collection.Query();
+        var queryable = collectionAccessor.Collection.Query();
 
         if (!string.IsNullOrWhiteSpace(metricName))
         {
@@ -63,16 +50,11 @@ public class LiteDBPrometheusMetricMetadataReader : IPrometheusMetricMetadataRea
 
     public Task<IEnumerable<string>> GetMetricNamesAsync()
     {
-        var metricNames = _collection.Query()
+        var metricNames = collectionAccessor.Collection.Query()
             .Select(m => m.Metric)
             .ToList()
             .ToHashSet();
 
         return Task.FromResult<IEnumerable<string>>(metricNames);
-    }
-
-    public void Dispose()
-    {
-        _db.Dispose();
     }
 }

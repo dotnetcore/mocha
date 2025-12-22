@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Storage.Prometheus;
 using OpenTelemetry.Proto.Common.V1;
 using OpenTelemetry.Proto.Metrics.V1;

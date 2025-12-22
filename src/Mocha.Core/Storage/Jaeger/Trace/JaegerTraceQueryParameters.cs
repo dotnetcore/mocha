@@ -19,5 +19,6 @@ public class JaegerTraceQueryParameters
 
     public ulong? DurationMaxNanoseconds { get; init; }
 
+    // default 0 from Jaeger means no limit
     public int NumTraces { get; init; }
 }

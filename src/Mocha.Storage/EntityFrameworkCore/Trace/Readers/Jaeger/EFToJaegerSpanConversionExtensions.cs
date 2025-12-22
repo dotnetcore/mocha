@@ -54,8 +54,8 @@ internal static class EFToJaegerSpanConversionExtensions
             .GroupBy(s => s.TraceID)
             .Select(g =>
             {
-                var spansOfCurrentTrace = g.ToArray();
-                var jaegerProcesses = new List<JaegerProcess>();
+                var spansOfCurrentTrace = g.OrderBy(s => s.StartTime).ToArray();
+                var jaegerProcesses = new Dictionary<string, JaegerProcess>();
 
                 foreach (var span in spansOfCurrentTrace)
                 {
@@ -69,15 +69,13 @@ internal static class EFToJaegerSpanConversionExtensions
                         Tags = Array.ConvertAll(attributes, ToJaegerTag)
                     };
 
-                    jaegerProcesses.Add(process);
+                    jaegerProcesses.TryAdd(span.ProcessID, process);
                 }
 
                 return new JaegerTrace
                 {
                     TraceID = g.Key,
-                    Processes = jaegerProcesses
-                        .DistinctBy(p => p.ProcessID)
-                        .ToDictionary(p => p.ProcessID),
+                    Processes = jaegerProcesses,
                     Spans = spansOfCurrentTrace
                 };
             });

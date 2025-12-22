@@ -11,25 +11,10 @@ using Mocha.Storage.LiteDB.Metrics.Models;
 
 namespace Mocha.Storage.LiteDB.Metrics.Readers.Prometheus;
 
-public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
+internal class LiteDBPrometheusMetricReader(
+    ILiteDBCollectionAccessor<LiteDBMetric> collectionAccessor)
+    : IPrometheusMetricReader
 {
-    private readonly ILiteDatabase _db;
-    private readonly ILiteCollection<LiteDBMetric> _collection;
-
-    public LiteDBPrometheusMetricReader(IOptions<LiteDBMetricsOptions> optionsAccessor)
-    {
-        var options = optionsAccessor.Value;
-        var dbPath = Path.Combine(options.DatabasePath, LiteDBConstants.MetricsDatabaseFileName);
-        _db = LiteDBUtils.OpenDatabase(dbPath);
-        _collection = _db.GetCollection<LiteDBMetric>(LiteDBConstants.MetricsCollectionName);
-
-        BsonMapper.Global.Entity<LiteDBMetric>().Id(x => x.Id);
-        _collection.EnsureIndex(x => x.TimestampUnixNano);
-        _collection.EnsureIndex(x => x.Name);
-        _collection.EnsureIndex(x => x.Labels);
-        _collection.EnsureIndex(x => x.LabelNames);
-    }
-
     public Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(
         TimeSeriesQueryParameters query,
         CancellationToken cancellationToken)
@@ -39,17 +24,31 @@ public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
         // Query by time range and label equivalent matchers
         var startUnixNano = query.StartTimestampUnixSec * 1_000_000_000;
         var endUnixNano = query.EndTimestampUnixSec * 1_000_000_000;
-        var labelEqMatchers = query.LabelMatchers
-            .Where(lm => lm.Type == LabelMatcherType.Equal)
-            .ToList();
-        var otherMatchers = query.LabelMatchers
-            .Where(lm => lm.Type != LabelMatcherType.Equal)
-            .ToList();
 
-        var queryable = _collection.Query()
+        var eqMatchers = new List<LabelMatcher>();
+        var neqMatchers = new List<LabelMatcher>();
+        var otherMatchers = new List<LabelMatcher>();
+
+        foreach (var matcher in query.LabelMatchers)
+        {
+            switch (matcher.Type)
+            {
+                case LabelMatcherType.Equal:
+                    eqMatchers.Add(matcher);
+                    break;
+                case LabelMatcherType.NotEqual:
+                    neqMatchers.Add(matcher);
+                    break;
+                default:
+                    otherMatchers.Add(matcher);
+                    break;
+            }
+        }
+
+        var queryable = collectionAccessor.Collection.Query()
             .Where(m => m.TimestampUnixNano >= startUnixNano && m.TimestampUnixNano <= endUnixNano);
 
-        foreach (var eqMatcher in labelEqMatchers)
+        foreach (var eqMatcher in eqMatchers)
         {
             if (eqMatcher is { Name: Labels.MetricName, Type: LabelMatcherType.Equal })
             {
@@ -60,6 +59,12 @@ public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
 
             var labelString = $"{eqMatcher.Name}={eqMatcher.Value}";
             queryable = queryable.Where(m => m.Labels.Contains(labelString));
+        }
+
+        foreach (var neqMatcher in neqMatchers)
+        {
+            var labelString = $"{neqMatcher.Name}={neqMatcher.Value}";
+            queryable = queryable.Where(m => !m.Labels.Contains(labelString));
         }
 
         var results = queryable
@@ -114,15 +119,17 @@ public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
     {
         var startUnixNano = query.StartTimestampUnixSec * 1_000_000_000;
         var endUnixNano = query.EndTimestampUnixSec * 1_000_000_000;
-        var labelEqMatchers = query.LabelMatchers
+        var eqMatchers = query.LabelMatchers
             .Where(lm => lm.Type == LabelMatcherType.Equal)
             .ToList();
-        var queryable = _collection.Query()
+
+        var queryable = collectionAccessor.Collection.Query()
             .Where(m => m.TimestampUnixNano >= startUnixNano && m.TimestampUnixNano <= endUnixNano);
 
-        foreach (var eqMatcher in labelEqMatchers)
+        foreach (var eqMatcher in eqMatchers)
         {
-            queryable = queryable.Where(m => m.Labels.Contains($"{eqMatcher.Name}={eqMatcher.Value}"));
+            var labelString = $"{eqMatcher.Name}={eqMatcher.Value}";
+            queryable = queryable.Where(m => m.Labels.Contains(labelString));
         }
 
         var results = queryable.ToList();
@@ -147,7 +154,7 @@ public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
     {
         var startUnixNano = query.StartTimestampUnixSec * 1_000_000_000;
         var endUnixNano = query.EndTimestampUnixSec * 1_000_000_000;
-        var queryable = _collection.Query()
+        var queryable = collectionAccessor.Collection.Query()
             .Where(m => m.TimestampUnixNano >= startUnixNano && m.TimestampUnixNano <= endUnixNano)
             .Where(m => m.LabelNames.Contains(query.LabelName));
 
@@ -167,11 +174,6 @@ public class LiteDBPrometheusMetricReader : IPrometheusMetricReader, IDisposable
         }
 
         return Task.FromResult<IEnumerable<string>>(labelValues);
-    }
-
-    public void Dispose()
-    {
-        _db.Dispose();
     }
 
     private IEnumerable<TimeSeries> TransformToTimeSeries(

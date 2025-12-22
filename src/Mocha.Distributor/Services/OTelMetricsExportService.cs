@@ -3,6 +3,7 @@
 
 using Grpc.Core;
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using OpenTelemetry.Proto.Collector.Metrics.V1;
 
