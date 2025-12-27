@@ -15,9 +15,9 @@ using Mocha.Storage.LiteDB.Metrics.Writers;
 namespace Mocha.Storage.Benchmarks;
 
 [MemoryDiagnoser]
-public class PrometheusMetricReaderBenchmark
+public class PrometheusMetricsReaderBenchmark
 {
-    private IPrometheusMetricReader? _liteDBReader;
+    private IPrometheusMetricsReader? _liteDBReader;
     private int[]? _randomRoutes;
 
     private const string DatabasePath = "benchmark_metrics";
@@ -29,8 +29,8 @@ public class PrometheusMetricReaderBenchmark
 
         var collectionAccessor = new LiteDBMetricsCollectionAccessor(options);
 
-        _liteDBReader = new LiteDBPrometheusMetricReader(collectionAccessor);
-        var writer = new LiteDBMetricWriter(collectionAccessor);
+        _liteDBReader = new LiteDBPrometheusMetricsReader(collectionAccessor);
+        var writer = new LiteDBMetricsWriter(collectionAccessor);
         WriteSampleDataAsync(writer).GetAwaiter().GetResult();
     }
 
@@ -68,7 +68,8 @@ public class PrometheusMetricReaderBenchmark
                 StartTimestampUnixSec = DateTimeOffset.UtcNow.AddHours(-1)
                     .ToUnixTimeSeconds(),
                 EndTimestampUnixSec = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                Limit = 1000
+                Limit = 1000,
+                Interval = TimeSpan.Zero
             };
 
             var result = await _liteDBReader.GetTimeSeriesAsync(query, CancellationToken.None);

@@ -23,8 +23,6 @@ internal class Evaluator
 
     public int MaxSamples { get; init; }
 
-    public TimeSpan DefaultEvalInterval { get; set; }
-
     private int _currentSamples;
 
     public MatrixResult Eval(Expression expr)

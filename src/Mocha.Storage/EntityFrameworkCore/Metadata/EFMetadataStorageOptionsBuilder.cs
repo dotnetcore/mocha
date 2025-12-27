@@ -20,8 +20,8 @@ public static class EFMetadataStorageOptionsBuilderExtensions
     {
         builder.Services.AddSingleton<ITelemetryDataWriter<MochaSpanMetadata>, EFSpanMetadataWriter>();
         builder.Services.AddSingleton<IJaegerSpanMetadataReader, EFJaegerSpanMetadataReader>();
-        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetricMetadata>, EFPrometheusMetricMetadataWriter>();
-        builder.Services.AddSingleton<IPrometheusMetricMetadataReader, EFPrometheusMetricMetadataReader>();
+        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetricMetadata>, EFPrometheusMetricsMetadataWriter>();
+        builder.Services.AddSingleton<IPrometheusMetricsMetadataReader, EFPrometheusMetricsMetadataReader>();
         builder.Services.AddPooledDbContextFactory<MochaMetadataContext>(configure);
         return builder;
     }

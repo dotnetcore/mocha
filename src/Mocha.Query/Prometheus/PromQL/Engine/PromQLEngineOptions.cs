@@ -13,5 +13,5 @@ public class PromQLEngineOptions
 
     public int MaxSamplesPerQuery { get; set; } = 50000000;
 
-    public TimeSpan DefaultEvaluationInterval { get; set; } = TimeSpan.FromMinutes(15);
+    public TimeSpan DefaultEvaluationInterval { get; set; } = TimeSpan.FromSeconds(15);
 }

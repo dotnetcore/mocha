@@ -12,6 +12,18 @@ internal class LiteDBJaegerSpanReader(ILiteDBCollectionAccessor<LiteDBSpan> coll
     public Task<IEnumerable<JaegerTrace>> FindTracesAsync(JaegerTraceQueryParameters query)
     {
         var queryable = collectionAccessor.Collection.Query();
+
+        // Filter by start time first so the index of StartTimeUnixNano can be used
+        if (query.StartTimeMinUnixNano.HasValue)
+        {
+            queryable = queryable.Where(span => span.StartTimeUnixNano >= query.StartTimeMinUnixNano.Value);
+        }
+
+        if (query.StartTimeMaxUnixNano.HasValue)
+        {
+            queryable = queryable.Where(span => span.StartTimeUnixNano <= query.StartTimeMaxUnixNano.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(query.ServiceName))
         {
             queryable = queryable.Where(span => span.ServiceName == query.ServiceName);
@@ -29,16 +41,6 @@ internal class LiteDBJaegerSpanReader(ILiteDBCollectionAccessor<LiteDBSpan> coll
                 var tagString = $"{key}={value}";
                 queryable = queryable.Where(span => span.AttributeKeyValueStrings.Contains(tagString));
             }
-        }
-
-        if (query.StartTimeMinUnixNano.HasValue)
-        {
-            queryable = queryable.Where(span => span.StartTimeUnixNano >= query.StartTimeMinUnixNano.Value);
-        }
-
-        if (query.StartTimeMaxUnixNano.HasValue)
-        {
-            queryable = queryable.Where(span => span.StartTimeUnixNano <= query.StartTimeMaxUnixNano.Value);
         }
 
         if (query.DurationMinNanoseconds.HasValue)

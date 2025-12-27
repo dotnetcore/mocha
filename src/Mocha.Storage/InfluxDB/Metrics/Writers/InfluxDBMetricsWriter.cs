@@ -10,7 +10,7 @@ using Mocha.Core.Storage;
 
 namespace Mocha.Storage.InfluxDB.Metrics.Writers;
 
-public class InfluxDBMetricWriter(
+public class InfluxDBMetricsWriter(
     IInfluxDBClient client,
     IOptions<InfluxDBOptions> options)
     : ITelemetryDataWriter<MochaMetric>

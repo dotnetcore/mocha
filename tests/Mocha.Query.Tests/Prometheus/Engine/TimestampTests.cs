@@ -16,7 +16,7 @@ public class TimestampTests
     [MemberData(nameof(TestCases))]
     public async Task Eval_Timestamps(EngineTestCase testCase)
     {
-        var mockReader = new Mock<IPrometheusMetricReader>();
+        var mockReader = new Mock<IPrometheusMetricsReader>();
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
 
         mockReader.Setup(x => x.GetTimeSeriesAsync(It.IsAny<TimeSeriesQueryParameters>(), It.IsAny<CancellationToken>()))
@@ -41,6 +41,7 @@ public class TimestampTests
                 await engine.QueryInstantAsync(
                     testCase.Query,
                     testCase.StartTimestampUnixSec,
+                    null,
                     CancellationToken.None);
 
             result.Should().BeEquivalentTo(testCase.Result,
@@ -54,6 +55,7 @@ public class TimestampTests
                     testCase.StartTimestampUnixSec,
                     testCase.EndTimestampUnixSec,
                     testCase.Interval,
+                    null,
                     CancellationToken.None);
 
             result.Should().BeEquivalentTo((MatrixResult)testCase.Result,

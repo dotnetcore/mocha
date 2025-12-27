@@ -7,14 +7,11 @@ namespace Mocha.Storage.LiteDB.Trace.Models;
 
 public class LiteDBSpan
 {
-    [BsonId]
-    public ObjectId? Id { get; init; }
+    [BsonField("si")]
+    public required string SpanId { get; init; }
 
     [BsonField("ti")]
     public required string TraceId { get; init; }
-
-    [BsonField("si")]
-    public required string SpanId { get; init; }
 
     [BsonField("n")]
     public required string SpanName { get; init; }
@@ -62,6 +59,7 @@ public class LiteDBSpan
     public required IEnumerable<LiteDBAttribute> Attributes { get; init; }
 
     // Stored as "key=value" strings for efficient querying
+    // Attributes from both span and resource are included
     [BsonField("avs")]
     public required IEnumerable<string> AttributeKeyValueStrings { get; init; }
 

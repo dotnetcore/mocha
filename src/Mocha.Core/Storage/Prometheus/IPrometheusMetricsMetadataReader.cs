@@ -5,7 +5,7 @@ using Mocha.Core.Storage.Prometheus.Metrics;
 
 namespace Mocha.Core.Storage.Prometheus;
 
-public interface IPrometheusMetricMetadataReader
+public interface IPrometheusMetricsMetadataReader
 {
     Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(
         string? metricName = null,

@@ -5,7 +5,7 @@ using Mocha.Core.Storage.Prometheus.Metrics;
 
 namespace Mocha.Core.Storage.Prometheus;
 
-public interface IPrometheusMetricReader
+public interface IPrometheusMetricsReader
 {
     Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(TimeSeriesQueryParameters query, CancellationToken cancellationToken);
 

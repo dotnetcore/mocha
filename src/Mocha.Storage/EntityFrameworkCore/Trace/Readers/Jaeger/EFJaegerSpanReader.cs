@@ -56,12 +56,13 @@ internal class EFJaegerSpanReader(IDbContextFactory<MochaTraceContext> contextFa
                     .Where(a => tags.Contains(a.Key + ":" + a.Value));
 
             var spanIds = queryableAttributes.GroupBy(a => a.SpanId)
-                .Where(a => a.Count() == query.Tags.Count())
+                .Where(a => a.Count() == query.Tags.Count)
                 .Select(a => a.Key);
 
             queryableSpans = from span in queryableSpans
                              join spanId in spanIds on span.SpanId equals spanId
                              select span;
+            // TODO: should also check ResourceAttributes for tags
         }
 
         queryableSpans = queryableSpans.OrderByDescending(s => s.Id);

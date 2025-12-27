@@ -9,7 +9,8 @@ namespace Mocha.Storage.LiteDB.Metadata;
 
 internal class LiteDBSpanMetadataCollectionAccessor(IOptions<LiteDBMetadataOptions> optionsAccessor)
     : LiteDBCollectionAccessor<LiteDBSpanMetadata>(
-        Path.Combine(optionsAccessor.Value.DatabasePath, LiteDBConstants.SpansMetadataDatabaseFileName),
+        optionsAccessor.Value.DatabasePath,
+        LiteDBConstants.SpansMetadataDatabaseFileName,
         LiteDBConstants.SpansMetadataCollectionName)
 {
     protected override void ConfigureCollection(ILiteCollection<LiteDBSpanMetadata> collection)

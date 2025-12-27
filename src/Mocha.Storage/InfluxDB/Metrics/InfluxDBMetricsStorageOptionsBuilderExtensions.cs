@@ -25,8 +25,8 @@ public static class InfluxDBMetricsStorageOptionsBuilderExtensions
             var options = sp.GetRequiredService<IOptions<InfluxDBOptions>>().Value;
             return new InfluxDBClient(options.Url, options.Token);
         });
-        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetric>, InfluxDBMetricWriter>();
-        builder.Services.AddSingleton<IPrometheusMetricReader, InfluxDbPrometheusMetricReader>();
+        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetric>, InfluxDBMetricsWriter>();
+        builder.Services.AddSingleton<IPrometheusMetricsReader, InfluxDbPrometheusMetricsReader>();
         return builder;
     }
 }

@@ -6,7 +6,7 @@ using Mocha.Storage.Benchmarks;
 
 var allBenchmarks = new[]
 {
-    typeof(PrometheusMetricReaderBenchmark)
+    typeof(PrometheusMetricsReaderBenchmark)
 };
 
 new BenchmarkSwitcher(allBenchmarks).Run(args);

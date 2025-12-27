@@ -10,10 +10,10 @@ using Mocha.Core.Storage.Prometheus.Metrics;
 
 namespace Mocha.Storage.InfluxDB.Metrics.Readers.Prometheus;
 
-public class InfluxDbPrometheusMetricReader(
+public class InfluxDbPrometheusMetricsReader(
     IInfluxDBClient influxDbClient,
     IOptions<InfluxDBOptions> options)
-    : IPrometheusMetricReader
+    : IPrometheusMetricsReader
 {
     private readonly IQueryApi _reader = influxDbClient.GetQueryApi();
     private readonly InfluxDBOptions _options = options.Value;
@@ -195,12 +195,14 @@ public class InfluxDbPrometheusMetricReader(
             switch (labelMatcherType)
             {
                 case LabelMatcherType.Equal:
-                    labelMatcherQLs.Add(labelValue == string.Empty
-                        ? $"(r.{name} == \"\" or not exists r.{name})"
+                    labelMatcherQLs.Add(string.IsNullOrEmpty(labelValue)
+                        ? $"(not exists r.{name} or r.{name} == \"\")"
                         : $"r.{name} == \"{labelValue}\"");
                     break;
                 case LabelMatcherType.NotEqual:
-                    labelMatcherQLs.Add($"r.{name} != \"{labelValue}\"");
+                    labelMatcherQLs.Add(string.IsNullOrEmpty(labelValue)
+                        ? $"(exists r.{name} and r.{name} != \"\")"
+                        : $"r.{name} != \"{labelValue}\"");
                     break;
                 case LabelMatcherType.RegexMatch:
                     labelMatcherQLs.Add($"r.{name} =~ /{labelValue}/");

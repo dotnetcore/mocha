@@ -19,8 +19,6 @@ internal static class LiteToJaegerSpanConversionExtensions
 
                 foreach (var span in g)
                 {
-                    var jaegerSpan = span.ToJaegerSpan();
-
                     var process = new JaegerProcess
                     {
                         ServiceName = span.ServiceName,

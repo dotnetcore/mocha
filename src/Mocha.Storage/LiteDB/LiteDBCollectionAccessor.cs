@@ -11,9 +11,15 @@ public abstract class LiteDBCollectionAccessor<T> : ILiteDBCollectionAccessor<T>
 
     protected LiteDBCollectionAccessor(
         string databasePath,
+        string databaseName,
         string collectionName)
     {
-        _db = OpenDatabase(databasePath);
+        ArgumentNullException.ThrowIfNull(databasePath);
+        ArgumentNullException.ThrowIfNull(databaseName);
+        ArgumentNullException.ThrowIfNull(collectionName);
+
+        var path = Path.Combine(databasePath, databaseName);
+        _db = OpenDatabase(path);
         Collection = _db.GetCollection<T>(collectionName);
 
         ConfigureCollection(Collection);
@@ -45,12 +51,28 @@ public abstract class LiteDBCollectionAccessor<T> : ILiteDBCollectionAccessor<T>
         var directory = Path.GetDirectoryName(path);
         if (directory is not null && !Directory.Exists(directory))
         {
-            Directory.CreateDirectory(directory);
+            try
+            {
+                Directory.CreateDirectory(directory);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(
+                    $"Could not create directory for LiteDB database file at path '{path}'.", e);
+            }
         }
 
         if (!File.Exists(path))
         {
-            using var fs = File.Create(path);
+            try
+            {
+                using var fs = File.Create(path);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(
+                    $"Could not create LiteDB database file at path '{path}'.", e);
+            }
         }
     }
 }

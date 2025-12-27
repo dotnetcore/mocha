@@ -7,7 +7,7 @@ using Mocha.Storage.LiteDB.Metrics.Models;
 
 namespace Mocha.Storage.LiteDB.Metrics.Writers;
 
-internal class LiteDBMetricWriter(
+internal class LiteDBMetricsWriter(
     ILiteDBCollectionAccessor<LiteDBMetric> collectionAccessor)
     : ITelemetryDataWriter<MochaMetric>
 {

@@ -9,6 +9,10 @@ internal static class MochaToLiteDBSpanConversionExtensions
 {
     internal static LiteDBSpan ToLiteDBSpan(this MochaSpan span)
     {
+        var attributeKeyValueStrings = span.Attributes
+            .Union(span.Resource.Attributes)
+            .Select(a => $"{a.Key}={a.Value}").ToList();
+
         var liteDBSpan = new LiteDBSpan
         {
             TraceId = span.TraceId,
@@ -28,7 +32,7 @@ internal static class MochaToLiteDBSpanConversionExtensions
             Resource = span.Resource.ToLiteDBResource(),
             Links = span.Links.ToLiteDBSpanLink(),
             Attributes = span.Attributes.ToLiteDBAttributes(),
-            AttributeKeyValueStrings = span.Attributes.Select(a => $"{a.Key}={a.Value}"),
+            AttributeKeyValueStrings = attributeKeyValueStrings,
             Events = span.Events.ToLiteDBSpanEvent()
         };
 

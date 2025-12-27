@@ -7,8 +7,8 @@ using Mocha.Core.Storage.Prometheus.Metrics;
 
 namespace Mocha.Storage.EntityFrameworkCore.Metadata.Readers;
 
-public class EFPrometheusMetricMetadataReader(IDbContextFactory<MochaMetadataContext> contextFactory)
-    : IPrometheusMetricMetadataReader
+internal class EFPrometheusMetricsMetadataReader(IDbContextFactory<MochaMetadataContext> contextFactory)
+    : IPrometheusMetricsMetadataReader
 {
     public async Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(
         string? metricName = null, int? limit = null)

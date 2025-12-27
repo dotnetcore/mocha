@@ -10,11 +10,12 @@ public interface IPromQLEngine
     Task<MatrixResult> QueryRangeAsync(string query,
         long startTimestampUnixSec,
         long endTimestampUnixSec,
-        TimeSpan? step,
+        TimeSpan step,
+        int? limit,
         CancellationToken cancellationToken);
 
-    Task<IParseResult> QueryInstantAsync(
-        string query,
+    Task<IParseResult> QueryInstantAsync(string query,
         long timestampUnixSec,
+        int? limit,
         CancellationToken cancellationToken);
 }

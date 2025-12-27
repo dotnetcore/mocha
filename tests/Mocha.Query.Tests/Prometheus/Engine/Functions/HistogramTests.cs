@@ -80,11 +80,12 @@ public class HistogramTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
             mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(
+                testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()

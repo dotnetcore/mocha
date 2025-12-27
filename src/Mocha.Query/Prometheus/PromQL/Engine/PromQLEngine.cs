@@ -21,7 +21,7 @@ namespace Mocha.Query.Prometheus.PromQL.Engine;
 
 internal class PromQLEngine(
     IPromQLParser promQLParser,
-    IPrometheusMetricReader metricReader,
+    IPrometheusMetricsReader metricReader,
     IOptions<PromQLEngineOptions> optionsAccessor)
     : IPromQLEngine
 {
@@ -31,7 +31,8 @@ internal class PromQLEngine(
         string query,
         long startTimestampUnixSec,
         long endTimestampUnixSec,
-        TimeSpan? step,
+        TimeSpan step,
+        int? limit,
         CancellationToken cancellationToken)
     {
         // TODO: Can we remove the EvalStatement?
@@ -40,7 +41,7 @@ internal class PromQLEngine(
             Expression = promQLParser.ParseExpression(query),
             StartTimestampUnixSec = startTimestampUnixSec,
             EndTimestampUnixSec = endTimestampUnixSec,
-            Interval = step > TimeSpan.Zero ? step.Value : _options.DefaultEvaluationInterval,
+            Interval = step
         };
 
         await PopulateSeriesAsync(evalStatement, cancellationToken);
@@ -50,8 +51,7 @@ internal class PromQLEngine(
             StartTimestampUnixSec = evalStatement.StartTimestampUnixSec,
             EndTimestampUnixSec = evalStatement.EndTimestampUnixSec,
             Interval = evalStatement.Interval,
-            MaxSamples = _options.MaxSamplesPerQuery,
-            DefaultEvalInterval = _options.DefaultEvaluationInterval,
+            MaxSamples = limit ?? _options.MaxSamplesPerQuery
         };
 
         var result = evaluator.Eval(evalStatement.Expression);
@@ -62,6 +62,7 @@ internal class PromQLEngine(
     public async Task<IParseResult> QueryInstantAsync(
         string query,
         long timestampUnixSec,
+        int? limit,
         CancellationToken cancellationToken)
     {
         var evalStatement = new EvalStatement
@@ -79,8 +80,7 @@ internal class PromQLEngine(
             StartTimestampUnixSec = evalStatement.StartTimestampUnixSec,
             EndTimestampUnixSec = evalStatement.EndTimestampUnixSec,
             Interval = TimeSpan.FromSeconds(1),
-            MaxSamples = 1000_000, // TODO: Make this configurable
-            DefaultEvalInterval = TimeSpan.FromSeconds(15), // TODO: Make this configurable
+            MaxSamples = limit ?? _options.MaxSamplesPerQuery,
         };
 
         var result = evaluator.Eval(evalStatement.Expression);
@@ -107,7 +107,6 @@ internal class PromQLEngine(
         }
     }
 
-
     // TODO: a pushdown can be applied to the function calls
     private async Task PopulateSeriesAsync(EvalStatement evalStatement, CancellationToken cancellationToken)
     {
@@ -124,7 +123,8 @@ internal class PromQLEngine(
                         StartTimestampUnixSec =
                             evalStatement.StartTimestampUnixSec - (long)_options.LookBackDelta.TotalSeconds,
                         EndTimestampUnixSec = evalStatement.EndTimestampUnixSec,
-                        Limit = _options.MaxSamplesPerQuery,
+                        Interval = evalStatement.Interval,
+                        Limit = _options.MaxSamplesPerQuery
                     };
                     if (vectorSelector.Offset > TimeSpan.Zero)
                     {
@@ -143,7 +143,8 @@ internal class PromQLEngine(
                         StartTimestampUnixSec =
                             evalStatement.StartTimestampUnixSec - (long)_options.LookBackDelta.TotalSeconds,
                         EndTimestampUnixSec = evalStatement.EndTimestampUnixSec,
-                        Limit = _options.MaxSamplesPerQuery,
+                        Interval = evalStatement.Interval,
+                        Limit = _options.MaxSamplesPerQuery
                     };
                     if (matrixSelector.Offset > TimeSpan.Zero)
                     {

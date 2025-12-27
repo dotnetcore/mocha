@@ -9,7 +9,8 @@ namespace Mocha.Storage.LiteDB.Metadata;
 
 internal class LiteDBMetricMetadataCollectionAccessor(IOptions<LiteDBMetadataOptions> optionsAccessor)
     : LiteDBCollectionAccessor<LiteDBMetricMetadata>(
-        Path.Combine(optionsAccessor.Value.DatabasePath, LiteDBConstants.MetricsMetadataDatabaseFileName),
+        optionsAccessor.Value.DatabasePath,
+        LiteDBConstants.MetricsMetadataDatabaseFileName,
         LiteDBConstants.MetricsMetadataCollectionName)
 {
     protected override void ConfigureCollection(ILiteCollection<LiteDBMetricMetadata> collection)

@@ -1,0 +1,116 @@
+# Licensed to the .NET Core Community under one or more agreements.
+# The .NET Core Community licenses this file to you under the MIT license.
+
+version: "3.8"
+
+name: mocha
+
+services:
+  mysql:
+    image: mysql:8.2.0
+    container_name: mocha-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mocha
+      MYSQL_USER: mocha
+      MYSQL_PASSWORD: mocha
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    volumes:
+      - ../scripts/mysql/init:/docker-entrypoint-initdb.d/
+#      - ./mysql:/var/lib/mysql
+    restart: always
+    networks:
+      - mocha
+
+  influxdb:
+    image: influxdb:2.7.7
+    container_name: mocha-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=mocha
+      - DOCKER_INFLUXDB_INIT_PASSWORD=mocha_password
+      - DOCKER_INFLUXDB_INIT_ORG=mocha_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=mocha_metrics
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mocha_influxdb_token
+#    volumes:
+#      - ./influxdb:/var/lib/influxdb2
+    restart: always
+    networks:
+      - mocha
+
+  grafana:
+    image: grafana/grafana:11.0.1
+    container_name: mocha-grafana
+    ports:
+      - "3000:3000"
+#    volumes:
+#      - ./grafana:/var/lib/grafana
+    restart: always
+    networks:
+      - mocha
+
+  distributor:
+    build:
+      context: ..
+      dockerfile: ./docker/distributor/Dockerfile
+    container_name: mocha-distributor
+    ports:
+      - "4317:4317"
+    expose:
+      - "4317"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Metadata__Storage__Provider=EFCore
+      - Tracing__Storage__Provider=EFCore
+      - Metrics__Storage__Provider=InfluxDB
+      - Metadata__Storage__EFCore=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Tracing__Storage__EFCore=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Metrics__Storage__InfluxDB__Url=http://influxdb:8086
+      - Metrics__Storage__InfluxDB__Token=mocha_influxdb_token
+      - Metrics__Storage__InfluxDB__Org=mocha_org
+      - Metrics__Storage__InfluxDB__Bucket=mocha_metrics
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
+    depends_on:
+      - mysql
+      - influxdb
+    restart: always
+    networks:
+      - mocha
+
+  query:
+    build:
+      context: ..
+      dockerfile: ./docker/query/Dockerfile
+    container_name: mocha-query
+    ports:
+      - "5775:5775"
+    expose:
+      - "5775"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Metadata__Storage__Provider=EFCore
+      - Tracing__Storage__Provider=EFCore
+      - Metrics__Storage__Provider=InfluxDB
+      - Metadata__Storage__EFCore=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Tracing__Storage__EFCore=server=mysql;port=3306;database=mocha;userid=mocha;password=mocha
+      - Metrics__Storage__InfluxDB__Url=http://influxdb:8086
+      - Metrics__Storage__InfluxDB__Token=mocha_influxdb_token
+      - Metrics__Storage__InfluxDB__Org=mocha_org
+      - Metrics__Storage__InfluxDB__Bucket=mocha_metrics
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
+    depends_on:
+      - mysql
+      - influxdb
+    restart: always
+    networks:
+      - mocha
+
+networks:
+  mocha:
+    driver: bridge

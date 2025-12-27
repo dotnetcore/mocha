@@ -1,17 +1,15 @@
 // Licensed to the .NET Core Community under one or more agreements.
 // The .NET Core Community licenses this file to you under the MIT license.
 
-using LiteDB;
-using Microsoft.Extensions.Options;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Storage.LiteDB.Metadata.Models;
 
 namespace Mocha.Storage.LiteDB.Metadata.Readers;
 
-internal class LiteDBPrometheusMetricMetadataReader(
+internal class LiteDBPrometheusMetricsMetadataReader(
     ILiteDBCollectionAccessor<LiteDBMetricMetadata> collectionAccessor)
-    : IPrometheusMetricMetadataReader
+    : IPrometheusMetricsMetadataReader
 {
     public Task<Dictionary<string, List<PrometheusMetricMetadata>>> GetMetadataAsync(
         string? metricName = null,

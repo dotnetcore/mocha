@@ -31,8 +31,8 @@ public static class LiteDBMetadataStorageOptionsBuilderExtensions
         builder.Services
             .AddSingleton<ILiteDBCollectionAccessor<LiteDBMetricMetadata>, LiteDBMetricMetadataCollectionAccessor>();
         builder.Services
-            .AddSingleton<ITelemetryDataWriter<MochaMetricMetadata>, LiteDBPrometheusMetricMetadataWriter>();
-        builder.Services.AddSingleton<IPrometheusMetricMetadataReader, LiteDBPrometheusMetricMetadataReader>();
+            .AddSingleton<ITelemetryDataWriter<MochaMetricMetadata>, LiteDBPrometheusMetricsMetadataWriter>();
+        builder.Services.AddSingleton<IPrometheusMetricsMetadataReader, LiteDBPrometheusMetricsMetadataReader>();
 
         return builder;
     }

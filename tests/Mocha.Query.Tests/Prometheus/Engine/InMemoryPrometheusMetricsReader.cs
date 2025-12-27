@@ -7,7 +7,7 @@ using Mocha.Core.Storage.Prometheus.Metrics;
 
 namespace Mocha.Query.Tests.Prometheus.Engine;
 
-public class InMemoryPrometheusMetricReader(IEnumerable<TimeSeries> timeSeries) : IPrometheusMetricReader
+public class InMemoryPrometheusMetricsReader(IEnumerable<TimeSeries> timeSeries) : IPrometheusMetricsReader
 {
     public Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(
         TimeSeriesQueryParameters query,

@@ -8,7 +8,7 @@ using Mocha.Storage.EntityFrameworkCore.Metadata.Models;
 
 namespace Mocha.Storage.EntityFrameworkCore.Metadata.Writers;
 
-public class EFSpanMetadataWriter(IDbContextFactory<MochaMetadataContext> contextFactory) : ITelemetryDataWriter<MochaSpanMetadata>
+internal class EFSpanMetadataWriter(IDbContextFactory<MochaMetadataContext> contextFactory) : ITelemetryDataWriter<MochaSpanMetadata>
 {
     public async Task WriteAsync(IEnumerable<MochaSpanMetadata> data)
     {

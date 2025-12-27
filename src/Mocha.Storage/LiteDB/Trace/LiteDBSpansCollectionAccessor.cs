@@ -9,22 +9,22 @@ namespace Mocha.Storage.LiteDB.Trace;
 
 public class LiteDBSpansCollectionAccessor : LiteDBCollectionAccessor<LiteDBSpan>
 {
-    public LiteDBSpansCollectionAccessor(IOptions<LiteDBTracingOptions> options)
+    public LiteDBSpansCollectionAccessor(IOptions<LiteDBTracingOptions> optionsAccessor)
         : base(
-            Path.Combine(options.Value.DatabasePath, LiteDBConstants.SpansDatabaseFileName),
+            optionsAccessor.Value.DatabasePath,
+            LiteDBConstants.SpansDatabaseFileName,
             LiteDBConstants.SpansCollectionName)
     {
     }
 
     protected override void ConfigureCollection(ILiteCollection<LiteDBSpan> collection)
     {
-        BsonMapper.Global.Entity<LiteDBSpan>().Id(x => x.Id);
-        collection.EnsureIndex(x => x.TraceId);
-        collection.EnsureIndex(x => x.SpanId);
-        collection.EnsureIndex(x => x.ServiceName);
-        collection.EnsureIndex(x => x.SpanName);
+        // Even if multiple indexed expressions are used on a query, only one of the indexes is used,
+        // with the remaining expressions being filtered using a full scan.
+        // Therefore, we create only two indexes: one on StartTimeUnixNano to optimize time range queries,
+        // and another on TraceId to optimize trace ID lookups.
+        BsonMapper.Global.Entity<LiteDBSpan>().Id(x => x.SpanId);
         collection.EnsureIndex(x => x.StartTimeUnixNano);
-        collection.EnsureIndex(x => x.EndTimeUnixNano);
-        collection.EnsureIndex(x => x.DurationNanoseconds);
+        collection.EnsureIndex(x => x.TraceId);
     }
 }

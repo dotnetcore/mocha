@@ -21,8 +21,8 @@ public static class LiteDBMetricsStorageOptionsBuilderExtensions
         builder.Services.Configure(configure);
 
         builder.Services.AddSingleton<ILiteDBCollectionAccessor<LiteDBMetric>, LiteDBMetricsCollectionAccessor>();
-        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetric>, LiteDBMetricWriter>();
-        builder.Services.AddSingleton<IPrometheusMetricReader, LiteDBPrometheusMetricReader>();
+        builder.Services.AddSingleton<ITelemetryDataWriter<MochaMetric>, LiteDBMetricsWriter>();
+        builder.Services.AddSingleton<IPrometheusMetricsReader, LiteDBPrometheusMetricsReader>();
 
         return builder;
     }

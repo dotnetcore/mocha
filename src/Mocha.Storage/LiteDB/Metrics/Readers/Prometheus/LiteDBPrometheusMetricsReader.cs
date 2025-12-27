@@ -2,8 +2,6 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
-using LiteDB;
-using Microsoft.Extensions.Options;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
@@ -11,9 +9,9 @@ using Mocha.Storage.LiteDB.Metrics.Models;
 
 namespace Mocha.Storage.LiteDB.Metrics.Readers.Prometheus;
 
-internal class LiteDBPrometheusMetricReader(
+internal class LiteDBPrometheusMetricsReader(
     ILiteDBCollectionAccessor<LiteDBMetric> collectionAccessor)
-    : IPrometheusMetricReader
+    : IPrometheusMetricsReader
 {
     public Task<IEnumerable<TimeSeries>> GetTimeSeriesAsync(
         TimeSeriesQueryParameters query,
@@ -58,61 +56,74 @@ internal class LiteDBPrometheusMetricReader(
             }
 
             var labelString = $"{eqMatcher.Name}={eqMatcher.Value}";
-            queryable = queryable.Where(m => m.Labels.Contains(labelString));
+            if (string.IsNullOrEmpty(labelString))
+            {
+                // If the value is empty in an Equal matcher (e.g., label = ""),
+                // the label may not exist.
+                queryable = queryable.Where(m =>
+                    !m.LabelNames.Contains(eqMatcher.Name) || m.Labels.Contains(labelString));
+            }
+            else
+            {
+                queryable = queryable.Where(m => m.Labels.Contains(labelString));
+            }
         }
 
         foreach (var neqMatcher in neqMatchers)
         {
+            if (string.IsNullOrEmpty(neqMatcher.Value))
+            {
+                // If the value is empty in a NotEqual matcher (e.g., label != ""),
+                // we need to ensure the label exists.
+                queryable = queryable.Where(m => m.LabelNames.Contains(neqMatcher.Name));
+            }
+
             var labelString = $"{neqMatcher.Name}={neqMatcher.Value}";
             queryable = queryable.Where(m => !m.Labels.Contains(labelString));
         }
 
-        var results = queryable
+        IEnumerable<LiteDBMetric> metrics = queryable
             .OrderBy(m => m.TimestampUnixNano)
+            .Limit(query.Limit)
             .ToList();
 
-        if (!results.Any())
+        if (metrics.Any() && otherMatchers.Count != 0)
         {
-            return Task.FromResult(Enumerable.Empty<TimeSeries>());
-        }
-
-        // Note: Other matcher types are not supported in this LiteDB implementation. We can only filter by ourselves.
-        if (!otherMatchers.Any())
-        {
-            return Task.FromResult(TransformToTimeSeries(results));
-        }
-
-        var filteredResults = results.Where(metric =>
-        {
-            foreach (var matcher in otherMatchers)
+            // Note: Other matcher types are not supported in this LiteDB implementation. We can only filter by ourselves.
+            metrics = metrics.Where(metric =>
             {
-                var labelPair = metric.Labels
-                    .Select(lp => lp.Split('=', 2))
-                    .FirstOrDefault(parts => parts.Length == 2 && parts[0] == matcher.Name);
-
-                var labelValue = labelPair?[1];
-
-                switch (matcher.Type)
+                foreach (var matcher in otherMatchers)
                 {
-                    case LabelMatcherType.NotEqual:
-                        if (labelValue == matcher.Value)
-                            return false;
-                        break;
-                    case LabelMatcherType.RegexMatch:
-                        if (labelValue == null || !Regex.IsMatch(labelValue, matcher.Value))
-                            return false;
-                        break;
-                    case LabelMatcherType.RegexNotMatch:
-                        if (labelValue != null && Regex.IsMatch(labelValue, matcher.Value))
-                            return false;
-                        break;
+                    var labelPair = metric.Labels
+                        .Select(lp => lp.Split('=', 2))
+                        .FirstOrDefault(parts => parts.Length == 2 && parts[0] == matcher.Name);
+
+                    var labelValue = labelPair?[1];
+
+                    switch (matcher.Type)
+                    {
+                        case LabelMatcherType.NotEqual:
+                            if (labelValue == matcher.Value)
+                                return false;
+                            break;
+                        case LabelMatcherType.RegexMatch:
+                            if (labelValue == null || !Regex.IsMatch(labelValue, matcher.Value))
+                                return false;
+                            break;
+                        case LabelMatcherType.RegexNotMatch:
+                            if (labelValue != null && Regex.IsMatch(labelValue, matcher.Value))
+                                return false;
+                            break;
+                    }
                 }
-            }
 
-            return true;
-        });
+                return true;
+            });
+        }
 
-        return Task.FromResult(TransformToTimeSeries(filteredResults));
+        var series = TransformToTimeSeries(metrics);
+
+        return Task.FromResult(series);
     }
 
     public Task<IEnumerable<string>> GetLabelNamesAsync(LabelNamesQueryParameters query)
@@ -176,8 +187,7 @@ internal class LiteDBPrometheusMetricReader(
         return Task.FromResult<IEnumerable<string>>(labelValues);
     }
 
-    private IEnumerable<TimeSeries> TransformToTimeSeries(
-        IEnumerable<LiteDBMetric> metrics)
+    private IEnumerable<TimeSeries> TransformToTimeSeries(IEnumerable<LiteDBMetric> metrics)
     {
         var grouped = new Dictionary<Labels, List<TimeSeriesSample>>();
 
@@ -206,7 +216,8 @@ internal class LiteDBPrometheusMetricReader(
             });
         }
 
-        var timeSeriess = grouped.Select(kvp => new TimeSeries { Labels = kvp.Key, Samples = kvp.Value }).ToList();
+        var timeSeriess = grouped
+            .Select(kvp => new TimeSeries { Labels = kvp.Key, Samples = kvp.Value }).ToList();
         return timeSeriess;
     }
 }

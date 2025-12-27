@@ -84,22 +84,32 @@ public static partial class OTelToMochaMetricConversionExtensions
     public static Labels ToMochaMetricLabels(this IEnumerable<KeyValue> attributes)
     {
         // TODO: Should we handle attributes with non-string values?
-        return new Labels(attributes.ToDictionary(
-            attr => attr.Key.Replace('.', '_'),
-            attr =>
+        var dictionary = attributes
+            .Where(attr =>
             {
-                var value = attr.Value;
-                return value.ValueCase switch
+                var isEmptyStringValue =
+                    attr.Value.ValueCase == AnyValue.ValueOneofCase.StringValue
+                    && string.IsNullOrEmpty(attr.Value.StringValue);
+                return !isEmptyStringValue;
+            })
+            .ToDictionary(
+                attr => attr.Key.Replace('.', '_'),
+                attr =>
                 {
-                    AnyValue.ValueOneofCase.StringValue => value.StringValue,
-                    AnyValue.ValueOneofCase.BoolValue => value.BoolValue.ToString(),
-                    AnyValue.ValueOneofCase.IntValue => value.IntValue.ToString(),
-                    AnyValue.ValueOneofCase.DoubleValue => value.DoubleValue.ToString("R"),
-                    _ => throw new ArgumentOutOfRangeException(nameof(value.ValueCase),
-                        value.ValueCase,
-                        "Unsupported attribute value case.")
-                };
-            }));
+                    var value = attr.Value;
+                    return value.ValueCase switch
+                    {
+                        AnyValue.ValueOneofCase.StringValue => value.StringValue,
+                        AnyValue.ValueOneofCase.BoolValue => value.BoolValue.ToString(),
+                        AnyValue.ValueOneofCase.IntValue => value.IntValue.ToString(),
+                        AnyValue.ValueOneofCase.DoubleValue => value.DoubleValue.ToString("R"),
+                        _ => throw new ArgumentOutOfRangeException(nameof(value.ValueCase),
+                            value.ValueCase,
+                            "Unsupported attribute value case.")
+                    };
+                });
+
+        return new Labels(dictionary);
     }
 
     private static IEnumerable<MochaMetric> ToMochaGaugeMetrics(

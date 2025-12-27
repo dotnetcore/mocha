@@ -3,14 +3,11 @@
 
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Storage.LiteDB.Metrics;
-using Mocha.Storage.LiteDB.Metrics.Readers.Prometheus;
-using Mocha.Storage.LiteDB.Metrics.Writers;
 
 namespace Mocha.Storage.Tests.LiteDB;
 
@@ -20,8 +17,7 @@ public class LiteDBMetricsTests : IDisposable
     private readonly ServiceProvider _serviceProvider;
 
     private readonly ITelemetryDataWriter<MochaMetric> _writer;
-    private readonly IPrometheusMetricReader _reader;
-
+    private readonly IPrometheusMetricsReader _reader;
 
     public LiteDBMetricsTests()
     {
@@ -40,7 +36,7 @@ public class LiteDBMetricsTests : IDisposable
         _serviceProvider = services.BuildServiceProvider();
 
         _writer = _serviceProvider.GetRequiredService<ITelemetryDataWriter<MochaMetric>>();
-        _reader = _serviceProvider.GetRequiredService<IPrometheusMetricReader>();
+        _reader = _serviceProvider.GetRequiredService<IPrometheusMetricsReader>();
     }
 
     [Fact]
@@ -79,7 +75,8 @@ public class LiteDBMetricsTests : IDisposable
                 .ToUnixTimeSeconds(),
             EndTimestampUnixSec = DateTimeOffset.UtcNow.AddMinutes(5)
                 .ToUnixTimeSeconds(),
-            Limit = 1000
+            Limit = 1000,
+            Interval = TimeSpan.Zero
         };
 
         var timeSeries = await _reader.GetTimeSeriesAsync(queryParameters, CancellationToken.None);
@@ -141,7 +138,8 @@ public class LiteDBMetricsTests : IDisposable
                 .ToUnixTimeSeconds(),
             EndTimestampUnixSec = DateTimeOffset.UtcNow.AddMinutes(5)
                 .ToUnixTimeSeconds(),
-            Limit = 1000
+            Limit = 1000,
+            Interval = TimeSpan.Zero
         };
 
         var timeSeries = await _reader.GetTimeSeriesAsync(queryParameters, CancellationToken.None);
@@ -199,7 +197,8 @@ public class LiteDBMetricsTests : IDisposable
                 .ToUnixTimeSeconds(),
             EndTimestampUnixSec = DateTimeOffset.UtcNow.AddMinutes(5)
                 .ToUnixTimeSeconds(),
-            Limit = 1000
+            Limit = 1000,
+            Interval = TimeSpan.Zero
         };
 
         var timeSeries = await _reader.GetTimeSeriesAsync(queryParameters, CancellationToken.None);
@@ -257,7 +256,8 @@ public class LiteDBMetricsTests : IDisposable
                 .ToUnixTimeSeconds(),
             EndTimestampUnixSec = DateTimeOffset.UtcNow.AddMinutes(5)
                 .ToUnixTimeSeconds(),
-            Limit = 1000
+            Limit = 1000,
+            Interval = TimeSpan.Zero
         };
 
         var timeSeries = await _reader.GetTimeSeriesAsync(queryParameters, CancellationToken.None);
@@ -293,7 +293,8 @@ public class LiteDBMetricsTests : IDisposable
                 .ToUnixTimeSeconds(),
             EndTimestampUnixSec = DateTimeOffset.UtcNow.AddMinutes(5)
                 .ToUnixTimeSeconds(),
-            Limit = 1000
+            Limit = 1000,
+            Interval = TimeSpan.FromSeconds(15)
         };
         var timeSeries = await _reader.GetTimeSeriesAsync(queryParameters, CancellationToken.None);
         timeSeries.Should().BeEmpty();
