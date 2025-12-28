@@ -116,5 +116,3 @@ Select the mocha-metrics data source that we just created.
 After that, you can add panels as needed to display Metrics data.
 
 ![](./assets/create-metrics-dashboard-4.png)
-
-

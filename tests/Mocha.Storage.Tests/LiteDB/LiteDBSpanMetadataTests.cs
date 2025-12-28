@@ -37,8 +37,7 @@ public class LiteDBSpanMetadataTests : IDisposable
     [Fact]
     public async Task GetServicesAsync()
     {
-        _writer.WriteAsync(new[]
-        {
+        await _writer.WriteAsync([
             new MochaSpanMetadata
             {
                 ServiceName = "ServiceName1",
@@ -49,7 +48,7 @@ public class LiteDBSpanMetadataTests : IDisposable
                 ServiceName = "ServiceName2",
                 OperationName = "OperationName2"
             }
-        }).GetAwaiter().GetResult();
+        ]);
 
         var services = await _reader.GetServicesAsync();
         Assert.Equal(["ServiceName1", "ServiceName2"], services);
@@ -58,8 +57,8 @@ public class LiteDBSpanMetadataTests : IDisposable
     [Fact]
     public async Task GetOperationsAsync()
     {
-      await  _writer.WriteAsync([
-          new MochaSpanMetadata
+        await _writer.WriteAsync([
+            new MochaSpanMetadata
             {
                 ServiceName = "ServiceName1",
                 OperationName = "OperationName1"
@@ -69,7 +68,7 @@ public class LiteDBSpanMetadataTests : IDisposable
                 ServiceName = "ServiceName1",
                 OperationName = "OperationName2"
             }
-      ]);
+        ]);
 
         var operations = await _reader.GetOperationsAsync("ServiceName1");
         Assert.Equal(["OperationName1", "OperationName2"], operations);

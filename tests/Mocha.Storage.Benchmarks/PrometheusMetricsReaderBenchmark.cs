@@ -48,7 +48,7 @@ public class PrometheusMetricsReaderBenchmark
     public void IterationSetup()
     {
         var rand = new Random();
-        _randomRoutes = Enumerable.Range(1, 10000).OrderBy(x => rand.Next()).Take(100).ToArray();
+        _randomRoutes = [.. Enumerable.Range(1, 10000).OrderBy(x => rand.Next()).Take(100)];
     }
 
     [Benchmark]
@@ -72,7 +72,7 @@ public class PrometheusMetricsReaderBenchmark
                 Interval = TimeSpan.Zero
             };
 
-            var result = await _liteDBReader.GetTimeSeriesAsync(query, CancellationToken.None);
+            var result = (await _liteDBReader.GetTimeSeriesAsync(query, CancellationToken.None)).ToList();
         }
     }
 
