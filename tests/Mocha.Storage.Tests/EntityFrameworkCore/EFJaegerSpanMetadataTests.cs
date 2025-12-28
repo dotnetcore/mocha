@@ -55,7 +55,7 @@ public class EFJaegerSpanMetadataTests : IDisposable
     [Fact]
     public async Task GetOperationsAsync()
     {
-        _writer.WriteAsync([
+        await _writer.WriteAsync([
             new MochaSpanMetadata
             {
                 ServiceName = "ServiceName1",

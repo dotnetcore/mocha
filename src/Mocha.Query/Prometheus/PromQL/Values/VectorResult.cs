@@ -6,8 +6,16 @@ using Mocha.Core.Storage.Prometheus;
 
 namespace Mocha.Query.Prometheus.PromQL.Values;
 
-public class VectorResult(int capacity = 0) : List<Sample>(capacity), IParseResult
+public class VectorResult : List<Sample>, IParseResult
 {
+    public VectorResult(int capacity) : base(capacity)
+    {
+    }
+
+    public VectorResult()
+    {
+    }
+
     public ResultValueType Type => ResultValueType.Vector;
 
     public bool ContainsSameLabelSet()

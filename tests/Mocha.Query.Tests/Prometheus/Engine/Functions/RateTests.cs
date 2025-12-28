@@ -15,13 +15,13 @@ public class RateTests
     {
         var series = new[]
         {
-        GenerateTimeSeries(
-            "http_requests{job=\"app-server\", instance=\"1\", group=\"canary\"}",
-            TimeSpan.FromMinutes(5),
-            10,
-            0,
-            80)
-    };
+            GenerateTimeSeries(
+                "http_requests{job=\"app-server\", instance=\"1\", group=\"canary\"}",
+                TimeSpan.FromMinutes(5),
+                10,
+                0,
+                80)
+        };
 
         var engine = new PromQLEngine(
             new MochaPromQLParserParser(),
@@ -37,20 +37,11 @@ public class RateTests
         result.Should().BeEquivalentTo(
             new VectorResult
             {
-            new Sample
-            {
-                Metric = new Labels
+                new Sample
                 {
-                    { "job", "app-server" },
-                    { "instance", "1" },
-                    { "group", "canary" }
-                },
-                Point = new DoublePoint
-                {
-                    TimestampUnixSec = 50 * 60,
-                    Value = 0.26666666666666666
+                    Metric = new Labels { { "job", "app-server" }, { "instance", "1" }, { "group", "canary" } },
+                    Point = new DoublePoint { TimestampUnixSec = 50 * 60, Value = 0.26666666666666666 }
                 }
-            }
             },
             opts => opts.RespectingRuntimeTypes()
                 .Using<double>(ctx =>
