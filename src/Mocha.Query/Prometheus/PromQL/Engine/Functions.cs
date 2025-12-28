@@ -445,7 +445,8 @@ internal static class Functions
 
             enh.Output.Add(new Sample
             {
-                Metric = Labels.Empty, Point = new DoublePoint { Value = aggregate(samples.Points) }
+                Metric = Labels.Empty,
+                Point = new DoublePoint { Value = aggregate(samples.Points) }
             });
         }
 
