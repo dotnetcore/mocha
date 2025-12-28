@@ -51,7 +51,8 @@ public class OperatorTests
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
         mockOptions.SetupGet(x => x.Value).Returns(new PromQLEngineOptions
         {
-            DefaultEvaluationInterval = TimeSpan.FromSeconds(15), MaxSamplesPerQuery = 50000000
+            DefaultEvaluationInterval = TimeSpan.FromSeconds(15),
+            MaxSamplesPerQuery = 50000000
         });
 
         var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
