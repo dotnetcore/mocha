@@ -582,8 +582,8 @@ internal class Evaluator
         // Add all rhs samples to a map so we can easily find matches later.
         foreach (var leftSeries in lhs)
         {
-            var leftKey = leftSeries.Metric.MatchLabels(matching.On, matching.MatchingLabels);
-            if (rightSignatures.Contains(leftKey))
+            var leftSignatures = leftSeries.Metric.MatchLabels(matching.On, matching.MatchingLabels);
+            if (rightSignatures.Contains(leftSignatures))
             {
                 enh.Output.Add(leftSeries);
             }

@@ -15,6 +15,30 @@ using Xunit;
 public class OTelToMochaMetricConversionExtensionsTests
 {
     [Fact]
+    public void ToMochaMetricLabels_ShouldHandleAllLabelValueTypes()
+    {
+        var attributes = new List<KeyValue>
+        {
+            new() { Key = "string.label", Value = new AnyValue { StringValue = "value" } },
+            new() { Key = "bool.label", Value = new AnyValue { BoolValue = true } },
+            new() { Key = "int.label", Value = new AnyValue { IntValue = 123 } },
+            new() { Key = "double.label", Value = new AnyValue { DoubleValue = 1.23 } },
+            new() { Key = "empty.string", Value = new AnyValue { StringValue = "" } }
+        };
+
+        var labels = attributes.ToMochaMetricLabels();
+
+        labels.Should().HaveCount(4);
+
+        labels["string_label"].Should().Be("value");
+        labels["bool_label"].Should().Be("True");
+        labels["int_label"].Should().Be("123");
+        labels["double_label"].Should().Be("1.23");
+
+        labels.Should().NotContainKey("empty_string");
+    }
+
+    [Fact]
     public void ToMochaGaugeMetricMetadata()
     {
         var metric = new Metric { Name = "cpu.usage", Unit = "1", Description = "cpu usage", Gauge = new Gauge() };
