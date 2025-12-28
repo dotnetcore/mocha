@@ -3,7 +3,6 @@
 
 using Mocha.Core.Extensions;
 using Mocha.Core.Models.Metrics;
-using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Ast;
 using Mocha.Query.Prometheus.PromQL.Exceptions;
 using Mocha.Query.Prometheus.PromQL.Values;
