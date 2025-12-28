@@ -7,10 +7,10 @@ namespace Mocha.Core.Tests.Conversions;
 
 using System.Collections.Generic;
 using System.Linq;
+using Mocha.Core.Models.Metrics;
 using OpenTelemetry.Proto.Common.V1;
 using OpenTelemetry.Proto.Metrics.V1;
 using Xunit;
-using Mocha.Core.Models.Metrics;
 
 public class OTelToMochaMetricConversionExtensionsTests
 {
@@ -69,7 +69,9 @@ public class OTelToMochaMetricConversionExtensionsTests
     {
         var metric = new Metric
         {
-            Name = "payload.size", Unit = "By", ExponentialHistogram = new ExponentialHistogram()
+            Name = "payload.size",
+            Unit = "By",
+            ExponentialHistogram = new ExponentialHistogram()
         };
 
         var result = metric.ToMochaMetricMetadata(
