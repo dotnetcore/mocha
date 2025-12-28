@@ -23,19 +23,6 @@ public class EngineTestCase : IXunitSerializable
         StartTimestampUnixSec = info.GetValue<long>(nameof(StartTimestampUnixSec));
         EndTimestampUnixSec = info.GetValue<long>(nameof(EndTimestampUnixSec));
         Interval = info.GetValue<TimeSpan>(nameof(Interval));
-        var resultValueType = info.GetValue<ResultValueType>(nameof(ResultValueType));
-        switch (resultValueType)
-        {
-            case ResultValueType.Vector:
-                Result = info.GetValue<VectorResult>(nameof(Result));
-                break;
-            case ResultValueType.Matrix:
-                Result = info.GetValue<MatrixResult>(nameof(Result));
-                break;
-            case ResultValueType.Scalar:
-                Result = info.GetValue<ScalarResult>(nameof(Result));
-                break;
-        }
     }
 
     public void Serialize(IXunitSerializationInfo info)
@@ -44,20 +31,5 @@ public class EngineTestCase : IXunitSerializable
         info.AddValue(nameof(StartTimestampUnixSec), StartTimestampUnixSec);
         info.AddValue(nameof(EndTimestampUnixSec), EndTimestampUnixSec);
         info.AddValue(nameof(Interval), Interval);
-        switch (Result)
-        {
-            case VectorResult vectorResult:
-                info.AddValue(nameof(ResultValueType), ResultValueType.Vector);
-                info.AddValue(nameof(Result), vectorResult);
-                break;
-            case MatrixResult matrixResult:
-                info.AddValue(nameof(ResultValueType), ResultValueType.Matrix);
-                info.AddValue(nameof(Result), matrixResult);
-                break;
-            case ScalarResult scalarResult:
-                info.AddValue(nameof(ResultValueType), ResultValueType.Scalar);
-                info.AddValue(nameof(Result), scalarResult);
-                break;
-        }
     }
 }
