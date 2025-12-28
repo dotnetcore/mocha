@@ -40,10 +40,7 @@ services:
     networks:
       - mocha
     volumes:
-        - litedb_data:/data/litedb
-# If you want to use a local folder for LiteDB data storage,
-# uncomment the following line and comment out the above volume line
-#        - ./litedb_data:/data/litedb
+      - ./litedb_data:/data/litedb
 
   query:
     build:
@@ -66,14 +63,8 @@ services:
     networks:
       - mocha
     volumes:
-        - litedb_data:/data/litedb
-# If you want to use a local folder for LiteDB data storage,
-# uncomment the following line and comment out the above volume line
-#        - ./litedb_data:/data/litedb
+      - ./litedb_data:/data/litedb
 
 networks:
   mocha:
     driver: bridge
-
-volumes:
-  litedb_data:
