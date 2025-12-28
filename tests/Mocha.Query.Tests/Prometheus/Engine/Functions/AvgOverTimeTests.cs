@@ -1,6 +1,8 @@
+// Licensed to the .NET Core Community under one or more agreements.
+// The .NET Core Community licenses this file to you under the MIT license.
+
 using Microsoft.Extensions.Options;
 using Mocha.Core.Models.Metrics;
-using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Engine;
 using Mocha.Query.Prometheus.PromQL.Values;
 
