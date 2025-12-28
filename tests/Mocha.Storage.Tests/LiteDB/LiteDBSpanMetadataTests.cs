@@ -19,18 +19,60 @@ public class LiteDBSpanMetadataTests : IDisposable
 
     public LiteDBSpanMetadataTests()
     {
+        _tempDatabasePath = TempDatabasePath.Create();
         var services = new ServiceCollection();
         services.AddStorage()
             .WithMetadata(metadataOptions =>
             {
                 metadataOptions.UseLiteDB(liteDbOptions =>
                 {
-                    liteDbOptions.DatabasePath = ":memory:";
+                    liteDbOptions.DatabasePath = _tempDatabasePath.Path;
                 });
             });
         _serviceProvider = services.BuildServiceProvider();
         _reader = _serviceProvider.GetRequiredService<IJaegerSpanMetadataReader>();
         _writer = _serviceProvider.GetRequiredService<ITelemetryDataWriter<MochaSpanMetadata>>();
+    }
+
+    [Fact]
+    public async Task GetServicesAsync()
+    {
+        _writer.WriteAsync(new[]
+        {
+            new MochaSpanMetadata
+            {
+                ServiceName = "ServiceName1",
+                OperationName = "OperationName1"
+            },
+            new MochaSpanMetadata
+            {
+                ServiceName = "ServiceName2",
+                OperationName = "OperationName2"
+            }
+        }).GetAwaiter().GetResult();
+
+        var services = await _reader.GetServicesAsync();
+        Assert.Equal(["ServiceName1", "ServiceName2"], services);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync()
+    {
+      await  _writer.WriteAsync([
+          new MochaSpanMetadata
+            {
+                ServiceName = "ServiceName1",
+                OperationName = "OperationName1"
+            },
+            new MochaSpanMetadata
+            {
+                ServiceName = "ServiceName1",
+                OperationName = "OperationName2"
+            }
+      ]);
+
+        var operations = await _reader.GetOperationsAsync("ServiceName1");
+        Assert.Equal(["OperationName1", "OperationName2"], operations);
     }
 
     public void Dispose()

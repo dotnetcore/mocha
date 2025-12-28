@@ -45,7 +45,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{D598862A-999C-40FD-A190-EBD00376D077}"
 	ProjectSection(SolutionItems) = preProject
 		docker\docker-compose.yml = docker\docker-compose.yml
-		docker\docker-compose.example.yml = docker\docker-compose.example.yml
+		docker\docker-compose-mysql-influxdb.yml = docker\docker-compose-mysql-influxdb.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "distributor", "distributor", "{959DCB4E-A070-4C66-A27F-D83CB933F0D8}"

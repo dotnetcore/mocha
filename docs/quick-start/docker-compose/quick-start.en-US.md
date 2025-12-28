@@ -6,13 +6,22 @@ Execute the following command in the docker directory under the project root dir
 docker-compose up --build -d
 ```
 
+This version of storage is LiteDB, which is an embedded database, so there is no need to start additional database containers.
+
 After the startup is successful, you can see the following containers:
 
 + mocha-distributor: Provides gRPC API for receiving OTLP data
 + mocha-query: Provides HTTP API for receiving query protocol
++ mocha-grafana: Used to display data
+
+We have also implemented versions that store Tracing to MySQL and Metrics to InfluxDB.
+
+You can execute `docker-compose -f docker-compose-mysql-influxdb.yml up --build -d` to start the version that uses MySQL and InfluxDB.
+
+After the startup is successful, in addition to the above containers, you can also see the following containers:
+
 + mocha-mysql: Used to store data
 + mocha-influxdb: Used to store data
-+ mocha-grafana: Used to display data
 
 ## Send Data
 
@@ -40,6 +49,8 @@ Select Jaeger.
 
 Configure the URL of the Jaeger data source as `http://query:5775/jaeger`.
 
+The name of the data source can be customized. In this example, we use mocha-tracing.
+
 ![](./assets/add-jaeger-data-source-4.png)
 
 Click Save & Test. If the following information is displayed, the configuration is successful.
@@ -52,7 +63,7 @@ If no data has been sent to the distributor yet, the following warning message w
 
 #### Query Trace Data
 
-Click the menu on the left, select Explore, and then select the Jaeger data source to see the Trace data.
+Click the menu on the left, select Explore, and then select the mocha-tracing data source to see the Trace data.
 
 ![](./assets/query-trace.png)
 
@@ -73,6 +84,8 @@ Select Prometheus.
 ![](./assets/add-prometheus-data-source.png)
 
 Configure the URL of the Prometheus data source as `http://query:5775/prometheus`.
+
+The name of the data source can be customized. In this example, we use mocha-metrics.
 
 ![](./assets/add-prometheus-data-source-2.png)
 
@@ -96,7 +109,7 @@ Click the menu on the left, select Dashboards, and then create a new dashboard.
 
 ![](./assets/create-metrics-dashboard-2.png)
 
-Select the Prometheus data source that we just created.
+Select the mocha-metrics data source that we just created.
 
 ![](./assets/create-metrics-dashboard-3.png)
 

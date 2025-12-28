@@ -2,33 +2,34 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
-using Mocha.Storage.EntityFrameworkCore.Metadata;
 using Mocha.Storage.EntityFrameworkCore.Metadata.Readers;
+using Mocha.Storage.LiteDB.Metadata;
 
-namespace Mocha.Storage.Tests.EntityFrameworkCore;
+namespace Mocha.Storage.Tests.LiteDB;
 
-public class EFPrometheusMetricsMetadataTests : IDisposable
+public class LiteDBMetricsMetadataTests : IDisposable
 {
+    private TempDatabasePath _tempDatabasePath;
     private readonly ServiceProvider _serviceProvider;
     private readonly ITelemetryDataWriter<MochaMetricMetadata> _writer;
     private readonly IPrometheusMetricsMetadataReader _reader;
 
-    public EFPrometheusMetricsMetadataTests()
+    public LiteDBMetricsMetadataTests()
     {
+        _tempDatabasePath = TempDatabasePath.Create();
         var services = new ServiceCollection();
         services.AddStorage()
             .WithMetadata(metadataOptions =>
             {
-                metadataOptions.UseEntityFrameworkCore(efOptions =>
+                metadataOptions.UseLiteDB(liteDbOptions =>
                 {
-                    efOptions.UseInMemoryDatabase(Guid.NewGuid().ToString());
+                    liteDbOptions.DatabasePath = _tempDatabasePath.Path;
                 });
             });
 
@@ -94,5 +95,6 @@ public class EFPrometheusMetricsMetadataTests : IDisposable
     public void Dispose()
     {
         _serviceProvider.Dispose();
+        _tempDatabasePath.Dispose();
     }
 }

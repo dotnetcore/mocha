@@ -7,10 +7,10 @@ USE mocha;
 
 CREATE TABLE IF NOT EXISTS span_metadata
 (
-    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    service_name VARCHAR(255) NOT NULL,
-    operation    VARCHAR(255) NOT NULL,
-    INDEX idx_service_operation (service_name, operation)
+    id             BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    service_name   VARCHAR(255) NOT NULL,
+    operation_name VARCHAR(255) NOT NULL,
+    INDEX idx_service_operation (service_name, operation_name)
 );
 
 CREATE TABLE IF NOT EXISTS metric_metadata
