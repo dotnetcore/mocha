@@ -37,15 +37,6 @@ public class OTelMetricsExportService(IBufferQueue bufferQueue) : MetricsService
             }
         }
 
-        foreach (var metric in metrics)
-        {
-            var valueTask = _bufferProducer.ProduceAsync(metric);
-            if (!valueTask.IsCompletedSuccessfully)
-            {
-                await valueTask.AsTask();
-            }
-        }
-
         foreach (var metadata in metricsMetadata)
         {
             var valueTask = _metadataBufferProducer.ProduceAsync(metadata);
