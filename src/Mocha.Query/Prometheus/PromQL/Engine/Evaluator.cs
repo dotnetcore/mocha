@@ -174,7 +174,7 @@ internal class Evaluator
                             // Evaluate the matrix selector for this series for this step.
                             // TODO: optimize enumeration
                             var points = timeSeries.Samples
-                                .Where(s => s.TimestampUnixSec > minTs && s.TimestampUnixSec <= maxTs)
+                                .Where(s => s.TimestampUnixSec >= minTs && s.TimestampUnixSec <= maxTs)
                                 .Select(s =>
                                     new DoublePoint { TimestampUnixSec = s.TimestampUnixSec, Value = s.Value })
                                 .ToList();
@@ -405,7 +405,7 @@ internal class Evaluator
                         {
                             Metric = new Labels(timeSeries.Labels),
                             Points = timeSeries.Samples
-                                .Where(p => p.TimestampUnixSec > minTs && p.TimestampUnixSec <= maxTs)
+                                .Where(p => p.TimestampUnixSec >= minTs && p.TimestampUnixSec <= maxTs)
                                 .Select(p => new DoublePoint { TimestampUnixSec = p.TimestampUnixSec, Value = p.Value })
                                 .ToList()
                         };
