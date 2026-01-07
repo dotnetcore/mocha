@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Storage.Prometheus;
 using OpenTelemetry.Proto.Common.V1;
 using OpenTelemetry.Proto.Metrics.V1;
@@ -59,7 +60,7 @@ public static partial class OTelToMochaMetricConversionExtensions
         return metadataList;
     }
 
-    public static IEnumerable<MochaMetric> ToMochaMetric(this Metric metric, Dictionary<string, string> resourceLabels)
+    public static IEnumerable<MochaMetric> ToMochaMetric(this Metric metric, Labels resourceLabels)
     {
         var mochaMetrics = metric.DataCase switch
         {
@@ -80,30 +81,40 @@ public static partial class OTelToMochaMetricConversionExtensions
         }
     }
 
-    public static Dictionary<string, string> ToMochaMetricLabels(this IEnumerable<KeyValue> attributes)
+    public static Labels ToMochaMetricLabels(this IEnumerable<KeyValue> attributes)
     {
         // TODO: Should we handle attributes with non-string values?
-        return attributes.ToDictionary(
-            attr => attr.Key.Replace('.', '_'),
-            attr =>
+        var dictionary = attributes
+            .Where(attr =>
             {
-                var value = attr.Value;
-                return value.ValueCase switch
+                var isEmptyStringValue =
+                    attr.Value.ValueCase == AnyValue.ValueOneofCase.StringValue
+                    && string.IsNullOrEmpty(attr.Value.StringValue);
+                return !isEmptyStringValue;
+            })
+            .ToDictionary(
+                attr => attr.Key.Replace('.', '_'),
+                attr =>
                 {
-                    AnyValue.ValueOneofCase.StringValue => value.StringValue,
-                    AnyValue.ValueOneofCase.BoolValue => value.BoolValue.ToString(),
-                    AnyValue.ValueOneofCase.IntValue => value.IntValue.ToString(),
-                    AnyValue.ValueOneofCase.DoubleValue => value.DoubleValue.ToString("R"),
-                    _ => throw new ArgumentOutOfRangeException(nameof(value.ValueCase),
-                        value.ValueCase,
-                        "Unsupported attribute value case.")
-                };
-            });
+                    var value = attr.Value;
+                    return value.ValueCase switch
+                    {
+                        AnyValue.ValueOneofCase.StringValue => value.StringValue,
+                        AnyValue.ValueOneofCase.BoolValue => value.BoolValue.ToString(),
+                        AnyValue.ValueOneofCase.IntValue => value.IntValue.ToString(),
+                        AnyValue.ValueOneofCase.DoubleValue => value.DoubleValue.ToString("R"),
+                        _ => throw new ArgumentOutOfRangeException(nameof(value.ValueCase),
+                            value.ValueCase,
+                            "Unsupported attribute value case.")
+                    };
+                });
+
+        return new Labels(dictionary);
     }
 
     private static IEnumerable<MochaMetric> ToMochaGaugeMetrics(
         this Metric metric,
-        Dictionary<string, string> resourceLabels)
+        Labels resourceLabels)
     {
         var metricName = SanitizeMetricName(metric.Name);
         var unit = GetUnit(metric.Unit);
@@ -132,7 +143,7 @@ public static partial class OTelToMochaMetricConversionExtensions
 
     private static IEnumerable<MochaMetric> ToMochaSumMetrics(
         this Metric metric,
-        Dictionary<string, string> resourceLabels)
+        Labels resourceLabels)
     {
         var metricName = SanitizeMetricName(metric.Name);
         var unit = GetUnit(metric.Unit);
@@ -167,7 +178,7 @@ public static partial class OTelToMochaMetricConversionExtensions
 
     private static IEnumerable<MochaMetric> ToMochaHistogramMetrics(
         this Metric metric,
-        Dictionary<string, string> resourceLabels)
+        Labels resourceLabels)
     {
         var metricName = SanitizeMetricName(metric.Name);
         var unit = GetUnit(metric.Unit);
@@ -210,7 +221,7 @@ public static partial class OTelToMochaMetricConversionExtensions
                     Description = metric.Description,
                     Unit = unit,
                     Labels = MergeLabels(labels,
-                        new Dictionary<string, string>
+                        new Labels
                         {
                             {
                                 "le", double.IsPositiveInfinity(explicitBound) ? "+Inf" : explicitBound.ToString("F")
@@ -242,7 +253,7 @@ public static partial class OTelToMochaMetricConversionExtensions
 
     private static IEnumerable<MochaMetric> ToExponentialHistogramMetrics(
         this Metric metric,
-        Dictionary<string, string> resourceLabels)
+        Labels resourceLabels)
     {
         var metricName = SanitizeMetricName(metric.Name);
         var unit = GetUnit(metric.Unit);
@@ -284,7 +295,7 @@ public static partial class OTelToMochaMetricConversionExtensions
                     Description = metric.Description,
                     Unit = unit,
                     Labels = MergeLabels(labels,
-                        new Dictionary<string, string>
+                        new Labels
                         {
                             {
                                 "le", double.IsPositiveInfinity(explicitBound) ? "+Inf" : explicitBound.ToString("F")
@@ -340,7 +351,7 @@ public static partial class OTelToMochaMetricConversionExtensions
 
     private static IEnumerable<MochaMetric> ToMochaSummaryMetrics(
         this Metric metric,
-        Dictionary<string, string> resourceLabels)
+        Labels resourceLabels)
     {
         var metricName = SanitizeMetricName(metric.Name);
         var unit = GetUnit(metric.Unit);
@@ -383,7 +394,7 @@ public static partial class OTelToMochaMetricConversionExtensions
                     Description = metric.Description,
                     Unit = unit,
                     Labels = MergeLabels(labels,
-                        new Dictionary<string, string> { { "quantile", quantileValue.Quantile.ToString("F") } }),
+                        new Labels { { "quantile", quantileValue.Quantile.ToString("F") } }),
                     Value = quantileValue.Value,
                     TimestampUnixNano = dataPoint.TimeUnixNano
                 };
@@ -391,11 +402,11 @@ public static partial class OTelToMochaMetricConversionExtensions
         }
     }
 
-    private static Dictionary<string, string> MergeLabels(
-        Dictionary<string, string> resourceLabels,
-        Dictionary<string, string> metricLabels)
+    private static Labels MergeLabels(
+        Labels resourceLabels,
+        Labels metricLabels)
     {
-        var mergedLabels = new Dictionary<string, string>(resourceLabels);
+        var mergedLabels = new Labels(resourceLabels);
         foreach (var label in metricLabels)
         {
             mergedLabels[label.Key] = label.Value;

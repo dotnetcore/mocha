@@ -3,6 +3,7 @@
 
 using Grpc.Core;
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Trace;
 using OpenTelemetry.Proto.Collector.Trace.V1;
 
@@ -13,6 +14,9 @@ public class OTelTraceExportService(IBufferQueue bufferQueue) : TraceService.Tra
     private readonly IBufferProducer<MochaSpan> _bufferProducer =
         bufferQueue.CreateProducer<MochaSpan>("otlp-span");
 
+    private readonly IBufferProducer<MochaSpanMetadata> _metadataBufferProducer =
+        bufferQueue.CreateProducer<MochaSpanMetadata>("otlp-span-metadata");
+
     public override async Task<ExportTraceServiceResponse> Export(
         ExportTraceServiceRequest request,
         ServerCallContext context)
@@ -20,9 +24,24 @@ public class OTelTraceExportService(IBufferQueue bufferQueue) : TraceService.Tra
         var spans = request.ResourceSpans
             .SelectMany(resourceSpans => resourceSpans.ScopeSpans
                 .SelectMany(scopeSpans => scopeSpans.Spans
-                    .Select(span => span.ToMochaSpan(resourceSpans.Resource)))).ToArray();
+                    .Select(span => span.ToMochaSpan(resourceSpans.Resource)))).ToList();
 
-        var totalSpanCount = spans.Length;
+        var spansMetadata = spans.Select(span => new MochaSpanMetadata
+        {
+            ServiceName = span.Resource.ServiceName,
+            OperationName = span.SpanName
+        }).DistinctBy(m => (m.ServiceName, m.OperationName)).ToList();
+
+        foreach (var metadata in spansMetadata)
+        {
+            var valueTask = _metadataBufferProducer.ProduceAsync(metadata);
+            if (!valueTask.IsCompletedSuccessfully)
+            {
+                await valueTask.AsTask();
+            }
+        }
+
+        var totalSpanCount = spans.Count;
         var acceptedSpanCount = 0;
 
         try

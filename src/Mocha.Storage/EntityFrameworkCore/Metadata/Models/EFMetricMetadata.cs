@@ -7,6 +7,8 @@ namespace Mocha.Storage.EntityFrameworkCore.Metadata.Models;
 
 public class EFMetricMetadata
 {
+    public long Id { get; init; }
+
     public required string Metric { get; init; }
 
     public required string ServiceName { get; init; }

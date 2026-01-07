@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Options;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Engine;
@@ -42,11 +43,11 @@ public class AggregatorTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
             mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()
@@ -130,11 +131,11 @@ public class AggregatorTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
             mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()
@@ -259,11 +260,11 @@ public class AggregatorTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
             mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()

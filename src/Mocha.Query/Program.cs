@@ -1,12 +1,14 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Mocha.Query;
 using Mocha.Query.Prometheus.Controllers;
 using Mocha.Query.Prometheus.PromQL.Engine;
 using Mocha.Storage;
 using Mocha.Storage.EntityFrameworkCore.Metadata;
 using Mocha.Storage.EntityFrameworkCore.Trace;
-using Mocha.Storage.InfluxDB;
+using Mocha.Storage.InfluxDB.Metrics;
+using Mocha.Storage.LiteDB.Metadata;
+using Mocha.Storage.LiteDB.Metrics;
+using Mocha.Storage.LiteDB.Trace;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -28,28 +30,74 @@ builder.Services.AddSingleton<PrometheusExceptionFilter>();
 builder.Services.AddStorage()
     .WithMetadata(metadataOptions =>
     {
-        metadataOptions.UseEntityFrameworkCore(options =>
+        var storageProvider = builder.Configuration.GetValue<string>("Metadata:Storage:Provider");
+        switch (storageProvider)
         {
-            var connectionString = builder.Configuration.GetSection("Metadata:Storage:EF").Value;
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
-            options.UseMySql(connectionString, serverVersion);
-        });
+            case MetadataStorageProvider.LiteDB:
+                metadataOptions.UseLiteDB(liteDbOptions =>
+                {
+                    builder.Configuration.GetSection("Metadata:Storage:LiteDB").Bind(liteDbOptions);
+                });
+                break;
+            case MetadataStorageProvider.EFCore:
+                metadataOptions.UseEntityFrameworkCore(efOptions =>
+                {
+                    var connectionString = builder.Configuration.GetSection("Metadata:Storage:EFCore").Value;
+                    var serverVersion = ServerVersion.AutoDetect(connectionString);
+                    efOptions.UseMySql(connectionString, serverVersion);
+                });
+                break;
+            default:
+                throw new NotSupportedException(
+                    $"Metadata storage provider '{storageProvider}' is not supported.");
+        }
     })
     .WithTracing(tracingOptions =>
     {
-        tracingOptions.UseEntityFrameworkCore(efOptions =>
+        var storageProvider = builder.Configuration.GetValue<string>("Tracing:Storage:Provider");
+
+        switch (storageProvider)
         {
-            var connectionString = builder.Configuration.GetSection("Trace:Storage:EF").Value;
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
-            efOptions.UseMySql(connectionString, serverVersion);
-        });
+            case TracingStorageProvider.LiteDB:
+                tracingOptions.UseLiteDB(liteDbOptions =>
+                {
+                    builder.Configuration.GetSection("Tracing:Storage:LiteDB").Bind(liteDbOptions);
+                });
+                break;
+            case TracingStorageProvider.EFCore:
+                tracingOptions.UseEntityFrameworkCore(efOptions =>
+                {
+                    var connectionString = builder.Configuration.GetSection("Tracing:Storage:EFCore").Value;
+                    var serverVersion = ServerVersion.AutoDetect(connectionString);
+                    efOptions.UseMySql(connectionString, serverVersion);
+                });
+                break;
+            default:
+                throw new NotSupportedException(
+                    $"Trace storage provider '{storageProvider}' is not supported.");
+        }
     })
     .WithMetrics(metricsOptions =>
     {
-        metricsOptions.UseInfluxDB(influxOptions =>
+        var storageProvider = builder.Configuration.GetValue<MetricsStorageProvider>("Metrics:Storage:Provider");
+        switch (storageProvider)
         {
-            builder.Configuration.GetSection("Metrics:Storage:InfluxDB").Bind(influxOptions);
-        });
+            case MetricsStorageProvider.LiteDB:
+                metricsOptions.UseLiteDB(liteDbOptions =>
+                {
+                    builder.Configuration.GetSection("Metrics:Storage:LiteDB").Bind(liteDbOptions);
+                });
+                break;
+            case MetricsStorageProvider.InFluxDB:
+                metricsOptions.UseInfluxDB(influxOptions =>
+                {
+                    builder.Configuration.GetSection("Metrics:Storage:InfluxDB").Bind(influxOptions);
+                });
+                break;
+            default:
+                throw new NotSupportedException(
+                    $"Metrics storage provider '{storageProvider}' is not supported.");
+        }
     });
 
 var app = builder.Build();

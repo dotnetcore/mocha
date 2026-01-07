@@ -20,7 +20,6 @@ public class EngineTestCase : IXunitSerializable
     public void Deserialize(IXunitSerializationInfo info)
     {
         Query = info.GetValue<string>(nameof(Query));
-        Result = info.GetValue<IParseResult>(nameof(Result));
         StartTimestampUnixSec = info.GetValue<long>(nameof(StartTimestampUnixSec));
         EndTimestampUnixSec = info.GetValue<long>(nameof(EndTimestampUnixSec));
         Interval = info.GetValue<TimeSpan>(nameof(Interval));
@@ -29,7 +28,6 @@ public class EngineTestCase : IXunitSerializable
     public void Serialize(IXunitSerializationInfo info)
     {
         info.AddValue(nameof(Query), Query);
-        info.AddValue(nameof(Result), Result);
         info.AddValue(nameof(StartTimestampUnixSec), StartTimestampUnixSec);
         info.AddValue(nameof(EndTimestampUnixSec), EndTimestampUnixSec);
         info.AddValue(nameof(Interval), Interval);

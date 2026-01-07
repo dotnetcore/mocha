@@ -3,6 +3,7 @@
 
 using Grpc.Core;
 using Mocha.Core.Buffer;
+using Mocha.Core.Models.Metadata;
 using Mocha.Core.Models.Metrics;
 using OpenTelemetry.Proto.Collector.Metrics.V1;
 
@@ -33,15 +34,6 @@ public class OTelMetricsExportService(IBufferQueue bufferQueue) : MetricsService
                     metrics.AddRange(metric.ToMochaMetric(resourceLabels));
                     metricsMetadata.AddRange(metric.ToMochaMetricMetadata(resourceLabels));
                 }
-            }
-        }
-
-        foreach (var metric in metrics)
-        {
-            var valueTask = _bufferProducer.ProduceAsync(metric);
-            if (!valueTask.IsCompletedSuccessfully)
-            {
-                await valueTask.AsTask();
             }
         }
 

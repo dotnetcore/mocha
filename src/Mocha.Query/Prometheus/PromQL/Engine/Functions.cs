@@ -12,7 +12,7 @@
 // limitations under the License.
 
 using Mocha.Core.Extensions;
-using Mocha.Core.Storage.Prometheus;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Ast;
 using Mocha.Query.Prometheus.PromQL.Values;
@@ -79,7 +79,7 @@ internal static class Functions
 
         var metricsWithBuckets = inputVector
             .GroupBy(s =>
-                s.Metric.MatchLabels(false, [Labels.MetricName, Labels.BucketLabel]), new LabelsComparer());
+                s.Metric.MatchLabels(false, [Labels.MetricName, Labels.BucketLabel]));
 
         foreach (var mb in metricsWithBuckets)
         {
@@ -260,12 +260,34 @@ internal static class Functions
     // min_over_time
     // the minimum value of all points in the specified interval.
     public static VectorResult FuncMinOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
-        AggregateOverTime(values, enh, points => points.Min(v => v.Value));
+        AggregateOverTime(values, enh, points =>
+        {
+            var min = points[0].Value;
+            foreach (var v in points)
+            {
+                if (v.Value < min || double.IsNaN(min))
+                {
+                    min = v.Value;
+                }
+            }
+            return min;
+        });
 
     // max_over_time
     // the maximum value of all points in the specified interval.
     public static VectorResult FuncMaxOverTime(IParseResult[] values, Expression[] args, EvalNodeHelper enh) =>
-        AggregateOverTime(values, enh, points => points.Max(v => v.Value));
+        AggregateOverTime(values, enh, points =>
+        {
+            var max = points[0].Value;
+            foreach (var v in points)
+            {
+                if (v.Value > max || double.IsNaN(max))
+                {
+                    max = v.Value;
+                }
+            }
+            return max;
+        });
 
     // sum_over_time
     // the sum of all values in the specified interval.

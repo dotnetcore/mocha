@@ -5,14 +5,22 @@
 ```bash
 docker-compose up --build -d
 ```
+此版本的存储实现为 LiteDB，属于嵌入式数据库，因此不需要额外启动数据库容器。
 
 启动成功后，可以看到以下容器：
 
 + mocha-distributor: 提供用于接收 OTLP 数据的 gRPC API
 + mocha-query: 提供用于接收查询协议的 HTTP API
++ mocha-grafana: 用于展示数据
+
+我们目前也实现了 Tracing 存储到 MySQL 和 Metrics 存储到 InfluxDB 的版本。
+
+可以执行 `docker-compose -f docker-compose-mysql-influxdb.yml up --build -d` 来启动使用 MySQL 和 InfluxDB 的版本。
+
+启动成功后，可以看到以除了上述容器外，还有以下容器：
+
 + mocha-mysql: 用于存储数据
 + mocha-influxdb: 用于存储数据
-+ mocha-grafana: 用于展示数据
 
 ## 数据的发送
 
@@ -38,7 +46,9 @@ docker-compose up --build -d
 
 ![](./assets/add-jaeger-data-source-3.png)
 
-配置 Jaeger 数据源的 URL 为 `http://query:5775/jaeger`。
+配置 Jaeger 数据源的 URL 为 `http://query:5775/jaeger` 。
+
+数据源的名称可以自定义，示例中使用的是 mocha-tracing。
 
 ![](./assets/add-jaeger-data-source-4.png)
 
@@ -52,7 +62,7 @@ docker-compose up --build -d
 
 #### Trace 数据的查询
 
-点击左侧的菜单，选择 Explore，然后选择 Jaeger 数据源，即可看到 Trace 数据。
+点击左侧的菜单，选择 Explore，然后选择 mocha-tracing 数据源，即可看到 Trace 数据。
 
 ![](./assets/query-trace.png)
 
@@ -72,7 +82,9 @@ docker-compose up --build -d
 
 ![](./assets/add-prometheus-data-source.png)
 
-配置 Prometheus 数据源的 URL 为 `http://query:5775/prometheus`。
+配置 Prometheus 数据源的 URL 为 `http://query:5775/prometheus` 。
+
+数据源的名称可以自定义，示例中使用的是 mocha-metrics。
 
 ![](./assets/add-prometheus-data-source-2.png)
 
@@ -86,7 +98,7 @@ docker-compose up --build -d
 
 #### Metrics 数据的查询
 
-点击左侧的菜单，选择 Explore，然后选择 Prometheus 数据源，即可看到 Metrics 数据。
+点击左侧的菜单，选择 Explore，然后选择 mocha-metrics 数据源，即可看到 Metrics 数据。
 
 ![](./assets/query-metrics.png)
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Mocha.Core.Models.Trace;
 using Mocha.Core.Storage;
 using Mocha.Storage.EntityFrameworkCore.Trace.Models;
+using Mocha.Storage.LiteDB.Trace;
 
 namespace Mocha.Storage.EntityFrameworkCore.Trace.Writers;
 

@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Options;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Engine;
 using Mocha.Query.Prometheus.PromQL.Values;
@@ -79,11 +80,12 @@ public class HistogramTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series),
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
             mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(
+                testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()

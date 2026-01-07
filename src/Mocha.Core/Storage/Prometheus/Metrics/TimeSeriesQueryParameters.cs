@@ -13,5 +13,8 @@ public class TimeSeriesQueryParameters
 
     public required int Limit { get; set; }
 
+    // TODO: reduce returned data points by aggregating them according to Interval
+    public required TimeSpan Interval { get; set; }
+
     // TODO: add hints for the query
 }

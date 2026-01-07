@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Options;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Query.Prometheus.PromQL.Engine;
 using Mocha.Query.Prometheus.PromQL.Values;
@@ -16,8 +17,7 @@ public class IncreaseTests
     {
         var series = new[]
         {
-            GenerateTimeSeries("http_requests{path=\"/foo\"}", TimeSpan.FromMinutes(5), 10, 0, 10),
-            Merge(
+            GenerateTimeSeries("http_requests{path=\"/foo\"}", TimeSpan.FromMinutes(5), 10, 0, 10), Merge(
                 GenerateTimeSeries("http_requests{path=\"/bar\"}", TimeSpan.FromMinutes(5), 5, 0, 10),
                 GenerateTimeSeries("http_requests{path=\"/bar\"}", 6 * 5 * 60, TimeSpan.FromMinutes(5), 5, 0, 10))
         };
@@ -29,10 +29,12 @@ public class IncreaseTests
             MaxSamplesPerQuery = 50000000
         });
 
-        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricReader(series), mockOptions.Object);
+        var engine = new PromQLEngine(new MochaPromQLParserParser(), new InMemoryPrometheusMetricsReader(series),
+            mockOptions.Object);
 
         var result =
-            await engine.QueryInstantAsync(testCase.Query, testCase.StartTimestampUnixSec, CancellationToken.None);
+            await engine.QueryInstantAsync(
+                testCase.Query, testCase.StartTimestampUnixSec, null, CancellationToken.None);
 
         result.Should().BeEquivalentTo(
             testCase.Result, options => options.RespectingRuntimeTypes()

@@ -45,6 +45,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{D598862A-999C-40FD-A190-EBD00376D077}"
 	ProjectSection(SolutionItems) = preProject
 		docker\docker-compose.yml = docker\docker-compose.yml
+		docker\docker-compose-mysql-influxdb.yml = docker\docker-compose-mysql-influxdb.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "distributor", "distributor", "{959DCB4E-A070-4C66-A27F-D83CB933F0D8}"
@@ -60,6 +61,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Query.Tests", "tests\Mocha.Query.Tests\Mocha.Query.Tests.csproj", "{D56CA47A-A948-4FB5-9E16-C61E12535521}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Antlr4.Generated", "src\Mocha.Antlr4.Generated\Mocha.Antlr4.Generated.csproj", "{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage.Benchmarks", "tests\Mocha.Storage.Benchmarks\Mocha.Storage.Benchmarks.csproj", "{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +84,7 @@ Global
 		{C7222A9C-C50C-4FF0-A02D-778A9BB4DD2C} = {D598862A-999C-40FD-A190-EBD00376D077}
 		{D56CA47A-A948-4FB5-9E16-C61E12535521} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
+		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -127,5 +131,9 @@ Global
 		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

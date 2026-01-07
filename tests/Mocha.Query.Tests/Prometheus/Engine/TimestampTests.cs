@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Options;
+using Mocha.Core.Models.Metrics;
 using Mocha.Core.Storage.Prometheus;
 using Mocha.Core.Storage.Prometheus.Metrics;
 using Mocha.Query.Prometheus.PromQL.Engine;
@@ -15,10 +16,10 @@ public class TimestampTests
     [MemberData(nameof(TestCases))]
     public async Task Eval_Timestamps(EngineTestCase testCase)
     {
-        var mockReader = new Mock<IPrometheusMetricReader>();
+        var mockReader = new Mock<IPrometheusMetricsReader>();
         var mockOptions = new Mock<IOptions<PromQLEngineOptions>>();
 
-        mockReader.Setup(x => x.GetTimeSeriesAsync(It.IsAny<TimeSeriesQueryParameters>()))
+        mockReader.Setup(x => x.GetTimeSeriesAsync(It.IsAny<TimeSeriesQueryParameters>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([
                 new TimeSeries(new Labels { ["__name__"] = "metric" }, [
                     new TimeSeriesSample { TimestampUnixSec = 0, Value = 1 },
@@ -40,6 +41,7 @@ public class TimestampTests
                 await engine.QueryInstantAsync(
                     testCase.Query,
                     testCase.StartTimestampUnixSec,
+                    null,
                     CancellationToken.None);
 
             result.Should().BeEquivalentTo(testCase.Result,
@@ -53,6 +55,7 @@ public class TimestampTests
                     testCase.StartTimestampUnixSec,
                     testCase.EndTimestampUnixSec,
                     testCase.Interval,
+                    null,
                     CancellationToken.None);
 
             result.Should().BeEquivalentTo((MatrixResult)testCase.Result,

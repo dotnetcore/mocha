@@ -5,7 +5,7 @@ using Mocha.Core.Models.Metrics;
 
 namespace Mocha.Storage.EntityFrameworkCore.Metadata.Readers;
 
-public static class EFToPrometheusConversionExtensions
+internal static class EFToPrometheusConversionExtensions
 {
     public static string ToPrometheusType(this MochaMetricType type)
     {

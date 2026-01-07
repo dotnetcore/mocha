@@ -2,6 +2,7 @@
 // The .NET Core Community licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Mocha.Core.Models.Metrics;
 
 namespace Mocha.Core.Storage.Prometheus.Metrics;
 
