@@ -11,16 +11,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-COPY ["src/Mocha.Query/Mocha.Query.csproj", "src/Mocha.Query/"]
-COPY ["src/Mocha.Antlr4.Generated/Mocha.Antlr4.Generated.csproj", "src/Mocha.Antlr4.Generated/"]
-COPY ["src/Mocha.Core/Mocha.Core.csproj", "src/Mocha.Core/"]
-COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "src/Mocha.Protocol.Generated/"]
-COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "src/Mocha.Storage/"]
-RUN dotnet restore "src/Mocha.Query/Mocha.Query.csproj"
-COPY . .
-WORKDIR "src/Mocha.Antlr4.Generated"
+COPY ["src/Mocha.Query/Mocha.Query.csproj", "Mocha.Query/"]
+COPY ["src/Mocha.Antlr4.Generated/Mocha.Antlr4.Generated.csproj", "Mocha.Antlr4.Generated/"]
+COPY ["src/Mocha.Core/Mocha.Core.csproj", "Mocha.Core/"]
+COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "Mocha.Protocol.Generated/"]
+COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "Mocha.Storage/"]
+RUN dotnet restore "Mocha.Query/Mocha.Query.csproj"
+COPY src/ .
+WORKDIR "/src/Mocha.Antlr4.Generated"
 RUN dotnet build "Mocha.Antlr4.Generated.csproj" -c $BUILD_CONFIGURATION
-WORKDIR "/src/src/Mocha.Query"
+WORKDIR "/src/Mocha.Query"
 RUN dotnet build "Mocha.Query.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

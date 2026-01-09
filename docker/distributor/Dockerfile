@@ -4,15 +4,15 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/Mocha.Distributor/Mocha.Distributor.csproj", "src/Mocha.Distributor/"]
-COPY ["src/Mocha.Core/Mocha.Core.csproj", "src/Mocha.Core/"]
-COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "src/Mocha.Protocol.Generated/"]
-COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "src/Mocha.Storage/"]
-RUN dotnet restore "src/Mocha.Distributor/Mocha.Distributor.csproj"
-COPY . .
-WORKDIR "src/Mocha.Protocol.Generated"
+COPY ["src/Mocha.Distributor/Mocha.Distributor.csproj", "Mocha.Distributor/"]
+COPY ["src/Mocha.Core/Mocha.Core.csproj", "Mocha.Core/"]
+COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "Mocha.Protocol.Generated/"]
+COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "Mocha.Storage/"]
+RUN dotnet restore "Mocha.Distributor/Mocha.Distributor.csproj"
+COPY src/ .
+WORKDIR "/src/Mocha.Protocol.Generated"
 RUN dotnet build "Mocha.Protocol.Generated.csproj" -c $BUILD_CONFIGURATION
-WORKDIR "/src/src/Mocha.Distributor"
+WORKDIR "/src/Mocha.Distributor"
 RUN dotnet build "Mocha.Distributor.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
