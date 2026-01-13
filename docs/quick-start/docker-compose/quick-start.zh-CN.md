@@ -28,15 +28,27 @@ docker-compose up --build -d
 
 ## 数据的查询
 
-### Trace
-
-#### 配置 Jaeger 数据源
-
-我们实现了支持 Jaeger 查询协议的 API，因此可以直接在 Grafana 中配置 Jaeger 数据源。
-
 访问 http://localhost:3000/ 即可看到grafana的登录页面。用户名和密码都是admin。
 
-登录后，点击左侧的菜单，选择 Data Sources，然后点击 Add data source。
+### Trace
+
+#### Trace 数据的查询
+
+我们实现了支持 Jaeger 查询协议的 API，因此可以在 Grafana 中配置 mocha 作为 Jaeger 数据源就可以查询 Trace 数据。
+
+在 `docker/grafana/provisioning/datasources/mocha-datasources.yaml` 中已经预配置好了 Jaeger 数据源。
+
+点击左侧的菜单，选择 Explore，然后选择 mocha-tracing 数据源，即可看到 Trace 数据。
+
+![](./assets/query-trace.png)
+
+![](./assets/query-trace-2.png)
+
+#### 配置 Trace 数据源
+
+如果需要手动配置 Trace 数据源，可以参考下面的步骤。
+
+登录 grafana 后，点击左侧的菜单，选择 Data Sources，然后点击 Add data source。
 
 ![](./assets/add-jaeger-data-source.png)
 
@@ -60,43 +72,13 @@ docker-compose up --build -d
 
 ![](./assets/add-jaeger-data-source-warning.png)
 
-#### Trace 数据的查询
-
-点击左侧的菜单，选择 Explore，然后选择 mocha-tracing 数据源，即可看到 Trace 数据。
-
-![](./assets/query-trace.png)
-
-![](./assets/query-trace-2.png)
-
 ### Metrics
 
-#### 配置 Prometheus 数据源
-
-我们实现了支持 PromQL 查询协议的 API，因此可以直接在 Grafana 中配置 Prometheus 数据源。
-
-访问 http://localhost:3000/ 即可看到grafana的登录页面。用户名和密码都是admin。
-
-登录后，点击左侧的菜单，选择 Data Sources，然后点击 Add data source。
-
-选择 Prometheus。
-
-![](./assets/add-prometheus-data-source.png)
-
-配置 Prometheus 数据源的 URL 为 `http://query:5775/prometheus` 。
-
-数据源的名称可以自定义，示例中使用的是 mocha-metrics。
-
-![](./assets/add-prometheus-data-source-2.png)
-
-配置 HTTP Method 为 POST。
-
-![](./assets/add-prometheus-data-source-3.png)
-
-点击 Save & Test，如果显示如下信息，则说明配置成功。
-
-![](./assets/add-prometheus-data-source-4.png)
-
 #### Metrics 数据的查询
+
+我们实现了支持 PromQL 查询协议的 API，因此可以在 Grafana 中配置 mocha 作为 Prometheus 数据源就可以查询 Metrics 数据。
+
+在 `docker/grafana/provisioning/datasources/mocha-datasources.yaml` 中已经预配置好了 Prometheus 数据源。
 
 点击左侧的菜单，选择 Explore，然后选择 mocha-metrics 数据源，即可看到 Metrics 数据。
 
@@ -115,3 +97,28 @@ docker-compose up --build -d
 接下来就可以根据需要添加 Panel，展示 Metrics 数据了。
 
 ![](./assets/create-metrics-dashboard-4.png)
+
+
+#### 配置 Prometheus 数据源
+
+如果需要手动配置 Prometheus 数据源，可以参考下面的步骤。
+
+登录 grafana 后，点击左侧的菜单，选择 Data Sources，然后点击 Add data source。
+
+选择 Prometheus。
+
+![](./assets/add-prometheus-data-source.png)
+
+配置 Prometheus 数据源的 URL 为 `http://query:5775/prometheus` 。
+
+数据源的名称可以自定义，示例中使用的是 mocha-metrics。
+
+![](./assets/add-prometheus-data-source-2.png)
+
+配置 HTTP Method 为 POST。
+
+![](./assets/add-prometheus-data-source-3.png)
+
+点击 Save & Test，如果显示如下信息，则说明配置成功。
+
+![](./assets/add-prometheus-data-source-4.png)

@@ -16,6 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Core.Tests", "tests\M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71D20701-E657-443F-8000-7958FB5E6BD7}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
@@ -46,7 +47,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{D59886
 	ProjectSection(SolutionItems) = preProject
 		docker\docker-compose.yml = docker\docker-compose.yml
 		docker\docker-compose-mysql-influxdb.yml = docker\docker-compose-mysql-influxdb.yml
-		docker\.dockerignore = docker\.dockerignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "distributor", "distributor", "{959DCB4E-A070-4C66-A27F-D83CB933F0D8}"
@@ -64,6 +64,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Antlr4.Generated", "src\Mocha.Antlr4.Generated\Mocha.Antlr4.Generated.csproj", "{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mocha.Storage.Benchmarks", "tests\Mocha.Storage.Benchmarks\Mocha.Storage.Benchmarks.csproj", "{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "grafana", "grafana", "{5B280BB9-A7AE-46E6-B735-CF484965A736}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "provisioning", "provisioning", "{C6E71F9B-BB5B-4946-9732-96CBA0B366B3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "datasources", "datasources", "{8FAF9AF6-7399-41FC-96C9-43756AAD16CB}"
+	ProjectSection(SolutionItems) = preProject
+		docker\grafana\provisioning\datasources\mocha-datasources.yaml = docker\grafana\provisioning\datasources\mocha-datasources.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +95,9 @@ Global
 		{D56CA47A-A948-4FB5-9E16-C61E12535521} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
 		{904CC523-A2D4-4982-8A7B-A6A0F5A5EB19} = {6983D239-07DA-4DFA-9AAA-F6876029FF8D}
 		{4B63E7B0-C8C8-4206-A113-A3D4EFB7533E} = {24F9E34A-D92A-4C0A-851F-1E864181BF97}
+		{5B280BB9-A7AE-46E6-B735-CF484965A736} = {D598862A-999C-40FD-A190-EBD00376D077}
+		{C6E71F9B-BB5B-4946-9732-96CBA0B366B3} = {5B280BB9-A7AE-46E6-B735-CF484965A736}
+		{8FAF9AF6-7399-41FC-96C9-43756AAD16CB} = {C6E71F9B-BB5B-4946-9732-96CBA0B366B3}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCA600F0-4D6C-44DA-A493-F63097CCE74E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

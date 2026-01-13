@@ -18,8 +18,6 @@ COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "Mocha.Pro
 COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "Mocha.Storage/"]
 RUN dotnet restore "Mocha.Query/Mocha.Query.csproj"
 COPY src/ .
-WORKDIR "/src/Mocha.Antlr4.Generated"
-RUN dotnet build "Mocha.Antlr4.Generated.csproj" -c $BUILD_CONFIGURATION
 WORKDIR "/src/Mocha.Query"
 RUN dotnet build "Mocha.Query.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
