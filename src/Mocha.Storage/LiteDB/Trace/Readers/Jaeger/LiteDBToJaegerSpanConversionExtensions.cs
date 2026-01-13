@@ -83,7 +83,9 @@ internal static class LiteDBToJaegerSpanConversionExtensions
 
         yield return new JaegerTag
         {
-            Key = "span.kind", Type = JaegerTagType.String, Value = span.SpanKind.ToJaegerSpanKind()
+            Key = "span.kind",
+            Type = JaegerTagType.String,
+            Value = span.SpanKind.ToJaegerSpanKind()
         };
 
         foreach (var attribute in spanAttributes)
