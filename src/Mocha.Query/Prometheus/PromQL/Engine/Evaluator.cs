@@ -11,7 +11,6 @@ using StringLiteral = Mocha.Query.Prometheus.PromQL.Ast.StringLiteral;
 
 namespace Mocha.Query.Prometheus.PromQL.Engine;
 
-// TODO: Use ArrayPool
 internal class Evaluator
 {
     public long StartTimestampUnixSec { get; init; }
@@ -132,11 +131,11 @@ internal class Evaluator
                     var matrixSelector = (MatrixSelector)call.Args[matrixArgIndex];
                     result = new MatrixResult(matrixSelector.Series.Count());
                     var selectorOffsetSeconds = (long)matrixSelector.Offset.TotalSeconds;
-                    var selectorRangeSeconds = matrixSelector.Range.TotalSeconds;
+                    var selectorRangeSeconds = (long)matrixSelector.Range.TotalSeconds;
                     var stepRangeSeconds = (long)Math.Min(selectorRangeSeconds, Interval.TotalSeconds);
 
                     // Reuse objects across steps to save memory allocations.
-                    // TODO: use ArrayPool
+                    var points = new List<DoublePoint>();
                     var inMatrix = new MatrixResult(1) { new Series { Metric = Labels.Empty, Points = [] } };
                     inArgs[matrixArgIndex] = inMatrix;
                     var enh = new EvalNodeHelper { Output = new VectorResult(1) };
@@ -144,6 +143,7 @@ internal class Evaluator
                     // Process all the calls for one time series at a time.
                     foreach (var timeSeries in matrixSelector.Series)
                     {
+                        points.Clear();
                         var series = new Series
                         {
                             Metric = timeSeries.Labels.DropMetricName(),
@@ -155,6 +155,7 @@ internal class Evaluator
                         var step = -1;
                         var refTimeStart = StartTimestampUnixSec - selectorOffsetSeconds;
                         var refTimeEnd = EndTimestampUnixSec - selectorOffsetSeconds;
+                        using var matrixEnumerator = new MatrixEnumerator(timeSeries.Samples);
                         for (var ts = refTimeStart; ts <= refTimeEnd; ts += stepRangeSeconds)
                         {
                             step++;
@@ -172,16 +173,17 @@ internal class Evaluator
                             var maxTs = ts;
                             var minTs = maxTs - selectorRangeSeconds;
                             // Evaluate the matrix selector for this series for this step.
-                            // TODO: optimize enumeration
-                            var points = timeSeries.Samples
-                                .Where(s => s.TimestampUnixSec >= minTs && s.TimestampUnixSec <= maxTs)
-                                .Select(s =>
-                                    new DoublePoint { TimestampUnixSec = s.TimestampUnixSec, Value = s.Value })
-                                .ToList();
+                            points = matrixEnumerator.Enumerate(minTs, maxTs, points);
 
                             if (points.Count <= 0)
                             {
                                 continue;
+                            }
+
+                            _currentSamples += points.Count;
+                            if (_currentSamples > MaxSamples)
+                            {
+                                throw new TooManySamplesException();
                             }
 
                             inMatrix[0].Points = points;
@@ -426,7 +428,6 @@ internal class Evaluator
                 throw new NotSupportedException($"Expression type {expr.GetType()} is not supported.");
         }
     }
-
 
     /// <summary>
     /// Evaluates the given expressions, and then for each step calls
