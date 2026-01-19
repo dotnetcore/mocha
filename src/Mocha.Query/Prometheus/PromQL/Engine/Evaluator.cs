@@ -25,7 +25,8 @@ internal class Evaluator
 
     public MatrixResult Eval(Expression expr)
     {
-        var numSteps = (int)((EndTimestampUnixSec - StartTimestampUnixSec) / Interval.TotalSeconds) + 1;
+        var intervalSeconds = (long)Interval.TotalSeconds;
+        var numSteps = (int)((EndTimestampUnixSec - StartTimestampUnixSec) / intervalSeconds) + 1;
         MatrixResult result;
         switch (expr)
         {
@@ -132,7 +133,6 @@ internal class Evaluator
                     result = new MatrixResult(matrixSelector.Series.Count());
                     var selectorOffsetSeconds = (long)matrixSelector.Offset.TotalSeconds;
                     var selectorRangeSeconds = (long)matrixSelector.Range.TotalSeconds;
-                    var stepRangeSeconds = (long)Math.Min(selectorRangeSeconds, Interval.TotalSeconds);
 
                     // Reuse objects across steps to save memory allocations.
                     var points = new List<DoublePoint>();
@@ -156,7 +156,7 @@ internal class Evaluator
                         var refTimeStart = StartTimestampUnixSec - selectorOffsetSeconds;
                         var refTimeEnd = EndTimestampUnixSec - selectorOffsetSeconds;
                         using var matrixEnumerator = new MatrixEnumerator(timeSeries.Samples);
-                        for (var ts = refTimeStart; ts <= refTimeEnd; ts += stepRangeSeconds)
+                        for (var ts = refTimeStart; ts <= refTimeEnd; ts += intervalSeconds)
                         {
                             step++;
                             // Set the non-matrix arguments.
@@ -352,7 +352,6 @@ internal class Evaluator
                             // TODO: use ArrayPool
                             Points = new List<DoublePoint>(numSteps)
                         };
-                        var intervalSeconds = (long)Interval.TotalSeconds;
                         var refTimeStart = StartTimestampUnixSec - offsetSeconds;
                         var refTimeEnd = EndTimestampUnixSec - offsetSeconds;
                         using var enumerator = timeSeries.Samples.Reverse().GetEnumerator();
