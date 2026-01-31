@@ -49,7 +49,9 @@ services:
     container_name: mocha-grafana
     ports:
       - "3000:3000"
-#    volumes:
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+# If you want to persist Grafana data, uncomment the following lines
 #      - ./grafana:/var/lib/grafana
     restart: always
     networks:

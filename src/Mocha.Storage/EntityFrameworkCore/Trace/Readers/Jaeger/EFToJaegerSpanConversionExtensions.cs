@@ -61,11 +61,14 @@ internal static class EFToJaegerSpanConversionExtensions
                 {
                     resourceAttributesBySpanId.TryGetValue(span.SpanID, out var attributes);
                     attributes ??= Array.Empty<EFResourceAttribute>();
+                    var serviceName = attributes
+                        .FirstOrDefault(a => a.Key == "service.name")?.Value ?? string.Empty;
                     var process = new JaegerProcess
                     {
-                        ProcessID = span.ProcessID,
-                        ServiceName = attributes
-                            .FirstOrDefault(a => a.Key == "service.name")?.Value ?? string.Empty,
+                        ProcessID = string.IsNullOrWhiteSpace(span.ProcessID)
+                            ? serviceName
+                            : span.ProcessID,
+                        ServiceName = serviceName,
                         Tags = Array.ConvertAll(attributes, ToJaegerTag)
                     };
 
