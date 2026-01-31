@@ -15,6 +15,13 @@ public class MatrixEnumerator(IEnumerable<TimeSeriesSample> samples) : IDisposab
         long maxTs,
         List<DoublePoint> reusedPoints)
     {
+        ArgumentNullException.ThrowIfNull(reusedPoints);
+
+        if (minTs > maxTs)
+        {
+            throw new ArgumentException("minTs must be less than or equal to maxTs");
+        }
+
         var keepFrom = 0;
         while (keepFrom < reusedPoints.Count && reusedPoints[keepFrom].TimestampUnixSec < minTs)
         {

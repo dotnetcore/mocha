@@ -128,6 +128,34 @@ public class MatrixEnumeratorTests
         Assert.Contains(p2, p => p.TimestampUnixSec == 10);
     }
 
+    [Fact]
+    public void Enumerate_InvalidWindow_Throws()
+    {
+        using var enumerator = new MatrixEnumerator(CreateSamples());
+        var reused = new List<DoublePoint>();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            enumerator.Enumerate(
+                minTs: 20,
+                maxTs: 10,
+                reusedPoints: reused);
+        });
+    }
+
+    [Fact]
+    public void Enumerate_NullReusedPoints_Throws()
+    {
+        using var enumerator = new MatrixEnumerator(CreateSamples());
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            enumerator.Enumerate(
+                minTs: 0,
+                maxTs: 10,
+                reusedPoints: null!);
+        });
+    }
+
     private static List<TimeSeriesSample> CreateSamples()
     {
         // ts: 0, 10, 20, 30, 40
