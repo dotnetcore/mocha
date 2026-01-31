@@ -17,9 +17,9 @@ public class MatrixEnumerator(IEnumerable<TimeSeriesSample> samples) : IDisposab
     {
         ArgumentNullException.ThrowIfNull(reusedPoints);
 
-        if (minTs > maxTs)
+        if (minTs >= maxTs)
         {
-            throw new ArgumentException("minTs must be less than or equal to maxTs");
+            throw new ArgumentException("minTs must be less than maxTs");
         }
 
         var keepFrom = 0;
