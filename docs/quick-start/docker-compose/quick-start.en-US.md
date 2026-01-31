@@ -29,13 +29,25 @@ Configure the OTLP exporter of the SDK as `http://localhost:4317` to send data t
 
 ## Query Data
 
+Visit http://localhost:3000/ to see the grafana login page. Both the username and password are admin.
+
 ### Trace
+
+#### Query Trace Data
+
+We have implemented an API that supports the Jaeger query protocol, so you can configure mocha as a Jaeger data source in Grafana to query Trace data.
+
+The Jaeger data source has been pre-configured in `docker/grafana/provisioning/datasources/mocha-datasources.yaml`.
+
+Click the menu on the left, select Explore, and then select the mocha-tracing data source to see the Trace data.
+
+![](./assets/query-trace.png)
+
+![](./assets/query-trace-2.png)
 
 #### Configure Jaeger Data Source
 
-We have implemented an API that supports the Jaeger query protocol, so you can configure the Jaeger data source directly in Grafana.
-
-Visit http://localhost:3000/ to see the grafana login page. Both the username and password are admin.
+If you need to manually configure the Trace data source, you can refer to the following steps.
 
 After logging in, click the menu on the left, select Data Sources, and then click Add data source.
 
@@ -61,21 +73,35 @@ If no data has been sent to the distributor yet, the following warning message w
 
 ![](./assets/add-jaeger-data-source-warning.png)
 
-#### Query Trace Data
-
-Click the menu on the left, select Explore, and then select the mocha-tracing data source to see the Trace data.
-
-![](./assets/query-trace.png)
-
-![](./assets/query-trace-2.png)
-
 ### Metrics
+
+#### Query Metrics Data
+
+We have implemented an API that supports the PromQL query protocol, so you can configure mocha as a Prometheus data source in Grafana to query Metrics data.
+
+The Prometheus data source has been pre-configured in `docker/grafana/provisioning/datasources/mocha-datasources.yaml`.
+
+Click the menu on the left, select Explore, and then select the Prometheus data source to see the Metrics data.
+
+![](./assets/query-metrics.png)
+
+Click the menu on the left, select Dashboards, and then create a new dashboard.
+
+![](./assets/create-metrics-dashboard.png)
+
+![](./assets/create-metrics-dashboard-2.png)
+
+Select the mocha-metrics data source that we just created.
+
+![](./assets/create-metrics-dashboard-3.png)
+
+After that, you can add panels as needed to display Metrics data.
+
+![](./assets/create-metrics-dashboard-4.png)
 
 #### Configure Prometheus Data Source
 
-We have implemented an API that supports the PromQL query protocol, so you can configure the Prometheus data source directly in Grafana.
-
-Visit http://localhost:3000/ to see the grafana login page. Both the username and password are admin.
+If you need to manually configure the Metrics data source, you can refer to the following steps.
 
 After logging in, click the menu on the left, select Data Sources, and then click Add data source.
 
@@ -96,23 +122,3 @@ Configure the HTTP Method as POST.
 Click Save & Test. If the following information is displayed, the configuration is successful.
 
 ![](./assets/add-prometheus-data-source-4.png)
-
-#### Query Metrics Data
-
-Click the menu on the left, select Explore, and then select the Prometheus data source to see the Metrics data.
-
-![](./assets/query-metrics.png)
-
-Click the menu on the left, select Dashboards, and then create a new dashboard.
-
-![](./assets/create-metrics-dashboard.png)
-
-![](./assets/create-metrics-dashboard-2.png)
-
-Select the mocha-metrics data source that we just created.
-
-![](./assets/create-metrics-dashboard-3.png)
-
-After that, you can add panels as needed to display Metrics data.
-
-![](./assets/create-metrics-dashboard-4.png)

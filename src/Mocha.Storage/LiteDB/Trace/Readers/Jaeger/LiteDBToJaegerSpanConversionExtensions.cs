@@ -6,7 +6,7 @@ using Mocha.Storage.LiteDB.Trace.Models;
 
 namespace Mocha.Storage.LiteDB.Trace.Readers.Jaeger;
 
-internal static class LiteToJaegerSpanConversionExtensions
+internal static class LiteDBToJaegerSpanConversionExtensions
 {
     public static IEnumerable<JaegerTrace> ToJaegerTraces(
         this IEnumerable<LiteDBSpan> spans)
@@ -22,7 +22,11 @@ internal static class LiteToJaegerSpanConversionExtensions
                     var process = new JaegerProcess
                     {
                         ServiceName = span.ServiceName,
-                        ProcessID = span.ServiceInstanceId,
+                        // service.instance.id may be null
+                        ProcessID =
+                            string.IsNullOrWhiteSpace(span.ServiceInstanceId)
+                                ? span.ServiceName
+                                : span.ServiceInstanceId,
                         Tags = span.Resource.Attributes.Select(a => a.ToJaegerTag()).ToArray()
                     };
 

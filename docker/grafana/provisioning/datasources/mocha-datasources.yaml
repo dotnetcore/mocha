@@ -1,0 +1,23 @@
+apiVersion: 1
+
+datasources:
+  # Tracing (Jaeger)
+  - name: mocha-tracing
+    type: jaeger
+    uid: mocha-tracing
+    access: proxy
+    url: http://query:5775/jaeger
+    isDefault: false
+    editable: false
+
+  # Metrics (Prometheus API)
+  - name: mocha-metrics
+    type: prometheus
+    uid: mocha-metrics
+    access: proxy
+    url: http://query:5775/prometheus
+    isDefault: true
+    editable: false
+
+    jsonData:
+      httpMethod: POST
