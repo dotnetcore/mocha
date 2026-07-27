@@ -13,6 +13,7 @@ RUN apt-get update && \
 WORKDIR /src
 COPY ["Mocha.sln", "Directory.Build.props", "./"]
 COPY src/ src/
+COPY tests/ tests/
 COPY proto/ proto/
 RUN dotnet restore "Mocha.sln"
 RUN dotnet build "Mocha.sln" -c $BUILD_CONFIGURATION
