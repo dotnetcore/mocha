@@ -3,6 +3,13 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
+
+# Install OpenJDK 17 for Antlr4
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /src
 COPY ["Mocha.sln", "Directory.Build.props", "./"]
 COPY src/ src/
