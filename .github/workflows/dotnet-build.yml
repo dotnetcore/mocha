@@ -38,6 +38,25 @@ jobs:
       - name: Format
         run: dotnet format --verify-no-changes --verbosity diagnostic
       - name: Test
+        run: dotnet test -c Release --no-build
+
+  coverage:
+    needs: dotnet-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build third-party modules
+        run: dotnet build ./src/Mocha.Protocol.Generated
+      - name: Test with coverage
         run: dotnet test -c Release --collect:"XPlat Code Coverage"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
