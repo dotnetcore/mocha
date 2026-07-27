@@ -10,7 +10,7 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Init submodules
         run: git submodule update --init --recursive
       - uses: actions/setup-dotnet@v4
