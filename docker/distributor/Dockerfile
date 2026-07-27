@@ -10,6 +10,7 @@ COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "Mocha.Pro
 COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "Mocha.Storage/"]
 RUN dotnet restore "Mocha.Distributor/Mocha.Distributor.csproj"
 COPY src/ .
+COPY proto/ proto/
 WORKDIR "/src/Mocha.Protocol.Generated"
 RUN dotnet build "Mocha.Protocol.Generated.csproj" -c $BUILD_CONFIGURATION
 WORKDIR "/src/Mocha.Distributor"
