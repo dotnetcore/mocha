@@ -16,24 +16,26 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ matrix.dotnet-version }}
-    - name: Fetch submodules
-      run: git submodule update --init --recursive
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build third-party modules
-      run: dotnet build ./src/Mocha.Protocol.Generated
-    - name: Build
-      run: dotnet build
-    - name: Format
-      run: dotnet format --verify-no-changes --verbosity diagnostic
-    - name: Test
-      run: dotnet test -c Release --collect:"XPlat Code Coverage"
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - uses: actions/checkout@v4
+      - name: Disable autocrlf
+        run: git config core.autocrlf false
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Fetch submodules
+        run: git submodule update --init --recursive
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build third-party modules
+        run: dotnet build ./src/Mocha.Protocol.Generated
+      - name: Build
+        run: dotnet build
+      - name: Format
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+      - name: Test
+        run: dotnet test -c Release --collect:"XPlat Code Coverage"
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

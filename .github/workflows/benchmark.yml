@@ -6,6 +6,7 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Init submodules
@@ -14,7 +15,14 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - name: Run Core benchmarks
+        # Run all benchmarks in the project (filter "*" matches every benchmark)
         run: dotnet run -c Release --project tests/Mocha.Core.Benchmarks -- --filter "*"
+      - name: Run Query benchmarks
+        # Run all benchmarks in the project (filter "*" matches every benchmark)
+        run: dotnet run -c Release --project tests/Mocha.Query.Benchmarks -- --filter "*"
+      - name: Run Storage benchmarks
+        # Run all benchmarks in the project (filter "*" matches every benchmark)
+        run: dotnet run -c Release --project tests/Mocha.Storage.Benchmarks -- --filter "*"
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
