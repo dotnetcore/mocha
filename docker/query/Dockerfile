@@ -12,14 +12,9 @@ RUN apt-get update && \
 
 WORKDIR /src
 COPY ["Mocha.sln", "Directory.Build.props", "./"]
-COPY ["src/Mocha.Query/Mocha.Query.csproj", "src/Mocha.Query/"]
-COPY ["src/Mocha.Antlr4.Generated/Mocha.Antlr4.Generated.csproj", "src/Mocha.Antlr4.Generated/"]
-COPY ["src/Mocha.Core/Mocha.Core.csproj", "src/Mocha.Core/"]
-COPY ["src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj", "src/Mocha.Protocol.Generated/"]
-COPY ["src/Mocha.Storage/Mocha.Storage.csproj", "src/Mocha.Storage/"]
-RUN dotnet restore "Mocha.sln"
 COPY src/ src/
 COPY proto/ proto/
+RUN dotnet restore "Mocha.sln"
 RUN dotnet build "Mocha.sln" -c $BUILD_CONFIGURATION
 
 FROM build AS publish
