@@ -1,0 +1,26 @@
+name: Docker Build & Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [distributor, query]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
+      - name: Build image
+        run: docker build -f docker/${{ matrix.service }}/Dockerfile -t mocha-${{ matrix.service }} .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: mocha-${{ matrix.service }}
+          format: table
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
