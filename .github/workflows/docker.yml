@@ -12,6 +12,8 @@ jobs:
         service: [distributor, query]
     steps:
       - uses: actions/checkout@v4
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Build image
         run: docker build -f docker/${{ matrix.service }}/Dockerfile -t mocha-${{ matrix.service }} .
       - name: Run Trivy vulnerability scanner
