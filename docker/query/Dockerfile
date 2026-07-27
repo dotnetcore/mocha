@@ -16,6 +16,7 @@ COPY src/ src/
 COPY tests/ tests/
 COPY proto/ proto/
 RUN dotnet restore "Mocha.sln"
+RUN dotnet build "src/Mocha.Protocol.Generated/Mocha.Protocol.Generated.csproj" -c $BUILD_CONFIGURATION
 RUN dotnet build "Mocha.sln" -c $BUILD_CONFIGURATION
 
 FROM build AS publish
