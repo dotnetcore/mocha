@@ -19,6 +19,6 @@
         <Protobuf Include="..\..\proto\otlp\opentelemetry\proto\**\*.proto"
                   ProtoRoot="..\..\proto\otlp"
                   OutputDir="%(RelativePath)generated"
-                  CompileOutputs="true" />
+                  CompileOutputs="false" />
     </ItemGroup>
 </Project>
