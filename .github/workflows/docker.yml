@@ -11,7 +11,7 @@ jobs:
       matrix:
         service: [distributor, query]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Init submodules
         run: git submodule update --init --recursive
       - name: Build image
