@@ -1,0 +1,28 @@
+# Licensed to the .NET Core Community under one or more agreements.
+# The .NET Core Community licenses this file to you under the MIT license.
+
+# End-to-end override shared by both backend variants
+# (docker/docker-compose.yml and docker/docker-compose-mysql-influxdb.yml).
+#
+# It keeps the shared compose files untouched while making an e2e run leaner:
+#   * Grafana is not exercised by the e2e assertions, so it is placed behind a compose
+#     profile that the e2e run never enables. This avoids starting an extra container.
+#
+# Intentionally NOT changed here: the "restart: always" policy is preserved. The
+# MySQL/InfluxDB variant depends on it, because "depends_on" only waits for container
+# start (not database readiness); the distributor/query may exit once before MySQL has
+# finished initializing and rely on the restart policy to reconnect. The test tolerates
+# this by polling readiness from the outside with a timeout.
+#
+# Usage (from repo root):
+#   docker compose -f docker/docker-compose.yml -f e2e/docker-compose.e2e.yml up --build -d
+# run-e2e.sh applies this automatically for whichever backend is selected.
+#
+# No top-level "name:" is set here on purpose, so the compose project name is inherited
+# from whichever base file is combined with this override (each base file sets its own).
+
+services:
+  grafana:
+    # Not required for e2e; guard behind an unused profile so it does not start.
+    profiles:
+      - donotstart

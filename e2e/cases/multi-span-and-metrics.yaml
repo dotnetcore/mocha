@@ -1,0 +1,43 @@
+name: multi-span-and-metrics
+description: >
+  Two spans (a server root and a client child operation) plus two gauges, all asserted through
+  Jaeger and Prometheus. Exercises multiple operations and multiple metric selectors in one case.
+timeoutSeconds: 30
+send:
+  resource:
+    serviceName: mocha-e2e-multi   # runner appends unique run suffix -> mocha-e2e-multi-<runId>
+    attributes: { service.instance.id: "${runId}", deployment.environment: e2e }
+  spans:
+    - id: root
+      name: e2e-multi-root-span
+      kind: server
+      status: ok
+      durationMs: 5
+      attributes: { http.method: GET, e2e.run_id: "${runId}" }
+    - id: child
+      name: e2e-multi-child-span
+      kind: client
+      status: ok
+      durationMs: 2
+      attributes: { db.system: mysql, e2e.run_id: "${runId}" }
+  metrics:
+    - name: mocha_e2e_multi_gauge_a
+      type: gauge
+      unit: "1"
+      value: 7
+      attributes: { e2e.run_id: "${runId}" }
+    - name: mocha_e2e_multi_gauge_b
+      type: gauge
+      unit: "1"
+      value: 13
+      attributes: { e2e.run_id: "${runId}" }
+expect:
+  jaeger:
+    service: true
+    operations: [e2e-multi-root-span, e2e-multi-child-span]
+    traceById: root
+  prometheus:
+    - query: mocha_e2e_multi_gauge_a
+      expect: nonEmptyVector
+    - query: mocha_e2e_multi_gauge_b
+      expect: nonEmptyVector

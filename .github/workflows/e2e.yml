@@ -1,0 +1,57 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Tier 1: full-stack, cross-process OTLP -> storage -> Query assertions against the docker-compose
+  # stack, for both storage backends. Intended to block PRs to main. run-e2e.sh initializes the
+  # submodule itself, but we still checkout submodules so the .NET build has the OTLP protos.
+  tier1-full-stack:
+    name: Tier 1 (full stack, ${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [litedb, mysql-influxdb]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - name: Run Tier-1 end-to-end (${{ matrix.backend }})
+        run: e2e/run-e2e.sh --backend ${{ matrix.backend }}
+
+  # Tier 2: xUnit component tests that exercise the storage adapters against real MySQL/InfluxDB via
+  # Testcontainers (needs Docker, present on ubuntu runners). Informational initially
+  # (continue-on-error) so it does not block PRs while the suite matures. Not part of Mocha.sln, so
+  # it is run explicitly by project path here and never by the sln-scoped CI "dotnet test".
+  tier2-component:
+    name: Tier 2 (component, Testcontainers)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - name: Build third-party modules
+        run: dotnet build ./src/Mocha.Protocol.Generated
+      - name: Run Tier-2 component tests
+        run: dotnet test e2e/Mocha.E2E.Component.Tests/Mocha.E2E.Component.Tests.csproj -c Release
