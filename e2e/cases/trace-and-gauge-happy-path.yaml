@@ -1,0 +1,25 @@
+name: trace-and-gauge-happy-path
+description: One server span + one gauge, asserted through Jaeger and Prometheus.
+timeoutSeconds: 30
+send:
+  resource:
+    serviceName: mocha-e2e        # runner appends unique run suffix -> mocha-e2e-<runId>
+    attributes: { service.instance.id: "${runId}" }
+  spans:
+    - id: root                    # symbolic id
+      name: e2e-root-span
+      kind: server
+      status: ok
+      durationMs: 1
+      attributes: { http.method: GET, e2e.run_id: "${runId}" }
+  metrics:
+    - name: mocha_e2e_gauge       # runner appends unique suffix
+      type: gauge
+      unit: "1"
+      value: 42
+      attributes: { e2e.run_id: "${runId}" }
+expect:
+  jaeger: { service: true, operations: [e2e-root-span], traceById: root }
+  prometheus:
+    - query: mocha_e2e_gauge
+      expect: nonEmptyVector

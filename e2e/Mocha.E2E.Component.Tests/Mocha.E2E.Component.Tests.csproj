@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <!-- xUnit component tests, but deliberately NOT under tests/ and deliberately NOT added to
+             Mocha.sln. The CI "dotnet test" (sln-scoped) must NOT run these (they need Docker via
+             Testcontainers), and the release Dockerfiles restore Mocha.sln over a src/ tests/ proto/
+             build context that never copies e2e/. Living under e2e/ + Mocha.E2E.sln keeps both
+             consumers untouched; CI runs these via an explicit "dotnet test <csproj>" job. -->
+        <IsTestProject>true</IsTestProject>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RootNamespace>Mocha.E2E.Component.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="6.12.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+        <PackageReference Include="xunit" Version="2.9.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="10.0.1">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Testcontainers.MySql" Version="4.0.0" />
+        <PackageReference Include="Testcontainers.InfluxDb" Version="4.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Mocha.E2E.Abstractions\Mocha.E2E.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Mocha.Storage\Mocha.Storage.csproj" />
+        <ProjectReference Include="..\..\src\Mocha.Core\Mocha.Core.csproj" />
+        <ProjectReference Include="..\..\src\Mocha.Query\Mocha.Query.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Seed the real MySQL schema from the same init scripts the compose stack uses, so the
+             test never hand-copies DDL. Copied next to the test assembly for runtime access. -->
+        <Content Include="..\..\scripts\mysql\init\*.sql" Link="mysql-init\%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

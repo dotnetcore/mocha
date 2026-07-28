@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <!-- Deliberately NOT a test project and deliberately NOT added to Mocha.sln.
+             The CI "dotnet test" step runs across the whole solution, and the production
+             Dockerfiles run "dotnet restore Mocha.sln" over a build context that only copies
+             src/, tests/ and proto/ (not e2e/). Keeping this project out of the solution keeps
+             both consumers untouched; run-e2e.sh builds it explicitly via its project path. -->
+        <IsTestProject>false</IsTestProject>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RootNamespace>Mocha.EndToEnd</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="16.1.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Mocha.E2E.Abstractions\Mocha.E2E.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Case files are copied next to the runner so the default discovery path resolves both
+             from the source tree and from the build output. Adding a case is "drop a YAML file,
+             no recompile" (they are content, not compiled). -->
+        <Content Include="..\cases\*.yaml" Link="cases\%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

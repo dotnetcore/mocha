@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <!-- Deliberately NOT a test project and deliberately NOT added to Mocha.sln.
+             Shared e2e building blocks (OTLP proto builders, the Query read-back client,
+             assertion matchers) consumed by BOTH the Tier-1 runner (Mocha.EndToEnd) and the
+             Tier-2 xUnit component tests. It lives under e2e/ and is referenced only from the
+             e2e-only Mocha.E2E.sln so that neither "dotnet test Mocha.sln" nor the release
+             Dockerfiles (which restore Mocha.sln over a src/ tests/ proto/ build context) ever
+             see it. -->
+        <IsTestProject>false</IsTestProject>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RootNamespace>Mocha.E2E.Abstractions</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Mocha.Protocol.Generated\Mocha.Protocol.Generated.csproj" />
+    </ItemGroup>
+
+</Project>
