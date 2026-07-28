@@ -21,6 +21,16 @@ services:
     volumes:
       - ../scripts/mysql/init:/docker-entrypoint-initdb.d/
 #      - ./mysql:/var/lib/mysql
+    # -h 127.0.0.1 forces a TCP connection, so this only turns healthy once the REAL server
+    # binds port 3306. During an empty first-init MySQL listens on the unix socket only (TCP
+    # port 0) for ~12s; a socket-based ping would pass too early and let dependents start
+    # against a server that is not yet accepting TCP.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
     restart: always
     networks:
       - mocha
@@ -40,6 +50,11 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mocha_influxdb_token
 #    volumes:
 #      - ./influxdb:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8086/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     restart: always
     networks:
       - mocha
@@ -79,8 +94,10 @@ services:
       - Metrics__Storage__InfluxDB__Bucket=mocha_metrics
       - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
     depends_on:
-      - mysql
-      - influxdb
+      mysql:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
     restart: always
     networks:
       - mocha
@@ -107,8 +124,10 @@ services:
       - Metrics__Storage__InfluxDB__Bucket=mocha_metrics
       - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
     depends_on:
-      - mysql
-      - influxdb
+      mysql:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
     restart: always
     networks:
       - mocha
