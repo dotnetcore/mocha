@@ -9,7 +9,7 @@
         <ProjectReference Include="..\Mocha.Core\Mocha.Core.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="InfluxDB.Client" Version="4.16.0" />
+        <PackageReference Include="InfluxDB.Client" Version="5.1.0" />
         <PackageReference Include="LiteDB" Version="5.0.21" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
